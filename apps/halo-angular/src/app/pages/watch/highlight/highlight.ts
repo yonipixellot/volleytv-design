@@ -115,6 +115,11 @@ export class HighlightPage {
   // neighbours and both arrows stand down with the rest of the story chrome.
   protected prevReel = computed(() => (this.single() ? null : this.deck()[this.deckIdx() - 1] ?? null));
   protected nextReel = computed(() => (this.single() ? null : this.deck()[this.deckIdx() + 1] ?? null));
+  /** Whether an arrow has somewhere to go: another moment in this reel, or
+   *  another reel in the deck. At the very end the arrow ghosts; the X is the
+   *  way out, not a step that happens to close. */
+  protected canBack = computed(() => !this.single() && (this.i() > 0 || !!this.prevReel()));
+  protected canFwd = computed(() => !this.single() && (this.i() < this.clips().length - 1 || !!this.nextReel() || this.showUpsell()));
   /**
    * Switch reels. `player` is dropped for the own reel so the URL of "mine"
    * stays the plain one, and every other param (game, from) is kept.

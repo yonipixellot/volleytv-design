@@ -18,10 +18,14 @@
     <img [src]="prevReel()?.thumb || ''" alt="" />
     <span class="side-t">{{ prevReel()?.title }}</span>
   </button>
+  <!-- The arrows step ONE MOMENT, like the tap zones (Yoni 2026-09-10): a
+       desktop viewer clicking through expects the next clip, not the next
+       player. Reels still chain, so the last moment of one flows into the next
+       reel; only the neighbour cards jump a whole reel. -->
   <div class="gap">
-    <button class="nav" type="button" [class.ghost]="!prevReel()"
-            [attr.aria-label]="'watch.prevReel' | t" [attr.tabindex]="prevReel() ? null : -1"
-            (click)="prevReel() && openReel(prevReel()!.id)">
+    <button class="nav" type="button" [class.ghost]="!canBack()"
+            [attr.aria-label]="'watch.prev' | t" [attr.tabindex]="canBack() ? null : -1"
+            (click)="prev()">
       <halo-icon name="chevron-left" [size]="16" />
     </button>
   </div>
@@ -38,7 +42,12 @@
        plays once, its clock fills the story line, and `ended` moves the reel on
        (see `lineRun` / `advance` in highlight.ts). -->
   @if (clipVideo() && !currentLocked()) {
-    <video #vid class="bg" [src]="clipVideo()" [poster]="current().thumb"
+    <!-- [muted] as a PROPERTY, not only the attribute: Angular sets the
+         attribute after the element exists, and the browser copies it into
+         .muted only at creation, so the reel was autoplaying UNMUTED and Chrome
+         blocked it on any load without a prior gesture (reload, deep link).
+         The result was a still frame and a line stuck at 0% (2026-09-10). -->
+    <video #vid class="bg" [src]="clipVideo()" [poster]="current().thumb" [muted]="true"
       autoplay muted playsinline preload="auto" (ended)="onEnded()"></video>
   } @else {
     <img class="bg" [class.blur]="currentLocked()" [src]="current().thumb" alt="" />
@@ -166,9 +175,9 @@
        corner, where nobody found it (Eugene 2026-09-10). Still one exit per
        width: the reel's own close (inside .top) stands down from 768. -->
   <div class="gap r">
-    <button class="nav r" type="button" [class.ghost]="!nextReel()"
-            [attr.aria-label]="'watch.nextReel' | t" [attr.tabindex]="nextReel() ? null : -1"
-            (click)="nextReel() && openReel(nextReel()!.id)">
+    <button class="nav r" type="button" [class.ghost]="!canFwd()"
+            [attr.aria-label]="'watch.next' | t" [attr.tabindex]="canFwd() ? null : -1"
+            (click)="next()">
       <halo-icon name="chevron-right" [size]="16" />
     </button>
     <button class="deckx" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">

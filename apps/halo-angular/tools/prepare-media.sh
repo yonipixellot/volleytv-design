@@ -42,9 +42,19 @@ enc_h "$SRC/Girls Horizontal Game Highlights.mp4" "$OUT/game/highlights.mp4"
 # Swap PLAYER to bring in a different athlete's reel; raise REEL_CLIP_COUNT in
 # media-manifest.ts if the new folder holds more clips than the old one.
 PLAYER="$SRC/Player HL - Vertical/OK KELTEKS/#15PlayerHighlights2"
+# In-point per clip, seconds. Every master opens on the same serve walk-up from
+# the same static camera, so nine clips read as one when the reel switches
+# between them (Yoni 2026-09-10). Cutting in at serve contact starts each moment
+# on the rally. Clip 6's server takes half a second longer.
+#
+# 2026-09-10: the shipped files were re-cut from the CRF-28 encodes with these
+# in-points (masters were not on hand), at CRF 26 / 1400k so the second
+# generation does not compound the loss. Rebuilding from the masters with this
+# script gives the same cut at the original single-generation quality.
+TRIM_IN=(0 1.5 1.5 1.5 1.5 1.5 2.0 1.5 1.5 1.5)
 i=1
 while [[ -f "$PLAYER/Clip $i.mp4" ]]; do
-  ffmpeg -nostdin -y -i "$PLAYER/Clip $i.mp4" \
+  ffmpeg -nostdin -y -ss "${TRIM_IN[$i]:-0}" -i "$PLAYER/Clip $i.mp4" \
     -c:v libx264 -preset slow -crf 28 -maxrate 1200k -bufsize 2400k \
     -vf "scale=720:-2" -c:a aac -b:a 96k -movflags +faststart \
     "$OUT/reel/clip-$i.mp4"
