@@ -30,7 +30,7 @@ export const en = {
   "cta.watchReplay": "Watch replay",
   "cta.watchLive": "Watch live",
   "cta.clearFilters": "Clear filters",
-  "comp.mondayMen14": "Monday Men Div 1 - 2026 Winter",
+  "comp.mondayMen14": "Monday Men Div 1",
   "comp.tuesdayB3Men": "Tuesday Men Div 3",
   "comp.tuesdayB2Women": "Tuesday Women Div 2",
   "league.metro": "Metro Volleyball League",

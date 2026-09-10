@@ -70,6 +70,12 @@
   margin-top: var(--space-3);
   padding-top: var(--space-3);
   border-top: 1px solid var(--hair2);
+  /* One row, always. The meta is competition · grade · set; when a name runs
+     long it ends in an ellipsis rather than pushing the card taller than its
+     neighbours in the rail (Yoni 2026-09-10). */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Desktop interaction — see rail-card for why this is (hover: hover) and why the
