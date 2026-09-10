@@ -97,7 +97,7 @@ export class FollowingPage {
   teams = computed(() => this.store.followedTeams());
   players = signal<FollowedPlayer[]>([
     { id: 'p7', name: 'Tal Weiss', number: '7', position: t('pos.outside'), teamName: 'Netsetters 1' },
-    { id: 'p12', name: 'J. Torres', number: '12', position: t('pos.opposite'), teamName: 'Netsetters 1' },
+    { id: 'p14', name: 'J. Torres', number: '14', position: t('pos.opposite'), teamName: 'Netsetters 1' },
     { id: 'p4', name: 'M. Chen', number: '4', position: t('pos.middle'), teamName: 'Netsetters 1' },
   ]);
 

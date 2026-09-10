@@ -1,5 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ReelStore } from './reel-store';
+import { teammateReelById } from './teammate-reels';
+
+export type StoryKind = 'you' | 'kid' | 'team' | 'player' | undefined;
 
 /**
  * HOW MUCH OF A CIRCLE HAS BEEN WATCHED.
@@ -34,9 +37,10 @@ export class StoryProgress {
 
   /** Circle label → the item keys shown so far. Torres starts finished, so the
    *  grey "nothing new" ring is visible on first load next to the accent ones
-   *  rather than only after watching something (Maryna 2026-09-02). */
+   *  rather than only after watching something (Maryna 2026-09-02). Keyed by
+   *  the moment's action, the same key the reel player reports. */
   private seen = signal<Record<string, ReadonlySet<string>>>({
-    Torres: new Set(['recap']),
+    Torres: new Set(teammateReelById('torres')?.clips.map((c) => c.action) ?? []),
   });
 
   /** Which circle the open player belongs to, set on the tap that opened it. */
@@ -49,25 +53,27 @@ export class StoryProgress {
    *  counts as new at all. */
   private static readonly ITEMS: Record<string, number> = { Vikings: 0 };
 
-  /** How many items a circle holds. A person's circle is their reel; a team's is
-   *  the one game recap. Zero means the circle is EMPTY, which is a state of its
-   *  own and never rings — an accent ring is a promise of content. */
-  total(label: string, kind: 'you' | 'kid' | 'team' | undefined): number {
+  /** How many items a circle holds. A person's circle is their reel (a followed
+   *  player's, the reel behind `reelId`); a team's is the one game recap. Zero
+   *  means the circle is EMPTY, which is a state of its own and never rings — an
+   *  accent ring is a promise of content. */
+  total(label: string, kind: StoryKind, reelId?: string): number {
     const override = StoryProgress.ITEMS[label];
     if (override !== undefined) return override;
+    if (kind === 'player') return teammateReelById(reelId ?? '')?.clips.length ?? 0;
     return kind === 'team' ? 1 : this.reel.moments().length;
   }
 
   /** Nothing inside — a state of its own, and not the same as "seen it all". */
-  isEmpty(label: string, kind: 'you' | 'kid' | 'team' | undefined): boolean {
-    return this.total(label, kind) === 0;
+  isEmpty(label: string, kind: StoryKind, reelId?: string): boolean {
+    return this.total(label, kind, reelId) === 0;
   }
 
   seenCount(label: string): number { return this.seen()[label]?.size ?? 0; }
 
   /** The ring's whole condition: something in here, and not all of it seen. */
-  unseen(label: string, kind: 'you' | 'kid' | 'team' | undefined): boolean {
-    const total = this.total(label, kind);
+  unseen(label: string, kind: StoryKind, reelId?: string): boolean {
+    const total = this.total(label, kind, reelId);
     return total > 0 && this.seenCount(label) < total;
   }
 

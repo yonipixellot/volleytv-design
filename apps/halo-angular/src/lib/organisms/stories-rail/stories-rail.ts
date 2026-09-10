@@ -11,10 +11,12 @@ export interface StoryItem {
   /** Active ("You") gets the gold accent ring. */
   active?: boolean;
   /** What the circle is — hosts route taps by this (you/kid → vertical reel,
-      team → the game recap in the horizontal player). Also decides how the
-      circle is PAINTED: person = number on --primary, team = logo or initials
-      on the neutral --mono-plate. */
-  kind?: 'you' | 'kid' | 'team';
+      player → that player's vertical reel, team → the game recap in the
+      horizontal player). Also decides how the circle is PAINTED: person =
+      number on --primary, team = logo or initials on the neutral --mono-plate. */
+  kind?: 'you' | 'kid' | 'team' | 'player';
+  /** For player circles — the reel id (teammate-reels.ts) the tap opens. */
+  reelId?: string;
   /** For you/kid circles — the ProfileState id this circle represents, so a
       tap can focus that person app-wide before opening their reel. */
   profileId?: string;

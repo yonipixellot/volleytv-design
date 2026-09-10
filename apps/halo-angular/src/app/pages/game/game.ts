@@ -350,6 +350,7 @@ export class GamePage {
     { jersey: 23, name: 'Marcus Lee', pts: 10, k: 8, ace: 1, blk: 1, dig: 5 },
     { jersey: 4, name: 'Dylan Cross', pts: 11, k: 7, ace: 0, blk: 4, dig: 2 },
     { jersey: 9, name: 'Owen Pratt', pts: 9, k: 7, ace: 1, blk: 1, dig: 4 },
+    { jersey: 14, name: 'Jordan Torres', pts: 4, k: 3, ace: 1, blk: 0, dig: 3 },
     { jersey: 15, name: 'Eli Brooks', pts: 7, k: 6, ace: 0, blk: 1, dig: 6 },
     { jersey: 2, name: 'Noah Kim', pts: 0, k: 0, ace: 0, blk: 0, dig: 18 },
   ];

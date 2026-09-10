@@ -33,7 +33,7 @@ export class CoachAdminPage {
       id: 't1', name: 'Netsetters 1', mono: 'NS',
       roster: [
         { id: 'r1', name: 'Tal Weiss', number: '7', email: emailFor('Tal Weiss') },
-        { id: 'r2', name: 'Jordan Torres', number: '12', email: emailFor('Jordan Torres') },
+        { id: 'r2', name: 'Jordan Torres', number: '14', email: emailFor('Jordan Torres') },
       ],
     },
     {

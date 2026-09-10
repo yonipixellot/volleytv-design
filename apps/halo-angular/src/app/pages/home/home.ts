@@ -62,8 +62,9 @@ export class HomePage {
   /** Orphan-nav wiring: every card/circle tap opens the matching player route.
       Story circles open the vertical personal reel; game highlights are horizontal
       videos (openVod), like the full game / live. */
-  /** You → own vertical reel; team circles → the game recap in the
-   *  HORIZONTAL player (highlights taxonomy — Yoni 2026-08-23). */
+  /** You → own vertical reel; a followed player → THEIR vertical reel; team
+   *  circles → the game recap in the HORIZONTAL player (highlights taxonomy —
+   *  Yoni 2026-08-23). */
   openStory(s: StoryItem): void {
     // The ring is NOT cleared here. Opening a circle is not watching it: this
     // marked a circle of three highlights finished on the first tap, before the
@@ -79,10 +80,11 @@ export class HomePage {
       // following is then the honest destination rather than a dead tap.
       const id = s.kind === 'team' ? teamIdOf(s.team ?? s.label) : null;
       if (id) { this.openTeam(id); return; }
-      void this.router.navigate(s.kind === 'team' ? ['/follows'] : ['/you']);
+      void this.router.navigate(s.kind === 'you' || s.kind === 'kid' ? ['/you'] : ['/follows']);
       return;
     }
     if (s.kind === 'team') { void this.router.navigate(['/watch/vod'], { queryParams: { kind: 'recap' } }); return; }
+    if (s.kind === 'player') { void this.router.navigate(['/watch/highlight'], { queryParams: { player: s.reelId } }); return; }
     // Tapping a person circle focuses them app-wide (You tab / game page follow)
     // before opening their vertical reel.
     if (s.profileId) this.profile.select(s.profileId);
@@ -165,13 +167,24 @@ export class HomePage {
         });
       }
     }
+    // Followed PLAYERS paint as people (jersey on --primary) and open their own
+    // vertical reel. Torres sat in the team list below, painted as initials and
+    // opening the game recap; he is a player video, not a team highlight
+    // (Yoni 2026-09-10). Same person as Following › Players and the game roster.
+    for (const p of [{ label: 'Torres', number: '14', reelId: 'torres' }]) {
+      out.push({
+        ...p, kind: 'player',
+        unseen: this.progress.unseen(p.label, 'player', p.reelId),
+        empty: this.progress.isEmpty(p.label, 'player', p.reelId),
+        newestAt: rank(p.label),
+      });
+    }
     // Teams with a logo file show the logo; the rest fall back to their
     // initials on the neutral plate, which the rail derives from the label.
     for (const t of [
       { label: 'Netsetters', team: 'Netsetters 1', logo: 'img/logo-netsetters.svg' },
       { label: 'Breakers', team: 'Bayside Breakers', logo: 'img/logo-breakers.svg' },
       { label: 'Flames', team: 'Northside Flames', logo: 'img/team-northside-flames.svg' },
-      { label: 'Torres', team: 'Torres' },
       // A followed team with nothing in it, so the rail shows all five circle
       // states at once: active, unseen, seen, empty, and the Follow action.
       { label: 'Vikings', team: 'Vikings Grey' },

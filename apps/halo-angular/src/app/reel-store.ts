@@ -20,11 +20,12 @@ export class ReelStore {
     { action: t('play.noLookSet'), thumb: 'img/clip-1.webp' },
     { action: t('play.lineShot'), thumb: 'img/clip-2.webp' },
     { action: t('play.soloBlock'), thumb: 'img/clip-3.webp' },
-    // Five moments, not three (Yoni 2026-09-10): the demo set has nine clips
-    // and the own reel was leaving two on the floor. Posters 4 and 9 map
-    // straight onto clips 4 and 9 in media-manifest.ts, so no wrap, no repeat.
+    // Four moments, not three (Yoni 2026-09-10): the demo set has nine clips
+    // and the own reel was leaving some on the floor. Poster 4 maps straight
+    // onto clip 4 in media-manifest.ts, so no wrap, no repeat. Clip 9 is Jordan
+    // Torres's reel (teammate-reels.ts): the same footage in two reels was the
+    // "first two stories show the same clip" defect (Eugene 2026-09-10).
     { action: t('play.quickKill'), thumb: 'img/clip-4.webp' },
-    { action: t('play.rallyWin'), thumb: 'img/clip-9.webp' },
   ]);
 
   /** Actions removed this session — You › Clips hides matching tiles. */
