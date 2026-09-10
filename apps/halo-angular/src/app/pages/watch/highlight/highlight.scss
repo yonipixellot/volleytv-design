@@ -110,7 +110,18 @@
   border: 0;
   background: transparent;
   cursor: pointer;
+  // Press-and-hold lives here: no text selection, no iOS long-press callout,
+  // and no double-tap zoom stealing the second tap.
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
+// Held: the chrome steps back so the frame can be looked at. The line stays,
+// it is the thing that shows the clock has stopped.
+.top, .cap { transition: opacity .18s ease; }
+.hv.held .top, .hv.held .cap { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .top, .cap { transition: none; } }
 .zone.left { inset-inline-start: 0; width: 32%; }
 .zone.right { inset-inline-end: 0; width: 68%; }
 

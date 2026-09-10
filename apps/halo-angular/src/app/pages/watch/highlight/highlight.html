@@ -24,7 +24,7 @@
     <halo-icon name="chevron-left" [size]="16" />
   </button>
 
-<div class="hv">
+<div class="hv" [class.held]="held()">
   <h1 class="sr-only">{{ reelTitle() }}, {{ current().action }}</h1>
   <!-- Real footage since 2026-09-09, and only where there IS footage for the
        moment: `reelVideo` returns '' for a poster outside the numbered clip set
@@ -68,9 +68,16 @@
     </div>
   </div>
 
-  <!-- tap zones -->
-  <button class="zone left" type="button" [attr.aria-label]="'watch.prev' | t" (click)="prev()"></button>
-  <button class="zone right" type="button" [attr.aria-label]="'watch.next' | t" (click)="next()"></button>
+  <!-- tap zones. A short press steps; a press held past HOLD_MS pauses and
+       fades the chrome until release (see holdStart / holdEnd). contextmenu is
+       stopped so a long press on a phone opens no callout, and Space toggles the
+       pause from the keyboard. -->
+  <button class="zone left" type="button" [attr.aria-label]="'watch.prev' | t" (click)="prev()"
+    (pointerdown)="holdStart()" (pointerup)="holdEnd()" (pointercancel)="holdEnd()" (pointerleave)="holdEnd()"
+    (contextmenu)="$event.preventDefault()" (keydown.space)="toggleHold($event)"></button>
+  <button class="zone right" type="button" [attr.aria-label]="'watch.next' | t" (click)="next()"
+    (pointerdown)="holdStart()" (pointerup)="holdEnd()" (pointercancel)="holdEnd()" (pointerleave)="holdEnd()"
+    (contextmenu)="$event.preventDefault()" (keydown.space)="toggleHold($event)"></button>
 
   <!-- per-clip premium lock — the PT's gold locked card, IN PLACE in the reel:
        the moment's own footage stays visible (blurred) so you buy what you can

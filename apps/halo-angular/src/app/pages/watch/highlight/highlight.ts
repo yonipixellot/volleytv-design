@@ -166,8 +166,15 @@ export class HighlightPage {
     this.lineFill.set(0);
     if (untracked(() => this.currentLocked() || this.showUpsell())) return;
     const hasVideo = untracked(() => !!this.clipVideo());
-    const t0 = performance.now();
+    let t0 = performance.now();
+    let last = t0;
     const tick = () => {
+      // Held: the clock stops. The <video> is paused by `holdFx`, so its own
+      // time stands still; the still-moment timer is pushed forward by the
+      // frame it just skipped, so releasing resumes from where it stopped.
+      const now = performance.now();
+      if (this.held()) { t0 += now - last; last = now; this.raf = requestAnimationFrame(tick); return; }
+      last = now;
       if (hasVideo) {
         const v = this.vid()?.nativeElement;
         if (v && v.duration > 0) this.lineFill.set(Math.min(1, v.currentTime / v.duration));
@@ -182,6 +189,40 @@ export class HighlightPage {
     this.raf = requestAnimationFrame(tick);
   });
   private stopLine = inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.raf));
+
+  /**
+   * PRESS AND HOLD TO PAUSE. Instagram's gesture: a finger held on the story
+   * stops the clock and clears the chrome so the frame can be looked at; lifting
+   * it resumes. A press shorter than HOLD_MS is still a tap (prev / next), and a
+   * press that became a hold is NOT also a tap on release, or every pause would
+   * skip a moment on the way out. Space on a focused tap zone toggles the same
+   * pause for keyboard users (Enter still steps). Auto-advancing content needs a
+   * pause that does not require a pointer (WCAG 2.2.2).
+   */
+  protected held = signal(false);
+  private static readonly HOLD_MS = 220;
+  private holdTimer = 0;
+  private swallowTap = false;
+  protected holdStart(): void {
+    clearTimeout(this.holdTimer);
+    this.holdTimer = window.setTimeout(() => this.held.set(true), HighlightPage.HOLD_MS);
+  }
+  protected holdEnd(): void {
+    clearTimeout(this.holdTimer);
+    if (!this.held()) return;
+    this.held.set(false);
+    // The click that follows this pointerup belongs to the hold, not a tap.
+    // Cleared on a timer too, so a cancelled pointer never eats the next tap.
+    this.swallowTap = true;
+    window.setTimeout(() => (this.swallowTap = false), 300);
+  }
+  protected toggleHold(ev: Event): void { ev.preventDefault(); this.held.update((h) => !h); }
+  private holdFx = effect(() => {
+    const v = this.vid()?.nativeElement;
+    if (!v) return;
+    if (this.held()) v.pause();
+    else if (v.paused && !v.ended) void v.play().catch(() => undefined);
+  });
 
   /** The <video> ran out: same as a tap on the right. */
   protected onEnded(): void { this.advance(); }
@@ -256,6 +297,7 @@ export class HighlightPage {
   showUpsell = signal(false);
 
   prev() {
+    if (this.swallowTap) { this.swallowTap = false; return; }
     if (this.showUpsell()) { this.showUpsell.set(false); return; }
     if (this.i() > 0) { this.i.update((v) => v - 1); return; }
     // First moment: rewind into the previous reel's LAST moment (Instagram).
@@ -263,6 +305,7 @@ export class HighlightPage {
     if (p) { this.landOnLast = true; this.openReel(p.id); }
   }
   next() {
+    if (this.swallowTap) { this.swallowTap = false; return; }
     if (this.showUpsell()) { this.nextReelOrClose(); return; }
     this.advance();
   }
