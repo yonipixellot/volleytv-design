@@ -28,17 +28,18 @@
   cursor: pointer;
 }
 
-/* ── The close button is a phone affordance ────────────────────────────────
+/* ── The close button, at every width ──────────────────────────────────────
    Below 1024 the player is a takeover: no header, no dock, nothing but the
-   video, so it has to carry its own exit. From 1024 the app header is above it
-   (app.ts, showShellHeader) and the exits are the ones the web already has —
-   the wordmark, the nav, the browser's back. A floating glass circle on top of
-   the footage is then one more thing painted over the game for no reason, and
-   it sits exactly where a desktop player's system controls are expected to be.
-   Netflix keeps its X because its player IS the page; YouTube and Twitch, which
-   keep their chrome, have none (Maryna 2026-08-30). */
+   video, so it carries its own exit and the exit stays put. From 1024 the app
+   header is above it and the X used to stand down, on the YouTube / Twitch
+   argument that the wordmark and the browser's back are the exits (Maryna
+   2026-08-30). Two reviewers then failed to find a way out of a live game
+   (Eugene 2026-09-10), which is the test that argument has to pass. So the X
+   stays, and instead of sitting over the footage for the whole game it fades
+   WITH the controls, so an idle screen is still nothing but the video. */
+.x { transition: opacity var(--dur-fast) ease; }
 @media (min-width: 1024px) {
-  .x { display: none; }
+  .x.hidden { opacity: 0; pointer-events: none; }
 }
 
 .stage {

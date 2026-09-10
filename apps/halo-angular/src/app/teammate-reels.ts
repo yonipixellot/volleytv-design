@@ -25,14 +25,19 @@ export interface TeammateReel {
  * Names + jerseys match game.ts's `homeRoster`, so the Teammates grid, the reel
  * player and the player-stats table can't disagree about who is on the team.
  *
+ * Clips 5..8, not 1..4: the viewer's own reel (ReelStore) plays clips 1..3, and
+ * with the same numbers here the first two stories in the deck showed the same
+ * footage (Eugene 2026-09-10). Nine reel clips exist; the poster number picks
+ * the video (media-manifest.ts), so the thumbs move with it.
+ *
  * These are NOT downloadable: download is own-content only, so the reel player
  * hides that control whenever it's showing one of these (see highlight.ts).
  */
 export const TEAMMATE_REELS: TeammateReel[] = [
-  { id: 'cole', name: 'Aiden Cole', jersey: 12, clips: [{ action: t('play.noLookSet'), type: 'AST', duration: '0:18', thumb: 'img/clip-1.webp' }] },
-  { id: 'lee', name: 'Marcus Lee', jersey: 23, clips: [{ action: t('play.crossCourtKill'), type: 'K', duration: '0:12', thumb: 'img/clip-2.webp' }] },
-  { id: 'cross', name: 'Dylan Cross', jersey: 4, clips: [{ action: t('play.stuffBlock'), type: 'BLK', duration: '0:15', thumb: 'img/clip-3.webp' }] },
-  { id: 'pratt', name: 'Owen Pratt', jersey: 9, clips: [{ action: t('play.jumpServeAce'), type: 'ACE', duration: '0:20', thumb: 'img/clip-4.webp' }] },
+  { id: 'cole', name: 'Aiden Cole', jersey: 12, clips: [{ action: t('play.noLookSet'), type: 'AST', duration: '0:18', thumb: 'img/clip-5.webp' }] },
+  { id: 'lee', name: 'Marcus Lee', jersey: 23, clips: [{ action: t('play.crossCourtKill'), type: 'K', duration: '0:12', thumb: 'img/clip-6.webp' }] },
+  { id: 'cross', name: 'Dylan Cross', jersey: 4, clips: [{ action: t('play.stuffBlock'), type: 'BLK', duration: '0:15', thumb: 'img/clip-7.webp' }] },
+  { id: 'pratt', name: 'Owen Pratt', jersey: 9, clips: [{ action: t('play.jumpServeAce'), type: 'ACE', duration: '0:20', thumb: 'img/clip-8.webp' }] },
 ];
 
 export const teammateReelById = (id: string): TeammateReel | undefined =>

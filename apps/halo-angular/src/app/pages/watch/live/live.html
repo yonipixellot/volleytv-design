@@ -2,7 +2,7 @@
   <h1 class="sr-only">{{ 'watch.liveSr' | t: { home: 'Netsetters 1', away: 'Vikings Grey' } }}</h1>
   <!-- Hidden in fullscreen: there all chrome lives inside .frame so it rotates
        with the feed. Exit is the control bar's own fullscreen toggle. -->
-  <button class="x" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
+  <button class="x" type="button" [class.hidden]="!controlsShown()" [attr.aria-label]="'common.close' | t" (click)="close()">
     <halo-icon name="close" [size]="14" />
   </button>
 

@@ -18,11 +18,13 @@
     <img [src]="prevReel()?.thumb || ''" alt="" />
     <span class="side-t">{{ prevReel()?.title }}</span>
   </button>
-  <button class="nav" type="button" [class.ghost]="!prevReel()"
-          [attr.aria-label]="'watch.prevReel' | t" [attr.tabindex]="prevReel() ? null : -1"
-          (click)="prevReel() && openReel(prevReel()!.id)">
-    <halo-icon name="chevron-left" [size]="16" />
-  </button>
+  <div class="gap">
+    <button class="nav" type="button" [class.ghost]="!prevReel()"
+            [attr.aria-label]="'watch.prevReel' | t" [attr.tabindex]="prevReel() ? null : -1"
+            (click)="prevReel() && openReel(prevReel()!.id)">
+      <halo-icon name="chevron-left" [size]="16" />
+    </button>
+  </div>
 
 <div class="hv" [class.held]="held()">
   <h1 class="sr-only">{{ reelTitle() }}, {{ current().action }}</h1>
@@ -158,11 +160,21 @@
 
 </div>
 
-  <button class="nav r" type="button" [class.ghost]="!nextReel()"
-          [attr.aria-label]="'watch.nextReel' | t" [attr.tabindex]="nextReel() ? null : -1"
-          (click)="nextReel() && openReel(nextReel()!.id)">
-    <halo-icon name="chevron-right" [size]="16" />
-  </button>
+  <!-- The right gap holds the arrow AND the close. The close sits at the top of
+       the gap, so it lines up with the reel's top edge, a thumb's width from
+       the frame: where the eye already is. It used to be in the page's far
+       corner, where nobody found it (Eugene 2026-09-10). Still one exit per
+       width: the reel's own close (inside .top) stands down from 768. -->
+  <div class="gap r">
+    <button class="nav r" type="button" [class.ghost]="!nextReel()"
+            [attr.aria-label]="'watch.nextReel' | t" [attr.tabindex]="nextReel() ? null : -1"
+            (click)="nextReel() && openReel(nextReel()!.id)">
+      <halo-icon name="chevron-right" [size]="16" />
+    </button>
+    <button class="deckx" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
+      <halo-icon name="close" [size]="18" />
+    </button>
+  </div>
   <button class="side" type="button" [class.ghost]="!nextReel()"
           [attr.aria-label]="nextReel() ? ('watch.nextReelA11y' | t: { title: nextReel()!.title }) : null"
           [attr.aria-hidden]="nextReel() ? null : 'true'" [attr.tabindex]="nextReel() ? null : -1"
@@ -171,10 +183,3 @@
     <span class="side-t">{{ nextReel()?.title }}</span>
   </button>
 </div>
-
-<!-- The page's close, in the page's corner. The reel's own close (inside .top)
-     stands down from 768, where this one exists — one exit per width, never
-     two. -->
-<button class="deckx" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
-  <halo-icon name="close" [size]="16" />
-</button>

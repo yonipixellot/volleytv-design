@@ -22,7 +22,7 @@
 // host's direct child, so the phone layout is exactly what it was. The
 // neighbours and the corner close are hidden rather than absent, so the same
 // markup serves both widths (see the .deck block under the 768 media query).
-.deck { display: contents; }
+.deck, .gap { display: contents; }
 .side, .nav, .deckx { display: none; }
 
 .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -410,9 +410,18 @@
     }
   }
 
-  // The arrow in the gap. Placed BETWEEN the neighbour and the reel rather than
-  // over either, so it never covers footage and never needs to know how wide
-  // the 9:16 frame turned out to be.
+  // The gap between neighbour and reel is a column as tall as the reel: the
+  // arrow centred in it, and (on the right) the close at its top. Nothing in it
+  // covers footage, and nothing needs to know how wide the 9:16 frame is.
+  .gap {
+    display: flex;
+    flex: none;
+    position: relative;
+    align-self: stretch;
+    width: 44px;
+    align-items: center;
+    justify-content: center;
+  }
   .nav {
     display: grid;
     place-items: center;
@@ -444,26 +453,29 @@
     .side.ghost { visibility: hidden; }
   }
 
-  // The page's close, in the page's corner — the reel's own stands down here.
+  // The close, at the top of the right gap: level with the reel's top edge and
+  // a thumb from the frame. Solid scrim glass, not 10% white: it has to read
+  // over a bright ambient backdrop.
   .deckx {
     display: grid;
     place-items: center;
     position: absolute;
-    top: var(--space-4);
-    inset-inline-end: var(--space-4);
+    top: 0;
+    inset-inline-start: 0;
     z-index: 5;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, .18);
-    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .28);
+    background: color-mix(in srgb, var(--scrim-ink) 72%, transparent);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: var(--on-player);
     cursor: pointer;
+    transition: background var(--dur-fast) ease;
   }
   @media (hover: hover) {
-    .deckx:hover { background: rgba(255, 255, 255, .2); }
+    .deckx:hover { background: color-mix(in srgb, var(--scrim-ink) 88%, transparent); }
   }
   // One exit per width: the reel's own close is for the phone, where there is
   // no page around the reel to put a corner in.
