@@ -31,23 +31,27 @@
        (a caller-supplied ?thumb=), and that case keeps the still it always had.
        A locked moment does NOT get a video — the blurred poster is the gate, so
        playing the clip underneath it would hand over the thing being sold.
-       Muted + loop + playsinline: this is a story frame, not a player, so it
-       behaves like one and never asks iOS for its own fullscreen. -->
+       Muted + playsinline: this is a story frame, not a player, so it behaves
+       like one and never asks iOS for its own fullscreen. No loop: the clip
+       plays once, its clock fills the story line, and `ended` moves the reel on
+       (see `lineRun` / `advance` in highlight.ts). -->
   @if (clipVideo() && !currentLocked()) {
-    <video class="bg" [src]="clipVideo()" [poster]="current().thumb"
-      autoplay muted loop playsinline preload="auto"></video>
+    <video #vid class="bg" [src]="clipVideo()" [poster]="current().thumb"
+      autoplay muted playsinline preload="auto" (ended)="onEnded()"></video>
   } @else {
     <img class="bg" [class.blur]="currentLocked()" [src]="current().thumb" alt="" />
   }
   <span class="veil"></span>
 
-  <!-- Progress segments (premium plays get a gold segment). A single clip has
-       nothing to progress THROUGH, so the bar and the counter both stand down:
-       a one-segment progress bar reads as a stalled reel. -->
+  <!-- Progress segments (premium plays get a gold segment). The active one
+       fills with the moment's playback (`lineFill`, 0..1) and the reel moves on
+       when it is full. Single-clip mode has nothing to progress THROUGH, so the
+       bar stands down there. -->
   @if (!single()) {
   <div class="segs">
     @for (c of clips(); track $index; let idx = $index) {
-      <span class="seg"><span class="fill" [class.done]="idx < i()" [class.on]="idx === i()" [class.premium]="clipPremium(c)"></span></span>
+      <span class="seg"><span class="fill" [class.done]="idx < i()" [class.on]="idx === i()" [class.premium]="clipPremium(c)"
+        [style.width.%]="idx === i() ? lineFill() * 100 : null"></span></span>
     }
   </div>
   }
@@ -56,7 +60,10 @@
   <div class="top">
     <span class="section"><span class="jz">{{ jersey() }}</span>{{ sectionLabel() }}</span>
     <div class="topright">
-      @if (!single()) { <span class="ix">{{ i() + 1 }} / {{ clips().length }}</span> }
+      <!-- "1 / 1" on a one-moment reel read as a stalled counter (Eugene,
+           2026-09-10): the number only earns its place when there is something
+           to count through. The line above still runs. -->
+      @if (!single() && clips().length > 1) { <span class="ix">{{ i() + 1 }} / {{ clips().length }}</span> }
       <halo-icon-button icon="close" [ariaLabel]="'common.close' | t" size="sm" (click)="close()" />
     </div>
   </div>

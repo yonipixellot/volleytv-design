@@ -46,7 +46,10 @@
 .seg { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .28); overflow: hidden; }
 .seg .fill { display: block; width: 0; height: 100%; border-radius: 3px; background: var(--on-player); }
 .seg .fill.done { width: 100%; }
-.seg .fill.on { width: 100%; }
+// The active fill's width is inline, driven per frame from the video clock
+// (highlight.ts `lineRun`); no CSS transition, so it never runs ahead of a
+// stalled picture.
+.seg .fill.on { will-change: width; }
 
 .top {
   position: absolute;

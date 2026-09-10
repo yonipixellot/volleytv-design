@@ -1,4 +1,4 @@
-import { Component, effect, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, effect, computed, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { IconButton } from '../../../../lib/atoms/icon-button/icon-button';
@@ -133,9 +133,72 @@ export class HighlightPage {
       replaceUrl: true,
     });
   }
-  /** A new reel starts at its first moment. The router reuses this component
+  /** A new reel starts at its first moment, unless the viewer walked BACK into
+   *  it from the reel after, in which case it opens on its last moment, the way
+   *  Instagram rewinds into the previous story. The router reuses this component
    *  across the query-param change, so the index does not reset itself. */
-  private reelChanged = effect(() => { this.playerId(); this.clip(); this.i.set(0); this.showUpsell.set(false); });
+  private landOnLast = false;
+  private reelChanged = effect(() => {
+    this.playerId(); this.clip();
+    const n = untracked(() => this.clips().length);
+    this.i.set(this.landOnLast ? Math.max(0, n - 1) : 0);
+    this.landOnLast = false;
+    this.showUpsell.set(false);
+  });
+
+  /**
+   * THE STORY LINE. The active segment fills as the moment plays, and when it
+   * is full the reel moves on by itself: Instagram's contract, and the thing
+   * that tells a viewer a story is running rather than a still they must tap
+   * through. Driven by the <video>'s own clock, so buffering stalls the line
+   * instead of racing ahead of the picture. A moment with no footage (a poster
+   * outside the numbered clip set) holds for STILL_MS. A locked moment does not
+   * run at all: the ticket on it is there to be read, and a line draining under
+   * it would hurry the one screen that sells.
+   */
+  protected lineFill = signal(0);
+  private static readonly STILL_MS = 5000;
+  private vid = viewChild<ElementRef<HTMLVideoElement>>('vid');
+  private raf = 0;
+  private lineRun = effect(() => {
+    this.current(); this.clipVideo(); this.currentLocked(); this.showUpsell();
+    cancelAnimationFrame(this.raf);
+    this.lineFill.set(0);
+    if (untracked(() => this.currentLocked() || this.showUpsell())) return;
+    const hasVideo = untracked(() => !!this.clipVideo());
+    const t0 = performance.now();
+    const tick = () => {
+      if (hasVideo) {
+        const v = this.vid()?.nativeElement;
+        if (v && v.duration > 0) this.lineFill.set(Math.min(1, v.currentTime / v.duration));
+        // `ended` on the element does the advance; the frame loop only draws.
+      } else {
+        const f = Math.min(1, (performance.now() - t0) / HighlightPage.STILL_MS);
+        this.lineFill.set(f);
+        if (f >= 1) { this.advance(); return; }
+      }
+      this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  });
+  private stopLine = inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.raf));
+
+  /** The <video> ran out: same as a tap on the right. */
+  protected onEnded(): void { this.advance(); }
+
+  /** Forward through the DECK, not just the reel. The last moment of one reel
+   *  flows into the first of the next, and only the last reel closes. The
+   *  terminal upsell still sits between a gated Basic reel and whatever comes
+   *  after it. */
+  private advance(): void {
+    if (this.i() < this.clips().length - 1) { this.i.update((v) => v + 1); return; }
+    if (this.hasGatedPremium() && this.vc.tier() !== 'premium' && !this.showUpsell()) { this.showUpsell.set(true); return; }
+    this.nextReelOrClose();
+  }
+  private nextReelOrClose(): void {
+    const n = this.nextReel();
+    if (n) this.openReel(n.id); else this.close();
+  }
 
   /** Every moment this reel puts on screen is reported to the circle that
    *  opened it, so the rail's ring clears on the LAST one rather than on the
@@ -194,13 +257,14 @@ export class HighlightPage {
 
   prev() {
     if (this.showUpsell()) { this.showUpsell.set(false); return; }
-    this.i.update((v) => Math.max(0, v - 1));
+    if (this.i() > 0) { this.i.update((v) => v - 1); return; }
+    // First moment: rewind into the previous reel's LAST moment (Instagram).
+    const p = this.prevReel();
+    if (p) { this.landOnLast = true; this.openReel(p.id); }
   }
   next() {
-    if (this.showUpsell()) { this.close(); return; }
-    if (this.i() < this.clips().length - 1) this.i.update((v) => v + 1);
-    else if (this.hasGatedPremium() && this.vc.tier() !== 'premium') this.showUpsell.set(true);
-    else this.close();
+    if (this.showUpsell()) { this.nextReelOrClose(); return; }
+    this.advance();
   }
 
   teamIdOf = teamIdOf;
