@@ -13,7 +13,7 @@
 
 | | Path | Git |
 |---|---|---|
-| This build | `~/Desktop/volleytv-design` (bun workspace, app in `apps/halo-angular`) | `origin` = `Pixellot/volleytv-design` (create when Yoni says so); `upstream` = `Pixellot/halo-design`, fetch-only |
+| This build | `~/Desktop/volleytv-design` (bun workspace, app in `apps/halo-angular`) | `origin` = `yonipixellot/volleytv-design` (public, Pages at https://yonipixellot.github.io/volleytv-design/); `upstream` = `Pixellot/halo-design`, fetch-only |
 | Hoops TV (do not touch) | `~/Desktop/halo-design` | `Pixellot/halo-design` `main` |
 | Workspace / planning | `~/Documents/Claude/ott-halo-master` | ledger `Outputs/Design Audits/audit-2026-09-08_volleytv-fork.md`, plan `Outputs/Planning/volley-tv/` |
 

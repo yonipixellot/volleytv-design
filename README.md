@@ -27,7 +27,7 @@ bun run test
 
 | Target | URL | Gate | Status |
 |---|---|---|---|
-| GitHub Pages (`pages.yml`, push to `main`) | `[NEED: enable Pages on the repo]` | GitHub org login (private repo Pages) | pending repo creation |
+| GitHub Pages (`pages.yml`, push to `main`) | https://yonipixellot.github.io/volleytv-design/ | none (public repo) | live since 2026-09-10 |
 | Vercel (client-facing) | `[NEED: create Vercel project]` | Supabase Auth, own project, admin-provisioned viewers | last phase, see `DEPLOYMENT.md` |
 
 ## Pulling a design-system fix from Hoops TV
