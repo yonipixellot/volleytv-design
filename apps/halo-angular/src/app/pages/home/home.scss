@@ -1,0 +1,174 @@
+:host { display: block; }
+
+// Events head
+.evhead {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--block-gap) var(--pad-block-x) 0;
+
+  h1 {
+    font-family: var(--disp);
+    font-weight: 700;   // 800 reads near-black in League Spartan (Yoni 2026-08-23)
+    font-size: var(--fs-d-md);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0;
+  }
+}
+
+.filters {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--ink2);
+  background: var(--card2);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-pill);
+  padding: var(--pad-control-y) var(--pad-control-x);
+
+  .b {
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--space-1);
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: var(--fs-caption);
+    font-weight: 800;
+  }
+}
+/* Desktop interaction. The control had no hover, so on a pointer it read as a
+   label rather than a button until you clicked it. */
+@media (hover: hover) {
+  .filters:hover:not(.on) { color: var(--ink); border-color: var(--hair2, var(--hair)); background: var(--card); }
+  .filters.on:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+}
+.filters { transition: color var(--dur-med), background var(--dur-med), border-color var(--dur-med); }
+@media (prefers-reduced-motion: reduce) { .filters { transition: none; } }
+
+.filters.on {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+// Underline tabs (shared polished spec — also in you.scss). Team filter tabs.
+// Level 2 (open-ended team filter) uses the shared underline row; the spec now
+// lives in halo-segmented-toggle, this is placement only (2026-08-27).
+// The team tabs belong to the Events head above them, so they take the
+// heading-to-content gap rather than a full block gap.
+.l2tabs { padding: var(--section-bottom) var(--pad-block-x) 0; margin-top: 0; }
+
+/* ---- Federation (state) context ---- */
+.fedchip {
+  display: inline-flex; align-items: center; gap: var(--gap-tight);
+  margin: var(--space-2) var(--pad-block-x) 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-2); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.fedchip .fc-t { font-size: var(--fs-caption); font-weight: 700; color: var(--accent); }
+.fedchip .fc-x {
+  width: 20px; height: 20px; flex: none; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent); cursor: pointer;
+}
+
+.fedempty {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--block-gap) var(--pad-block-x) 0;
+}
+.fedempty .fe-ic {
+  width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: var(--space-3);
+  border-radius: 18px; color: var(--ink3);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.fedempty .fe-t { margin: 0 0 var(--space-1); font-family: var(--disp); font-weight: 800; font-size: var(--fs-body-lg); color: var(--ink); }
+.fedempty .fe-s { margin: 0; max-width: 300px; font-size: var(--fs-body); line-height: 1.5; color: var(--ink3); }
+
+.fedempty .fe-clear {
+  margin-top: var(--space-4); padding: var(--space-2) var(--space-4); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent); font-family: var(--body); font-weight: 800; font-size: var(--fs-body); cursor: pointer;
+}
+
+// ===================== Tablet and desktop =====================
+// Three bands, because a tablet is neither a big phone nor a small desktop:
+//
+//   768–1023   portrait tablet — 2-column rails, floating dock kept
+//   1024–1279  landscape tablet — 3-column rails, nav moves into the header
+//   1280+      desktop — 4-column rails
+//
+// Before this the shell was capped at 430px until 1280, so an iPad ran a phone
+// column with 44–66% of the screen empty beside it, truncating text it had the
+// room to show (Maryna 2026-08-28).
+
+// A phone rail scrolls, so the grid caps below do not apply to it — but it takes
+// the same shape of answer: four cards to swipe, and See all for the rest.
+// Measured at 375, where a card is 302px against a 12px gap and 1.14 of them are
+// on screen, four is about three screens of swipe. See RailCapacity for why it
+// was ten first, and why ten was worse than long: it matched the seeded
+// catalogue exactly, so See all never appeared on a phone at all.
+.halo-rail.capped > :nth-child(n + 5) { display: none; }
+
+@media (min-width: 768px) {
+  // No inset rules here any more. `.dhome` raises --pad-block-x once for the
+  // whole route (styles.scss) and every block on this page already reads it.
+
+  // Rails stop scrolling and become a grid: with the full width available, a
+  // horizontal scroller hides content behind a gesture for no reason.
+  .halo-rail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  // One full row per section at every band; the rest is one tap away via the
+  // section's See all rather than scrolled past. Capping to the column count
+  // keeps the last row from going ragged.
+  .halo-rail.capped > :nth-child(n + 3) { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .halo-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .halo-rail.capped > :nth-child(n + 3) { display: revert; }
+  .halo-rail.capped > :nth-child(n + 4) { display: none; }
+
+  .home { padding-bottom: var(--space-12); }
+}
+
+@media (min-width: 1280px) {
+  .halo-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .halo-rail.capped > :nth-child(n + 4) { display: revert; }
+  .halo-rail.capped > :nth-child(n + 5) { display: none; }
+}
+
+// Past the desktop band a wide screen earns MORE CARDS, not bigger ones. Held
+// at four columns, a card went from 290px at 1280 to 440 at 1920 and 599 at
+// 2560 — the same layout stretched, holding the same 12px text. Each step is
+// placed so the card lands back near 290px, the width it holds at 1280.
+@media (min-width: 1600px) {
+  .halo-rail { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .halo-rail.capped > :nth-child(n + 5) { display: revert; }
+  .halo-rail.capped > :nth-child(n + 6) { display: none; }
+}
+
+// 2000, not 1920: at 1920 a sixth column drops the card to 289px, which is the
+// 1280 width and truncates team names harder than the screen needs to. Five
+// columns give 350px there. The sixth is worth taking once the canvas can pay
+// for it — at 2000 it lands at 302px.
+@media (min-width: 2000px) {
+  .halo-rail { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .halo-rail.capped > :nth-child(n + 6) { display: revert; }
+  .halo-rail.capped > :nth-child(n + 7) { display: none; }
+}

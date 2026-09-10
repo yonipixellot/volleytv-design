@@ -1,0 +1,66 @@
+<halo-settings-page activeKey="profile" [title]="'settings.accountProfile' | t">
+  <!-- Avatar coin — gradient ring + initials. No change-avatar in V1 (no UGC photo). -->
+  <div class="avatar">
+    <span class="ring"><span class="disc">{{ initials }}</span></span>
+  </div>
+
+  <!-- Read-only for now (2026-08-26): there's no profile-editing flow yet, so
+       the fields display the account's details rather than pretending to accept
+       input. Restore editing by dropping [disabled] here — the email re-auth
+       sheet below is still wired and starts working again with it. -->
+  <halo-form-field [label]="'auth.displayName' | t" [value]="name()" [readonly]="true" (valueChange)="name.set($event)" />
+
+  <div (focusout)="onEmailBlur()">
+    <halo-form-field
+      [label]="'auth.email' | t"
+      type="email"
+      inputmode="email"
+      [value]="email()"
+      [readonly]="true"
+      (valueChange)="email.set($event)"
+    />
+  </div>
+
+  <halo-form-field [label]="'account.phone' | t" type="tel" inputmode="tel" [value]="phone()" [readonly]="true" (valueChange)="phone.set($event)" />
+
+  @if (pendingEmail() && !reauthOpen()) {
+    <div class="pending">
+      <p class="eyebrow">{{ 'account.verificationPending' | t }}</p>
+      <p class="body">{{ pendingBody() }}</p>
+    </div>
+  }
+
+  <div class="actions">
+    <!-- Change password hidden 2026-08-26 — not in scope at this stage. The
+         /account/change-password route + ChangePasswordPage are kept; restore
+         by uncommenting this one line.
+    <halo-button variant="glass" [block]="true" (press)="changePassword()">Change password</halo-button>
+    -->
+    <button class="danger" type="button" (click)="deleteAccount()">{{ 'account.deleteAccount' | t }}</button>
+  </div>
+</halo-settings-page>
+
+<!-- Re-auth confirm sheet — confirm current password before queueing the email change. -->
+@if (reauthOpen()) {
+  <div class="scrim" (click)="cancelReauth()"></div>
+  <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'account.confirmYou' | t">
+    <p class="eyebrow">{{ 'account.securityCheck' | t }}</p>
+    <h2>{{ 'account.confirmYou' | t }}</h2>
+    <p class="lead">{{ 'account.reauthLead' | t: { email: email() } }}</p>
+    <div class="pwd">
+      <input
+        type="password"
+        class="inp"
+        [value]="reauthPwd()"
+        (input)="reauthPwd.set($any($event.target).value)"
+        [placeholder]="'account.currentPassword' | t"
+        [attr.aria-label]="'account.currentPassword' | t"
+      />
+    </div>
+    @if (reauthErr()) { <p class="err">{{ reauthErr() }}</p> }
+    <div class="row">
+      <halo-button variant="glass" [block]="true" (press)="cancelReauth()">{{ 'ob.cancel' | t }}</halo-button>
+      <halo-button variant="primary" [block]="true" (press)="confirmReauth()">{{ 'account.updateEmail' | t }}</halo-button>
+    </div>
+  </div>
+}

@@ -1,0 +1,155 @@
+<div class="games halo-wide halo-page">
+  <div class="topbar">
+    <halo-status-bar time="9:30" />
+    <halo-app-top-bar activeNav="games" />
+  </div>
+
+  <!-- One grid for the whole page, so the month control lives in exactly one
+       place in the DOM and only its GRID AREA changes: beside the title on a
+       phone, at the head of the date rail on a desktop. Rendering it twice would
+       be two controls to keep in step (Maryna 2026-08-29). -->
+  <div class="gmain">
+  <!-- The date panel is ONE element, not four grid items. It used to be four,
+       and only the list was sticky: the month control scrolled away while the
+       dates stayed, which is why the panel read as half-broken. On a phone
+       `display: contents` puts the month control back beside the title. -->
+  <div class="gpanel">
+  <!-- Month and Today are ONE row. Today used to sit on its own line below and
+       render only when the selection had moved off today, so choosing any other
+       day inserted a whole row and the calendar under it jumped (Maryna
+       2026-08-29). It is always here now, and says so by going quiet. -->
+  <div class="gdate">
+    <div class="monthwrap">
+      <!-- aria carries the month spelled out; the visible label is abbreviated
+           so the trigger holds one width from January to September. -->
+      <button class="monthpill" type="button" [class.open]="pickerOpen()" aria-haspopup="listbox"
+        [attr.aria-label]="'games.monthA11y' | t: { m: monthLabel() }" [attr.aria-expanded]="pickerOpen()" (click)="pickerOpen.set(!pickerOpen())">
+        <halo-icon name="calendar" [size]="15" /><span class="ml-full">{{ monthAbbr() }}</span><span class="ml-short">{{ monthShort() }}</span><halo-icon class="halo-chev" name="chevron-down" [size]="13" />
+      </button>
+      @if (pickerOpen()) {
+        <button class="scrim" type="button" [attr.aria-label]="'games.closeMonthPicker' | t" (click)="pickerOpen.set(false)"></button>
+        <div class="monthmenu" role="listbox">
+          @for (m of months; track m.key) {
+            <button class="mopt" type="button" role="option" [class.on]="m.key === monthKey()" [attr.aria-selected]="m.key === monthKey()" (click)="selectMonth(m.key)">
+              {{ m.label }}
+              @if (m.key === monthKey()) { <halo-icon name="check" [size]="15" /> }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Disabled rather than removed: the control keeps its place, and being
+         unpressable IS the statement that you are already on today. -->
+    <button class="todaybtn" type="button" [disabled]="onToday()"
+      [attr.aria-label]="onToday() ? ('games.alreadyToday' | t) : ('games.goToday' | t)"
+      (click)="goToToday()">{{ 'games.today' | t }}</button>
+  </div>
+
+    <!-- The month at a glance. Every day is reachable, including the empty ones,
+         and the dot is the only mark that says a day carries anything. -->
+    <div class="mgrid" role="grid" [attr.aria-label]="monthLabel()">
+      <div class="mg-head" aria-hidden="true">
+        @for (w of weekdayHeads; track $index) { <span>{{ w }}</span> }
+      </div>
+      <div class="mg-cells" role="row">
+        @for (b of monthGrid().lead; track $index) { <span class="mg-pad"></span> }
+        @for (d of monthGrid().days; track d.iso) {
+          <button class="mg-d" type="button" role="gridcell"
+            [class.on]="d.i === selectedIndex()" [class.today]="d.today"
+            [class.has]="d.count" [class.live]="d.live"
+            [attr.aria-label]="d.a11y"
+            [attr.aria-selected]="d.i === selectedIndex()"
+            (click)="selectedIndex.set(d.i)">
+            {{ d.n }}
+            @if (d.count) { <span class="mg-dot" aria-hidden="true"></span> }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Only the days that carry games. In May that is 4 rows, not 31. -->
+    @if (gameDays().length) {
+      <nav class="gdays" [attr.aria-label]="'games.gameDaysIn' | t: { m: monthLabel() }">
+        @for (d of gameDays(); track d.iso) {
+          <button class="gd" type="button"
+            [class.on]="d.i === selectedIndex()" [class.live]="d.live"
+            [attr.aria-label]="d.a11y"
+            [attr.aria-current]="d.i === selectedIndex() ? 'date' : null"
+            (click)="selectedIndex.set(d.i)">
+            <span class="gd-d"><em>{{ d.w }}</em>{{ d.n }}</span>
+            <span class="gd-s">
+              <!-- The word, not just the colour. Red on its own in a quiet list
+                   of counts reads as an error; the chip is the app's canonical
+                   live badge, the same one the section headers and cards use. -->
+              @if (d.live) { <halo-chip tone="live" [dot]="true">{{ 'status.live' | t }}</halo-chip> }
+              <span class="gd-n">{{ plural(d.count, 'count.game1', 'count.gameN') }}</span>
+            </span>
+          </button>
+        }
+      </nav>
+    } @else {
+      <p class="gd-none">{{ 'games.noneInMonth' | t: { m: monthShort() } }}</p>
+    }
+  </div>
+
+  <!-- Two titles, one shown per band. On a phone the month selector sits right
+       beside it and the strip under it both say the date, so the page name is
+       the useful thing there. On a desktop the date has to be said once, and
+       the header tab already reads "Games". -->
+  <h1 class="ptitle">{{ 'nav.games' | t }}</h1>
+  <h1 class="dayhead">{{ selectedLabel() }}</h1>
+
+  <halo-day-strip class="dstrip" [days]="days()" [(activeIndex)]="selectedIndex" [scroll]="true" />
+
+  <div class="gbody">
+    @if (!hasGames()) {
+      <div class="noday">
+        <span class="nd-ic"><halo-icon name="calendar" [size]="26" /></span>
+        <p class="nd-t">{{ 'games.noneOnDay' | t }}</p>
+        @if (nearestDays().length) {
+          <p class="nd-s">{{ 'games.closestDays' | t }}</p>
+          <div class="nd-jump">
+            @for (d of nearestDays(); track d.iso) {
+              <button class="nd-day" type="button" (click)="goToDay(d.iso)">
+                @if (d.dir === 'back') { <halo-icon name="chevron-left" [size]="13" /> }
+                {{ d.label }}
+                @if (d.dir === 'fwd') { <halo-icon name="chevron-right" [size]="13" /> }
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="nd-s">{{ 'games.pickAnother' | t }}</p>
+        }
+      </div>
+    }
+
+    <!-- Sections as data, so the sponsor banner lands after the FIRST one
+         whichever it is that day, instead of standing between the viewer and
+         the games they came for. -->
+    @for (sec of sections(); track sec.key; let i = $index) {
+      @if (showHeads()) { <halo-section-header [title]="sec.title" [tone]="sec.tone" /> }
+      <div class="halo-stack" [class.nohead]="!showHeads()">
+        @for (m of sec.games; track m.round) {
+          @if (sec.act) {
+            <halo-ladder-card [chipTone]="m.chipTone" [chipText]="m.chipText" [round]="''" [teams]="m.teams" [footMeta]="m.footMeta || ''" [footCta]="m.footCta || ''" ctaStyle="block" (open)="openGame(m)" (cta)="onCta(m)" />
+          } @else {
+            <halo-ladder-card [chipTone]="m.chipTone" [chipText]="m.chipText" [round]="''" [teams]="m.teams" />
+          }
+        }
+      </div>
+
+      @if (i === 0) {
+        <div class="halo-ad-wrap">
+          <p class="sponeye">{{ 'games.sponsored' | t }}</p>
+          <halo-ad-slot creative="img/ads/gatorade-2.webp" sponsor="Gatorade" href="#" />
+        </div>
+      }
+    }
+  </div>
+  </div>
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav [items]="navItems()" active="games" (select)="tabNav.go($event)" />
+  </div>
+</div>

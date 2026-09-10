@@ -1,0 +1,107 @@
+// host stretches in the .impact row → let the column fill it so the divider
+// (border-right) runs the FULL height of the two cards beside it (Yoni 2026-08-24).
+:host { display: flex; align-self: stretch; }
+
+.gcol {
+  flex: none;
+  width: 110px;                 // trimmed (was 126) so the metric tiles get room + balance
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  padding-right: var(--space-3);
+  border-right: 1px solid var(--hair);
+}
+
+.gauge { position: relative; width: 100px; height: 88px; }
+.gauge svg { display: block; width: 100%; height: auto; }
+.gauge .gv {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-bottom: var(--space-2);
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-md);
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: 0.005em;
+}
+
+.gcapt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  // Was pulled up into the old dial's open bottom; the ring is closed now.
+  margin-top: 0;
+}
+.gk {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  line-height: 1;
+}
+.gp { font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--pos); line-height: 1; }
+
+
+// The gauge is the card's anchor from the desktop band up. The ring is a
+// diagram, so it scales as one — but the value inside it is HTML, not SVG, and
+// would have stayed at its phone size in a ring half again as big, so it steps
+// with it (Maryna 2026-08-30).
+// A bigger ring from the desktop band, still with its caption underneath: the
+// card is only ~570px wide here and a caption beside the ring would take a
+// third of it away from the metrics (Maryna 2026-08-30).
+@media (min-width: 1024px) {
+  // Wider than the ring so the spelled-out caption underneath it takes two
+  // lines at worst, not four (Maryna 2026-08-30).
+  .gcol { width: 180px; }
+  .gauge { width: 140px; height: 122px; }
+  // Kept in proportion with the ring: 40 in a 140 ring reads the same weight as
+  // 54 does in the 200 ring at the band above.
+  .gauge .gv { font-size: var(--fs-d-lg); }
+}
+
+// From 1280 the caption reads BESIDE the ring: the block turns into a row and
+// the column stops being a column — the ring is the figure, the text is its
+// reading. The metric names are spelled out now, so the caption gets ~160px
+// here, bought from the metric tiles; the shortest name sits on one line and a
+// long one takes two rather than pushing the ring around (Maryna 2026-08-30).
+@media (min-width: 1280px) {
+  .gcol {
+    // Fills the host, which is the grid item — otherwise the column shrinks to
+    // its contents and the divider it carries stops short of the track's edge,
+    // leaving a gap that belongs to neither side.
+    flex: 1;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    // Centred, so the column's extra room reads as air around the figure
+    // rather than as a gap after the caption.
+    justify-content: center;
+    gap: var(--space-4);
+    padding-right: var(--space-6);
+  }
+  .gauge { width: 200px; height: 172px; flex: none; }
+  // The card's headline. A 200px ring has the room, and the step to 54 is what
+  // keeps the two metric values below from competing with it (Maryna
+  // 2026-08-30).
+  .gauge .gv { font-size: var(--fs-d-2xl); }
+
+  .gcapt { align-items: flex-start; gap: var(--space-2); }
+  .gk { font-size: var(--fs-body); letter-spacing: .02em; color: var(--ink2); line-height: 1.25; }
+}
+
+// One caption per width — see the note in the template. `.gk-short` is absent
+// from the DOM when no short form was supplied, so the full name simply stays.
+.gk-short { display: none; }
+@media (max-width: 767px) {
+  .gcapt:has(.gk-short) .gk-full { display: none; }
+  .gk-short { display: inline; }
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "angular",
+  "installCommand": "bun ci",
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist/halo-web/browser",
+  "bunVersion": "1.4.x",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

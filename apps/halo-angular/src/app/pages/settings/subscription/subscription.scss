@@ -1,0 +1,142 @@
+.sec {
+  margin: var(--space-5) 2px var(--space-3); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink3);
+}
+
+// ---- Current plan hero ----
+.hero {
+  padding: var(--space-4) var(--space-5); border-radius: var(--r-card-sm);
+  background:
+    radial-gradient(ellipse 70% 60% at 25% 30%, color-mix(in srgb, var(--accent) 20%, transparent) 0%, transparent 60%),
+    var(--card);
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 10px 30px -14px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.hero .eyebrow {
+  margin: 0 0 var(--space-1); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--accent);
+}
+.hero .name { margin: 0 0 var(--space-1); font-family: var(--disp); font-weight: 800; font-size: var(--fs-d-sm); color: var(--ink); }
+.hero .price { margin: 0 0 var(--space-2); }
+.hero .price b { font-family: var(--disp); font-weight: 800; font-size: var(--fs-heading); color: var(--ink); }
+.hero .price span { font-size: var(--fs-caption); color: var(--ink3); }
+.hero .renew { margin: 0; font-size: var(--fs-caption); color: var(--ink2); }
+
+// ---- Compare plans ----
+.plans { display: flex; flex-direction: column; gap: var(--gap-snug); }
+.plan {
+  padding: var(--space-3) var(--space-4); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.plan.cur { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+.plan.feat { background: color-mix(in srgb, var(--accent) 6%, var(--card)); }
+.plan .ph { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-2); }
+.plan .pn { font-family: var(--disp); font-weight: 800; font-size: var(--fs-body-lg); color: var(--ink); }
+.plan .pn em {
+  margin-inline-start: var(--space-2); font-style: normal; font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--accent);
+}
+.plan .pp b { font-family: var(--disp); font-weight: 800; font-size: var(--fs-body); color: var(--ink); }
+.plan .pp { font-size: var(--fs-caption); color: var(--ink3); }
+.plan ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1); }
+.plan li { display: flex; align-items: flex-start; gap: var(--gap-tight); font-size: var(--fs-caption); line-height: 1.4; color: var(--ink2); }
+.plan li halo-icon { color: var(--accent); margin-top: 1px; flex: none; }
+
+// ---- Payment method ----
+.pay {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-3); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.pay .cardic {
+  width: 40px; height: 40px; flex: none; display: grid; place-items: center;
+  border-radius: var(--r-field); color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.pay .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pay .l1 { // Inter: "Visa ending 6411" is a row's title, not a name. The display face
+  // is for titles, names and numbers, and a card description is none of them.
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); }
+.pay .l2 { font-size: var(--fs-caption); color: var(--ink3); }
+.pay .edit {
+  flex: none; padding: var(--space-2) var(--space-3); border-radius: var(--r-pill);
+  background: var(--card2); border: 1px solid var(--hair);
+  color: var(--ink2); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+}
+
+// ---- Billing history ----
+.bills { display: flex; flex-direction: column; gap: var(--gap-tight); }
+.bill {
+  width: 100%; display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-3); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+  cursor: pointer; text-align: start;
+}
+.bill .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bill .d { font-family: var(--disp); font-weight: 700; font-size: var(--fs-body); color: var(--ink); }
+.bill .ds { font-size: var(--fs-caption); color: var(--ink3); }
+.bill .amt { font-family: var(--disp); font-weight: 800; font-size: var(--fs-body); color: var(--ink); }
+.bill .ch { color: var(--ink3); }
+
+// ---- Cancel ----
+.cancel {
+  width: 100%; margin-top: var(--space-6); padding: var(--space-3);
+  border-radius: var(--r-field);
+  background: color-mix(in srgb, var(--live) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--live) 32%, transparent);
+  color: var(--live); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}
+
+// ---- Cancel confirm sheet ----
+.scrim {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: rgba(0, 0, 0, .5); backdrop-filter: blur(2px);
+}
+.sheet {
+  position: fixed; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; z-index: calc(var(--z-modal) + 10);
+  margin: 0 auto; max-width: 440px;
+  padding: var(--space-5) var(--pad-x) calc(var(--space-5) + env(safe-area-inset-bottom));
+  background: var(--card); border-top: 1px solid var(--hair);
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  box-shadow: var(--shadow-up);
+}
+.sheet.danger { border-top: 1px solid color-mix(in srgb, var(--live) 45%, transparent); }
+.sheet .eyebrow {
+  margin: 0 0 var(--space-1); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--live);
+}
+.sheet h2 { margin: 0 0 var(--space-2); font-family: var(--disp); font-weight: 800; font-size: var(--fs-title); color: var(--ink); }
+.sheet .lead { margin: 0 0 var(--pad-card); font-size: var(--fs-body); line-height: 1.5; color: var(--ink2); }
+.sheet .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-snug); }
+.sheet .stay {
+  padding: var(--pad-card-sm); border-radius: var(--r-field);
+  background: var(--card2); border: 1px solid var(--hair);
+  color: var(--ink); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}
+.sheet .conf {
+  padding: var(--pad-card-sm); border-radius: var(--r-field);
+  background: color-mix(in srgb, var(--live) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--live) 55%, transparent);
+  color: var(--live); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}
+
+// ---- payment-edit + invoice sheets ----
+.sheet .eyebrow.acc { color: var(--accent); }
+.payform { display: flex; flex-direction: column; gap: var(--gap-snug); margin: var(--space-1) 0 var(--space-4); }
+.sheet .save {
+  padding: var(--pad-card-sm); border-radius: var(--r-field);
+  background: var(--accent); border: 0;
+  color: var(--on-accent); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}
+.sheet .row.one { grid-template-columns: 1fr; }
+.invrows { display: flex; flex-direction: column; margin: var(--space-2) 0 var(--space-4); }
+.ir {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--gap-snug);
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--hair2, var(--hair));
+  font-size: var(--fs-body);
+  span { color: var(--ink2); }
+  b { color: var(--ink); font-weight: 700; }
+  .paid { color: var(--pos); }
+}

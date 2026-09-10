@@ -1,0 +1,87 @@
+<div class="tp halo-page halo-wide">
+  <halo-status-bar time="9:30" />
+  <div class="tbar"><halo-icon-button icon="chevron-left" [ariaLabel]="'common.back' | t" size="sm" (click)="back()" /></div>
+  <h1 class="sr-only">{{ team().name }}</h1>
+
+  <!-- Two panes from 1024, the same frame You and Game use: the identity the
+       page is ABOUT stays put on the left while its fixtures scroll on the
+       right. Below 1024 `.halo-split` is `display: contents`, so the phone
+       layout is exactly what it was (Maryna 2026-08-30). -->
+  <div class="halo-split">
+    <div class="halo-split-rail">
+    <!-- hero: crest · name · counts · follow toggle (PT TeamProfile parity) -->
+    <div class="hero">
+      <halo-crest [src]="team().crest || ''" [monogram]="team().mono" [size]="84" />
+      <!-- Grouped so the three metadata lines can be spaced as a unit.
+           `display: contents` everywhere the hero is a column, which is now
+           every width: in the rail the card keeps the phone's composition. -->
+      <div class="hero-tx">
+        <p class="nm">{{ team().name }}</p>
+        <p class="sub">{{ team().league }} · {{ team().division }}</p>
+      </div>
+      <halo-stat-grid class="counts-grid" [cells]="countCells()" [cols]="3"
+                      [flush]="true" [showDelta]="false" />
+      <button class="folbtn halo-follow-pill" type="button" [class.on]="following()"
+              [attr.aria-pressed]="following()" (click)="toggleFollow()">
+        {{ following() ? ('common.unfollow' | t) : ('common.follow' | t) }}
+      </button>
+    </div>
+    </div>
+
+    <div class="halo-split-main">
+    <!-- A SECTION THAT HAS NOTHING IS NOT SHOWN. Each of the three used to
+         render its heading and an empty state, so a team with one finished game
+         printed two "nothing here" panels under two headings — three headings
+         for one card. When the team has no games AT ALL there is one message
+         instead, because that is one fact, not three (Maryna 2026-08-30). -->
+    @if (!hasGames()) {
+      <halo-empty-state icon="games"
+        [title]="'team.noGames' | t"
+        [sub]="'team.noGamesSub' | t: { team: team().name }" />
+    } @else {
+      @if (fx().live.length > 0) {
+        <halo-section-header [title]="'home.liveNow' | t" tone="live" [count]="countOf(fx().live)" />
+        <div class="halo-stack stack">
+          @for (m of shown(fx().live); track m.round) {
+            <halo-ladder-card [chipTone]="m.chipTone" [chipText]="m.chipText" [round]="''" [teams]="m.teams"
+              [footMeta]="m.footMeta || ''" [footCta]="m.footCta || ''" ctaStyle="block" (open)="openGame(m)" (cta)="onCta(m)" />
+          }
+        </div>
+        @if (hasMore(fx().live)) {
+          <button class="halo-more" type="button" (click)="seeAll('live-now')">See all {{ fx().live.length }} games <halo-icon name="chevron-right" [size]="14" /></button>
+        }
+      }
+
+      @if (fx().recent.length > 0) {
+        <halo-section-header [title]="'team.recent' | t" [count]="countOf(fx().recent)" />
+        <div class="halo-stack stack">
+          @for (m of shown(fx().recent); track m.round) {
+            <halo-ladder-card [chipTone]="m.chipTone" [chipText]="m.chipText" [round]="''" [teams]="m.teams"
+              [footMeta]="m.footMeta || ''" [footCta]="m.footCta || ''" ctaStyle="block" (open)="openGame(m)" (cta)="onCta(m)" />
+          }
+        </div>
+        @if (hasMore(fx().recent)) {
+          <button class="halo-more" type="button" (click)="seeAll('full-games')">See all {{ fx().recent.length }} games <halo-icon name="chevron-right" [size]="14" /></button>
+        }
+      }
+
+      @if (fx().upcoming.length > 0) {
+        <halo-section-header [title]="'home.upcoming' | t" [count]="countOf(fx().upcoming)" />
+        <div class="halo-stack stack">
+          @for (m of shown(fx().upcoming); track m.round) {
+            <halo-ladder-card [chipTone]="m.chipTone" [chipText]="m.chipText" [round]="''" [teams]="m.teams"
+              [footMeta]="m.footMeta || ''" />
+          }
+        </div>
+        @if (hasMore(fx().upcoming)) {
+          <button class="halo-more" type="button" (click)="seeAll('upcoming')">See all {{ fx().upcoming.length }} games <halo-icon name="chevron-right" [size]="14" /></button>
+        }
+      }
+    }
+    </div>
+  </div>
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav active="games" (select)="tabNav.go($event)" />
+  </div>
+</div>

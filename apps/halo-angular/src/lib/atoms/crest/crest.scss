@@ -1,0 +1,33 @@
+:host { display: inline-flex; }
+
+.crest {
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--crest-plate);     // uniform white plate so every logo reads as one shape
+  // OUTLINE, not an inset shadow. The logo is an <img> at 100% x 100% inside a
+  // plate with `overflow: hidden`, and an inset box-shadow paints under the
+  // element's content — so the ring was there the whole time, hidden beneath the
+  // artwork. An outline paints ABOVE content, and `outline-offset: -1px` keeps
+  // it on the plate's own edge instead of growing the box (Maryna 2026-08-30).
+  outline: 1px solid var(--crest-edge);
+  outline-offset: -1px;
+
+  // logos are white-bg squares: fill the plate edge-to-edge so the art's own
+  // background merges into the tile (no floating circles / white boxes)
+  img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+}
+
+.crest.mono {
+  background: var(--brand-ring);
+  outline: none;                    // colored monogram tiles need no plate edge
+
+  .mono-t {
+    font-family: var(--disp);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--on-primary);   // tile bg is --brand-ring (= --primary): pair the knob's ink
+    letter-spacing: .01em;
+  }
+}

@@ -1,0 +1,59 @@
+:host { display: inline-flex; }
+
+.ib {
+  flex: none;
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--ink);
+  background: var(--card2);
+  border: 1px solid var(--hair);
+  transition: background var(--dur-med) ease, border-color var(--dur-med) ease, opacity var(--dur-med) ease;
+}
+.ib.sm { width: 34px; height: 34px; }
+.ib.lg { width: 44px; height: 44px; }
+
+@media (hover: hover) {
+  .ib:hover { background: color-mix(in srgb, var(--ink) 8%, var(--card2)); }
+}
+.ib:disabled { opacity: .45; cursor: default; }
+
+// Tinted while whatever this button opens (a dropdown/sheet) is showing —
+// same "open" cue as the fedball roundel, generalized onto the atom every
+// other circular icon button already shares.
+.ib.active {
+  background: color-mix(in srgb, var(--accent) 16%, var(--card2));
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--hair));
+}
+
+// Unread pip (bell). Ring matches the card2 surface behind it.
+.ib.has-dot::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 2px var(--card2);
+}
+.ib.sm.has-dot::after { top: 6px; inset-inline-end: 7px; }
+
+// numeric unread badge (CM-1417) — replaces the dot when a count exists
+.ib .cnt {
+  position: absolute; top: -3px; inset-inline-end: -3px;
+  min-width: 17px; height: 17px; padding: 0 var(--space-1);
+  display: grid; place-items: center;
+  border-radius: 9px;
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption); line-height: 1;
+  box-shadow: 0 0 0 2px var(--screen, var(--card));
+  /* a11y audit 2026-09-02 G31: white ink on --live was 3.05:1 → --live-strong (the live pill's swap);
+     ink is --on-media so it stays light in the light theme too (theme --ink read 3.59:1). */
+  background: var(--live-strong);
+  color: var(--on-media);
+}

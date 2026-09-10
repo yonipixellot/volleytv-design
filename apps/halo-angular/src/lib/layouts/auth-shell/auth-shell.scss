@@ -1,0 +1,147 @@
+:host { display: block; }
+
+.auth {
+  position: relative;
+  min-height: 100%;
+  background: var(--screen);
+  padding: 0 0 var(--space-10);   // hero is full-bleed; the form supplies its own side padding
+  overflow: hidden;
+}
+
+.col {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+// ---------------------------------------------------------------------------
+// Brand hero — a full-bleed, brand-tinted panel with the big logo centred,
+// matching the wireframe PT sign-in: square top corners, 32px bottom radius,
+// a solid deep-brand colour with a subtle bottom-darkening gradient. Deliberately
+// dark in both themes (a "keep-dark" branded header), so the gold emblem always
+// pops. --primary / --secondary flip with the skin, so this reskins per client.
+// ---------------------------------------------------------------------------
+.brand { display: block; padding: var(--space-5) var(--pad-x) 0; margin-bottom: var(--space-6); }
+
+.brand-card {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  padding: var(--space-10) var(--space-4);
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, transparent 0%, transparent 52%, rgba(0, 0, 0, .24) 100%),
+    color-mix(in srgb, var(--primary) 46%, #060a07);
+  border: 1px solid color-mix(in srgb, var(--primary) 34%, var(--hair));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .07),
+    0 24px 60px -24px rgba(0, 0, 0, .55);
+}
+
+// The big centred logo. Emblem → BA gold, wordmark → white — high contrast on
+// the deep-green panel, and BA's authentic brand pairing.
+.brand-card ::ng-deep .logo.svg .ic { fill: var(--secondary); }
+.brand-card ::ng-deep .logo.svg .tx { fill: #fff; }
+
+// Sized from the shared token, never from an inline height, so this lockup and
+// the provider screen's are the same object at every width.
+.brand-lockup { display: block; width: var(--auth-lockup-w); height: auto; max-width: 100%; }
+
+.form { padding: 0 var(--pad-x); }
+
+// ---------------------------------------------------------------------------
+// Wide screens. Below 1024 the page stays a single centred column, just wider —
+// two panels at 768 would be ~380px each, narrower than the form needs.
+//
+// From 1024 the SAME two pieces rotate into a split: the brand block becomes a
+// full-height field on the left, the form a neutral panel on the right. No new
+// structure, no second template — the shell was already "brand above, form
+// below", which is this layout stacked (Maryna 2026-08-28).
+// ---------------------------------------------------------------------------
+@media (min-width: 768px) {
+  .col { max-width: 480px; }
+}
+
+@media (min-width: 1024px) {
+  :host { display: flex; flex: 1 1 auto; min-height: 0; }
+
+  .auth {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    padding: 0;
+    flex: 1 1 auto;
+    min-height: 100dvh;
+    // Sticky needs a scrollable ancestor. `overflow: hidden` here would make this
+    // a scroll container that never scrolls, and pin the panel to nothing.
+    overflow: visible;
+  }
+
+  // The column stops being a box and lets its two children become the grid's
+  // items, so the split needs no extra wrapper in the template.
+  .col { display: contents; }
+
+  // The form is longer than the screen and is allowed to scroll. The brand panel
+  // is not: it holds still while the form moves past it.
+  //
+  // Sticky rather than a nested scroll container, and this is not a preference.
+  // Shrinking a flex child needs the container to have a DEFINITE height, and
+  // .halo.shell is sized with min-height — a floor, not a cap. With no definite
+  // height there is no negative free space, so nothing shrinks and every
+  // ancestor simply grows to the form's height. Measured: the whole chain sat at
+  // shrink 1 / min-height 0 and still came out 1020px tall. Sticky does not care.
+  .brand {
+    grid-column: 1;
+    position: sticky;
+    // Under whatever chrome is pinned above the page, so the panel does not
+    // shift by the bar's height on the first scroll. --devbar-h is 0 in the
+    // product, and this reads as a plain full-screen panel there.
+    top: var(--devbar-h);
+    align-self: start;
+    height: calc(100dvh - var(--devbar-h));
+    display: grid;
+    place-items: center;
+    padding: var(--space-12) var(--space-8);
+    margin: 0;
+    // The panel IS the brand surface now, so the card sheds the frame it needed
+    // when it floated on the screen colour.
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 22%, var(--brand-field-glow) 0%, transparent 62%),
+      var(--brand-field);
+  }
+  .brand-card {
+    min-height: 0;
+    max-width: 420px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  // The scroll container is the whole right column, so the scrollbar sits at the
+  // panel's own edge rather than floating in the middle of it. The reading column
+  // is capped by padding instead of a max-width, which needs no extra wrapper:
+  // 420px is a form column, a layout dimension, not rhythm.
+  .form {
+    grid-column: 2;
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    padding-block: var(--space-12);
+    // 420px is a form column: a layout dimension, not rhythm.
+    padding-inline: max(var(--pad-x-wide), calc((100% - 420px) / 2));
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Auto spacers centre a short form inside the screen's height and collapse to
+  // nothing once it outgrows it. `justify-content: center` would instead push the
+  // top out of reach, the classic failure of centring against a scroll.
+  .form::before,
+  .form::after { content: ''; flex: 1 1 auto; min-height: 0; }
+}

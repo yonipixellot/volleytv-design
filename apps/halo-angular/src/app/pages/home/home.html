@@ -1,0 +1,107 @@
+<div class="home halo-page halo-wide dhome">
+  <div class="topbar">
+    <halo-status-bar time="9:30" />
+    <halo-app-top-bar activeNav="home" />
+  </div>
+
+  <halo-stories-rail [items]="stories()" [showAdd]="true"
+    (open)="openStory($event)" (add)="manageFollowing()" />
+
+  <div class="evhead">
+    <h1>{{ 'home.events' | t }}</h1>
+    <button class="filters" type="button" [class.on]="filterActive() || filtersExpanded()"
+      [attr.aria-expanded]="filtersExpanded()" (click)="toggleFiltersBar()">
+      {{ 'home.filters' | t }}@if (activeCount()) { <span class="b">{{ activeCount() }}</span> }
+    </button>
+  </div>
+
+  <!-- Collapsing filter structure (PT EventFilterBar): the pill row unfolds
+       under the Events head; each pill anchors its own option menu. -->
+  @if (filtersExpanded()) {
+    <halo-event-filter-bar
+      [categories]="barCategories()" [selected]="ef.filters()"
+      (toggleOption)="ef.toggle($any($event.cat), $event.value)" (clear)="clearFilters()" />
+  }
+
+  <!-- Underline, not the pill: this is a filter over an open-ended list of
+       teams that has to scroll, not a fixed set of page sections. -->
+  <div class="l2tabs">
+    <halo-segmented-toggle mode="tabs" [options]="teamTabOptions" [value]="activeTeamTab()"
+      (valueChange)="selectTeam($event)" />
+  </div>
+
+  @if (showHero()) {
+    <halo-game-hero
+      [teamIdOf]="teamIdOf" (openTeam)="openTeam($event)"
+      homeName="Netsetters 1" awayName="Vikings Grey"
+      [homeScore]="24" [awayScore]="20"
+      status="live" [meta]="heroMeta"
+      image="img/hero-court.webp" (watch)="openLive()" />
+  }
+
+  @if (stateEmpty()) {
+    <div class="fedempty">
+      <span class="fe-ic"><halo-icon name="calendar" [size]="26" /></span>
+      <p class="fe-t">{{ 'home.noMatch' | t }}</p>
+      <p class="fe-s">{{ 'home.noMatchSub' | t }}</p>
+      <button class="fe-clear" type="button" (click)="clearFilters()">{{ 'cta.clearFilters' | t }}</button>
+    </div>
+  }
+
+  @if (liveF().length) {
+    <halo-section-header [title]="'home.liveNow' | t" [count]="rail.count(liveF().length, 'game')" tone="live" [seeAll]="rail.hasMore(liveF().length)" (seeAllClick)="seeAll('live-now')" />
+    <div class="halo-rail capped">
+      @for (g of liveF(); track g.home.name + g.away.name) {
+        <halo-live-game-card [home]="g.home" [away]="g.away" [meta]="g.meta" (open)="openLive()" />
+      }
+    </div>
+  }
+
+  <div class="halo-ad-wrap">
+    <halo-ad-slot creative="img/ads/mizuno-2.webp" sponsor="Mizuno" href="#" />
+  </div>
+
+  @if (fullGamesF().length) {
+    <halo-section-header [title]="'home.fullGames' | t" [count]="rail.count(fullGamesF().length, 'game')" [seeAll]="rail.hasMore(fullGamesF().length)" (seeAllClick)="seeAll('full-games')" />
+    <div class="halo-rail capped">
+      @for (g of fullGamesF(); track g.title) {
+        <halo-rail-card [title]="g.title" [sub]="g.sub" [date]="g.date!" [score]="g.score!" [duration]="g.duration!" [thumb]="g.thumb" (open)="openVod('full', g.duration)" />
+      }
+    </div>
+  }
+
+  @if (highlightsF().length) {
+    <halo-section-header [title]="'home.gameHighlights' | t" [count]="rail.count(highlightsF().length, 'clip')" [seeAll]="rail.hasMore(highlightsF().length)" (seeAllClick)="seeAll('game-highlights')" />
+    <div class="halo-rail capped">
+      @for (h of highlightsF(); track h.title) {
+        <halo-rail-card [title]="h.title" [sub]="h.sub" [date]="h.date!" [score]="h.score!" [duration]="h.duration!" [thumb]="h.thumb" (open)="openVod('highlights', h.duration)" />
+      }
+    </div>
+  }
+
+  <!-- External Content — tenant uploads, shown to everyone, never filtered. -->
+  @if (external.length) {
+    <halo-section-header [title]="externalTitle"
+      [count]="rail.count(external.length, 'video')" [seeAll]="rail.hasMore(external.length)"
+      (seeAllClick)="seeAll('external')" />
+    <div class="halo-rail capped">
+      @for (x of external; track x.title) {
+        <halo-rail-card [title]="x.title" [sub]="x.sub" [duration]="x.duration!" [thumb]="x.thumb" (open)="openExternal(x)" />
+      }
+    </div>
+  }
+
+  @if (upcomingF().length) {
+    <halo-section-header [title]="'home.upcoming' | t" [count]="rail.count(upcomingF().length, 'game')" [seeAll]="rail.hasMore(upcomingF().length)" (seeAllClick)="seeAll('upcoming')" />
+    <div class="halo-rail capped" tabindex="0" role="region" [attr.aria-label]="'home.upcomingGames' | t">
+      @for (f of upcomingF(); track f.day) {
+        <halo-upcoming-row variant="card" [day]="f.day" [time]="f.time" [home]="f.home" [away]="f.away" />
+      }
+    </div>
+  }
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav [items]="navItems()" active="home" (select)="tabNav.go($event)" />
+  </div>
+
+</div>

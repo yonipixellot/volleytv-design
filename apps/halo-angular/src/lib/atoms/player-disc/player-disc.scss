@@ -1,0 +1,41 @@
+:host { display: inline-flex; }
+
+// One consistent player-identity disc (Yoni 2026-08-23): a THIN lime ring, a
+// gap, then the fill + white number — the story-ring look. Three concentric
+// layers: .pdisc = lime ring · gap (screen colour, via .n's box-shadow) · .n =
+// purple fill.
+.pdisc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);           // lime ring (the outer 3px band)
+  box-shadow: var(--shadow-2);
+
+  .n {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--primary);        // purple fill
+    box-shadow: 0 0 0 4px var(--screen);   // the gap between fill and ring
+    font-family: var(--disp);
+    font-weight: 700;   // a touch lighter (Yoni 2026-08-24; was 800)
+    letter-spacing: -0.015em;
+    color: #fff;
+  }
+}
+
+// No ring: the fill becomes the whole disc, so the number keeps its optical
+// size relative to the circle instead of shrinking inside a plain purple round.
+.pdisc.noring {
+  background: transparent;
+  box-shadow: none;
+
+  .n {
+    width: 100%;
+    height: 100%;
+    box-shadow: var(--shadow-2);
+  }
+}

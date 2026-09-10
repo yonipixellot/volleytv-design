@@ -1,0 +1,103 @@
+<div class="lp halo-wide" [class.fs]="fs()">
+  <h1 class="sr-only">{{ 'watch.liveSr' | t: { home: 'Netsetters 1', away: 'Vikings Grey' } }}</h1>
+  <!-- Hidden in fullscreen: there all chrome lives inside .frame so it rotates
+       with the feed. Exit is the control bar's own fullscreen toggle. -->
+  <button class="x" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
+    <halo-icon name="close" [size]="14" />
+  </button>
+
+  <div class="stage">
+    <div class="frame" (click)="reveal()" (mousemove)="reveal()">
+      <!-- Real footage since 2026-09-10, same demo-file approach as the VOD
+           player: one file backs every "Watch live" entry point (see
+           `LIVE_VIDEO` in media-manifest.ts). `loop` because a live broadcast
+           never reaches an "ended" state — the on-air clock in the pill below
+           keeps its own count independent of the file's own position. -->
+      <video
+        #vid
+        class="vid"
+        [src]="videoSrc"
+        poster="img/hero-court.webp"
+        playsinline
+        loop
+        preload="metadata"
+        [muted]="muted()"
+        (loadedmetadata)="onMeta()"
+        (canplay)="onMeta()"
+      ></video>
+
+      <!-- Fullscreen chrome — the team names, inside the frame so the portrait
+           rotate carries them. Hides WITH the controls (Netflix / YouTube
+           behaviour: tap to reveal, idle to dismiss).
+           NO "go to the game page" link here, unlike the VOD player: the game
+           page has no live state (its `state` input is 'final' | 'pregame'
+           only, and its own copy reads "Stats come after tipoff"), and nothing
+           in the live flow links to it — Home's hero and live cards both go
+           straight to this player. A link would land the viewer on a pre-game
+           placeholder for a game that is on right now. The ticket scopes the
+           link to full-game / game-highlights anyway (Maryna 2026-08-28). -->
+      @if (fs()) {
+        <div class="fstop" [class.hidden]="!controlsShown()">
+          <span class="fs-match">
+            <halo-team-name name="Netsetters 1" [teamId]="teamIdOf('Netsetters 1')" (open)="openTeam($event)" />
+            <span class="fs-v">{{ 'common.vs' | t }}</span>
+            <halo-team-name name="Vikings Grey" [teamId]="teamIdOf('Vikings Grey')" (open)="openTeam($event)" />
+          </span>
+        </div>
+      }
+
+      <!-- center play, only when paused -->
+      @if (!playing()) {
+        <button class="centerplay" type="button" [attr.aria-label]="'player.play' | t" (click)="toggle(); $event.stopPropagation()">
+          <svg viewBox="0 0 12 14" width="26" height="26" fill="currentColor"><path d="M0 1.2v11.6c0 .9 1 1.4 1.7 1l9.6-5.8c.7-.4.7-1.5 0-1.9L1.7.2C1-.2 0 .3 0 1.2z"/></svg>
+        </button>
+      }
+
+      <!-- control pill, auto-hides -->
+      <div class="controls" dir="ltr" [class.hidden]="!controlsShown()">
+        <button class="ctl" type="button" [attr.aria-label]="playing() ? ('player.pause' | t) : ('player.play' | t)" (click)="toggle(); $event.stopPropagation()">
+          @if (playing()) {
+            <svg viewBox="0 0 14 14" width="15" height="15" fill="currentColor"><rect x="3" y="2" width="3" height="10" rx="1"/><rect x="8" y="2" width="3" height="10" rx="1"/></svg>
+          } @else {
+            <svg viewBox="0 0 12 14" width="15" height="15" fill="currentColor"><path d="M0 1.2v11.6c0 .9 1 1.4 1.7 1l9.6-5.8c.7-.4.7-1.5 0-1.9L1.7.2C1-.2 0 .3 0 1.2z"/></svg>
+          }
+        </button>
+        <span class="scrub"><span class="prog"></span></span>
+        <span class="run"><span class="rdot"></span>{{ 'status.liveCaps' | t }} · {{ runtime() }}</span>
+        <button class="ctl" type="button" [attr.aria-label]="muted() ? ('player.unmute' | t) : ('player.mute' | t)" [attr.aria-pressed]="muted()" (click)="toggleMute(); $event.stopPropagation()">
+          @if (muted()) {
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor" stroke="none"/><path d="M11 6l3.5 4M14.5 6L11 10"/></svg>
+          } @else {
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h2.5L6 3v10L2.5 10H2z" fill="currentColor" stroke="none"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6 6 0 0 1 0 9"/></svg>
+          }
+        </button>
+        <!-- Share archived 2026-08-26: no sharing anywhere yet (ShareState
+             kept for reuse; see the commented block in live.ts).
+        <button class="ctl" type="button" aria-label="Share" (click)="openShare(); $event.stopPropagation()">
+          <halo-icon name="share" [size]="15" />
+        </button>
+        -->
+        <button class="ctl" type="button" [attr.aria-label]="fs() ? ('player.exitFullscreen' | t) : ('player.fullscreen' | t)" (click)="$event.stopPropagation(); toggleFullscreen()">
+          @if (fs()) {
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 V6 H2 M10 2 V6 H14 M6 14 V10 H2 M10 14 V10 H14"/></svg>
+          } @else {
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6 V2 H6 M14 6 V2 H10 M2 10 V14 H6 M14 10 V14 H10"/></svg>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Metadata block: carries the team names and the game link INLINE. Hidden
+         in fullscreen, where .fstop above takes over — one placement per mode. -->
+    <div class="title">
+      <div class="status">
+        <span class="livepill"><span class="ld"></span>{{ 'status.liveCaps' | t }}</span>
+        <halo-score class="score" home="24" away="20"
+                    homeName="Netsetters 1" awayName="Vikings Grey" />
+        <span class="period">{{ 'games.setN' | t: { n: 3 } }}</span>
+      </div>
+      <div class="match"><halo-team-name name="Netsetters 1" [teamId]="teamIdOf('Netsetters 1')" (open)="openTeam($event)" /> <span class="v">{{ 'common.vs' | t }}</span> <halo-team-name name="Vikings Grey" [teamId]="teamIdOf('Vikings Grey')" (open)="openTeam($event)" /></div>
+      <div class="meta">{{ meta }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,217 @@
+:host { display: block; }
+
+.stp { padding: 0 var(--pad-x); }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;   // matches the back-button height so the header is the same
+  margin-bottom: var(--pad-card); // height whether or not the back button shows (step 1 vs 2–4)
+}
+
+.back {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hair);
+  background: var(--card);
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--dur-med), border-color var(--dur-med);
+
+  @media (hover: hover) {
+    &:hover { background: var(--card2); border-color: var(--ink4); }
+  }
+}
+.spacer { width: 38px; }
+
+.lbl {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.track {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--hair);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width var(--dur-slow) var(--ease-spring);
+}
+
+// The named journey. Hidden below the tablet band: a phone row has no width for
+// five labels, and the "Step X of Y" text already carries the count there.
+// aria-hidden in the template — the label stays in the accessibility tree at every
+// width (visually hidden from 768 up), so this must not read out as a second,
+// competing announcement.
+.names { display: none; }
+
+@media (min-width: 768px) {
+  // From here the numbered rail IS the progress indicator, so the plain bar and
+  // the "STEP 2 OF 5" text would be a third and fourth way of saying the same
+  // thing. The bar goes, the text goes visually but stays for screen readers,
+  // and the back button moves onto the rail's line — which is also the vertical
+  // space this screen was asked to give back.
+  .stp {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gap-loose);
+  }
+
+  // Fixed width whether or not the back button renders, so the rail's left edge
+  // does not jump between step 1 and the steps that can go back.
+  .row {
+    flex: 0 0 38px;
+    min-height: 38px;
+    margin-bottom: 0;
+  }
+  .spacer { display: none; }
+  .track { display: none; }
+
+  .lbl {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .names {
+    --ease-rail: cubic-bezier(.4, 0, .2, 1);
+    --dur-rail: 420ms;
+    position: relative;
+    display: flex;
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  // The rail and its fill are two pseudo-elements spanning the whole row, not a
+  // chain of per-step halves. A chain has to hand the fill over mid-rail, and an
+  // eased segment decelerates to a full stop before the next starts from rest —
+  // which is exactly the stall at the midpoint. One line, one transition, and no
+  // hand-over to smooth because there is no hand-over.
+  //
+  // Each step owns 100%/steps of the row, so half of one inset at each end lands
+  // the rail on the first and last dot CENTRES rather than the row's outer edges.
+  // The box is the full 38px dot band and the line is painted as a centred 2px
+  // gradient inside it, which keeps it on the dots' axis without an offset that
+  // has to be kept in sync with the dot size by hand.
+  .names::before,
+  .names::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 38px;
+    inset-inline-start: calc(100% / var(--steps) / 2);
+    inset-inline-end: calc(100% / var(--steps) / 2);
+    pointer-events: none;
+  }
+  .names::before {
+    background: linear-gradient(var(--hair), var(--hair)) center / 100% 2px no-repeat;
+  }
+  // Travel, not a state snap — and the two are not the same motion. Both system
+  // curves are hard ease-outs built for a control reacting to a tap: measured,
+  // --ease-out-soft covers half the distance in the first 30ms of 300 and then
+  // crawls. On a control you barely see it; on a line you are actually watching
+  // move between two points it reads as a jump followed by a stall. Symmetric
+  // ease-in-out is what makes a journey along a rail read as travelled. Local to
+  // this one motion, deliberately not promoted to a system curve.
+  .names::after {
+    background: linear-gradient(var(--accent), var(--accent)) center / 100% 2px no-repeat;
+    transform: scaleX(var(--progress));
+    transform-origin: left;
+    transition: transform var(--dur-rail) var(--ease-rail);
+  }
+
+  // The sweep is decoration over a state the colour already states outright, so
+  // removing it costs no information — no substitute cue needed here.
+  @media (prefers-reduced-motion: reduce) {
+    .names::after { transition: none; }
+  }
+
+  // Equal segments, so the dots land on a regular beat rather than wherever the
+  // label widths happen to push them. Raised above the rail so the line passes
+  // behind each dot instead of being painted across it.
+  .nm {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    position: relative;
+    z-index: 1;
+  }
+
+  // Height matched to the back button, so the dot centres itself on the same
+  // axis and the two stay lined up if either size changes.
+  .rail {
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    height: 38px;
+  }
+
+  .dot {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    // Rings are inset so a state change never alters the dot's diameter and
+    // nudges the rail passing behind it.
+    box-shadow: inset 0 0 0 1px var(--hair);
+    font-family: var(--body);
+    font-weight: 800;
+    font-size: var(--fs-caption);
+    line-height: 1;
+    color: var(--ink3);
+    transition: background var(--dur-med), box-shadow var(--dur-med), color var(--dur-med);
+  }
+
+  .nm-t {
+    font-family: var(--body);
+    font-weight: 500;
+    font-size: var(--fs-body);
+    text-align: center;
+    color: var(--ink3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    transition: color var(--dur-med);
+  }
+
+  // Done reads as done. The tick is the whole point: opacity alone made a step
+  // you had answered look like one you had not reached, which is the opposite
+  // of what a stepper is for.
+  .nm.done .dot {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: none;
+  }
+  .nm.done .nm-t { color: var(--ink2); }
+
+  .nm.now .dot {
+    color: var(--accent);
+    box-shadow:
+      inset 0 0 0 2px var(--accent),
+      0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+  .nm.now .nm-t { color: var(--accent); }
+}

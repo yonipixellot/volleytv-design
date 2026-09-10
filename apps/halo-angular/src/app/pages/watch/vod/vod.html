@@ -1,0 +1,149 @@
+<div class="vod halo-wide" [class.fs]="fs()">
+  <h1 class="sr-only">Netsetters 1 {{ 'common.vs' | t }} Vikings Grey</h1>
+  <!-- Hidden in fullscreen: there, ALL chrome lives inside .frame so it rotates
+       with the video (see .fs rules in vod.scss). Exit is the control bar's own
+       fullscreen toggle, the way YouTube and Netflix do it. -->
+  <button class="x" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
+    <halo-icon name="close" [size]="14" />
+  </button>
+
+  @if (missing()) {
+    <div class="fallback">
+      <span class="fb-ic"><halo-icon name="play" [size]="22" /></span>
+      <div class="fb-t">{{ 'watch.notAvailable' | t: { kind: kindNoun() } }}</div>
+      <div class="fb-s">{{ 'watch.checkBack' | t }}</div>
+    </div>
+  } @else {
+    <div class="stage">
+      <div class="frame">
+        <!-- Real footage since 2026-09-09. The poster is the frame the player
+             used to BE, so it covers the load and any decode failure without a
+             second fallback path. `playsinline` keeps iOS from handing the
+             video to Apple's own fullscreen player, which would take our chrome
+             with it (the same reason `fs` is a CSS takeover, see vod.ts). -->
+        <video
+          #vid
+          class="vid"
+          [src]="videoSrc()"
+          poster="img/game-1.webp"
+          playsinline
+          preload="metadata"
+          [muted]="muted()"
+          (loadedmetadata)="onMeta()"
+          (timeupdate)="onTime()"
+          (progress)="onTime()"
+          (waiting)="stalled.set(true)"
+          (playing)="stalled.set(false)"
+          (canplay)="stalled.set(false)"
+          (ended)="playing.set(false)"
+        ></video>
+
+        <!-- Fullscreen chrome, INSIDE the frame so the portrait rotate carries
+             it: the metadata block below the frame is hidden in fullscreen, so
+             this is where the ticket's team names and game link have to live to
+             survive it (ticket: loader, team names, link to game page). -->
+        @if (fs()) {
+          <div class="fstop">
+            <span class="fs-match">
+              <halo-team-name name="Netsetters 1" [teamId]="teamIdOf('Netsetters 1')" (open)="openTeam($event)" />
+              <span class="fs-v">{{ 'common.vs' | t }}</span>
+              <halo-team-name name="Vikings Grey" [teamId]="teamIdOf('Vikings Grey')" (open)="openTeam($event)" />
+            </span>
+            @if (showGameLink()) {
+              <halo-button class="fs-link" variant="primary" size="sm" (press)="goToGamePage()">
+                {{ 'watch.goToGame' | t }}<halo-icon name="chevron-right" [size]="14" />
+              </halo-button>
+            }
+          </div>
+        }
+
+        <!-- First paint: nothing buffered, so the controls are not offered yet. -->
+        @if (loading()) {
+          <div class="load" role="status" [attr.aria-label]="'watch.loading' | t">
+            <span class="spin" aria-hidden="true"></span>
+          </div>
+        }
+        <!-- Stalled mid-playback: controls stay reachable, spinner sits over the
+             frame, and the scrubber keeps showing the buffered-ahead range. -->
+        @if (buffering() && !loading()) {
+          <div class="buf" role="status" [attr.aria-label]="'watch.buffering' | t">
+            <span class="spin" aria-hidden="true"></span>
+          </div>
+        }
+
+        @if (!loading()) {
+        <div class="controls" dir="ltr">
+          <button class="ctl" type="button" [attr.aria-label]="playing() ? ('player.pause' | t) : ('player.play' | t)" (click)="toggle()">
+            @if (playing()) {
+              <svg viewBox="0 0 14 14" width="15" height="15" fill="currentColor"><rect x="3" y="2" width="3" height="10" rx="1"/><rect x="8" y="2" width="3" height="10" rx="1"/></svg>
+            } @else {
+              <svg viewBox="0 0 12 14" width="15" height="15" fill="currentColor"><path d="M0 1.2v11.6c0 .9 1 1.4 1.7 1l9.6-5.8c.7-.4.7-1.5 0-1.9L1.7.2C1-.2 0 .3 0 1.2z"/></svg>
+            }
+          </button>
+          <span class="time">{{ atLabel() }}</span>
+          <!-- Fill + knob driven by progressPct() so the bar always matches the
+               clock either side of it (see RUNTIME in vod.ts). `buffered` sits
+               behind the fill so a stall reads as "downloaded ahead of played". -->
+          <!-- Seekable since real footage landed: a slider rather than a bare
+               span, so the keyboard reaches it and a screen reader reads the
+               position out (the A11Y-AUDIT baseline is 0 violations, and a
+               click-only bar would have cost one). -->
+          <span class="scrub" role="slider" tabindex="0"
+            [attr.aria-label]="'player.seek' | t"
+            aria-valuemin="0" aria-valuemax="100"
+            [attr.aria-valuenow]="progressPct() | number: '1.0-0'"
+            [attr.aria-valuetext]="atLabel() + ' / ' + totalLabel()"
+            (click)="seekTo($event)"
+            (keydown)="onScrubKey($event)">
+            <span class="buffered" [style.width.%]="bufferedPct()"></span>
+            <span class="prog" [style.width.%]="progressPct()"></span>
+            <span class="knob" [style.left.%]="progressPct()"></span>
+          </span>
+          <span class="time">{{ totalLabel() }}</span>
+          <button class="ctl" type="button" [attr.aria-label]="muted() ? ('player.unmute' | t) : ('player.mute' | t)" [attr.aria-pressed]="muted()" (click)="toggleMute()">
+            @if (muted()) {
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor" stroke="none"/><path d="M11 6l3.5 4M14.5 6L11 10"/></svg>
+            } @else {
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h2.5L6 3v10L2.5 10H2z" fill="currentColor" stroke="none"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6 6 0 0 1 0 9"/></svg>
+            }
+          </button>
+          <!-- Share archived 2026-08-26: no sharing anywhere yet (ShareState
+               kept for reuse; see the commented block in vod.ts).
+          <button class="ctl" type="button" aria-label="Share" (click)="openShare()">
+            <halo-icon name="share" [size]="15" />
+          </button>
+          -->
+          <button class="ctl" type="button" [attr.aria-label]="fs() ? ('player.exitFullscreen' | t) : ('player.fullscreen' | t)" (click)="toggleFullscreen()">
+            @if (fs()) {
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 V6 H2 M10 2 V6 H14 M6 14 V10 H2 M10 14 V10 H14"/></svg>
+            } @else {
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6 V2 H6 M14 6 V2 H10 M2 10 V14 H6 M14 10 V14 H10"/></svg>
+            }
+          </button>
+        </div>
+        }
+      </div>
+
+      <!-- Metadata block: carries the team names and the game link in the
+           INLINE player. In fullscreen it is hidden and .fstop above takes over
+           — one placement per mode, never both at once, the way YouTube moves
+           its title from below the player to over it. -->
+      <div class="title">
+        <div class="titletext">
+          <div class="chiprow">
+            <span class="chip">{{ kindLabel() }}</span>
+            <span class="scorechip"><halo-score home="3" away="1"
+              homeName="Netsetters 1" awayName="Vikings Grey" /></span>
+          </div>
+          <div class="ttl"><halo-team-name name="Netsetters 1" [teamId]="teamIdOf('Netsetters 1')" (open)="openTeam($event)" /> {{ 'common.vs' | t }} <halo-team-name name="Vikings Grey" [teamId]="teamIdOf('Vikings Grey')" (open)="openTeam($event)" /></div>
+          <div class="meta">{{ meta }}</div>
+        </div>
+        @if (showGameLink()) {
+          <halo-button class="gamelink" variant="primary" [size]="wide() ? 'sm' : 'md'" (press)="goToGamePage()">
+            {{ 'watch.goToGame' | t }}<halo-icon name="chevron-right" [size]="14" />
+          </halo-button>
+        }
+      </div>
+    </div>
+  }
+</div>

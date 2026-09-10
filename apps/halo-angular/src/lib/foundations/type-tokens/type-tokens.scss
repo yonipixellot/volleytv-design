@@ -1,0 +1,42 @@
+:host { display: block; padding: var(--space-7) var(--space-6) var(--space-10); }
+
+.tt-wrap { display: flex; flex-direction: column; gap: var(--space-9); }
+
+.tt-h {
+  font-family: var(--body);
+  font-weight: 700; font-size: var(--fs-caption); letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink3); margin: 0 0 var(--space-4);
+
+  code { font-size: var(--fs-caption); letter-spacing: 0; text-transform: none; color: var(--ink2); }
+}
+
+// specimen row: token label on the left, rendered sample on the right
+.row {
+  display: grid; grid-template-columns: 120px 1fr; align-items: baseline;
+  gap: var(--gap-loose); padding: var(--space-2) 0; border-top: 1px solid var(--hair2);
+}
+.row:first-of-type { border-top: 0; }
+
+.tok {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption);
+  letter-spacing: .04em; color: var(--ink3); white-space: nowrap;
+}
+
+p { margin: 0; color: var(--ink); }
+
+.disp { font-family: var(--disp); font-weight: 700; line-height: var(--lh-tight); text-transform: uppercase; }
+.disp.num { color: var(--accent); }
+.body { font-family: var(--body); font-weight: 400; line-height: var(--lh-body); color: var(--ink2); max-width: 320px; }
+.body.cap { letter-spacing: .09em; text-transform: uppercase; font-weight: 800; }
+
+// scale steps — each pulls its size straight from the token
+.fs-caption { font-size: var(--fs-caption); }
+.fs-body    { font-size: var(--fs-body); }
+.fs-body-lg { font-size: var(--fs-body-lg); }
+.fs-title   { font-size: var(--fs-title); }
+.fs-heading { font-size: var(--fs-heading); }
+.fs-d-xs    { font-size: var(--fs-d-xs); }
+.fs-d-sm    { font-size: var(--fs-d-sm); }
+.fs-d-md    { font-size: var(--fs-d-md); }
+.fs-d-lg    { font-size: var(--fs-d-lg); }
+.fs-d-2xl   { font-size: var(--fs-d-2xl); }

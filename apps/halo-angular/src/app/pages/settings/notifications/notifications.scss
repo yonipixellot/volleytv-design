@@ -1,0 +1,34 @@
+.rows { display: flex; flex-direction: column; gap: var(--gap-snug); }
+
+.row {
+  display: flex; align-items: center; gap: var(--gap-loose);
+  padding: var(--pad-card-sm) var(--pad-card); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+// Body font (Inter), same size/weight as every other row label in the app
+// (menu-sheet's .row .tx .lb) — this used to be set in the display font
+// (League Spartan) at a slightly smaller size, which is why it read as
+// off-brand small next to Menu's "Account & profile" / "Manage following".
+.row .lb { font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.row .sub { font-size: var(--fs-caption); color: var(--ink2); line-height: 1.4; }
+
+// The single master switch (2026-08-26; layout per BA reference screenshot) —
+// a bit more room than a per-type row since it's the only decision here.
+.row.main { padding: var(--pad-card) var(--pad-card); gap: var(--gap-loose); }
+.row.main .tx { gap: var(--space-1); }
+
+.eyebrow {
+  margin: var(--space-6) 2px var(--space-3); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink3);
+}
+
+.chcard {
+  padding: var(--space-4) var(--space-4); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.chcard .lb { display: block; font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.chcard .sub { display: block; margin: 2px 0 var(--space-3); font-size: var(--fs-caption); color: var(--ink2); }
+.chcard .channels { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.chcard .ch { display: flex; align-items: center; gap: var(--gap-tight); }
+.chcard .cl { font-size: var(--fs-caption); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }

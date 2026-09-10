@@ -1,0 +1,86 @@
+<div class="halo shell" [class.dhome]="isDesktopHomeRoute()" [class.has-devbar]="showDevBar()" [attr.data-skin]="tenant.skin()" [attr.data-theme]="vc.theme()"
+     [attr.data-a11y-text]="a11y.text()" [attr.data-a11y-contrast]="a11y.contrast()" [attr.data-a11y-motion]="a11y.motion()"
+     [style.--primary]="tenant.primaryVar()" [style.--secondary]="tenant.secondaryVar()"
+     [style.--on-primary]="tenant.onPrimaryVar()" [style.--on-secondary]="tenant.onSecondaryVar()"
+     [style.--accent-deep]="tenant.accentDeepVar()"
+     [style.--brand-grad]="tenant.brandGradVar()" [style.--brand-grad-ink]="tenant.brandGradInkVar()">
+  @if (showDevBar()) {
+    <app-dev-bar />
+  }
+
+  <!-- The shell's header for drill-down routes. Desktop only: below 1024 those
+       screens have the dock and their own back control, and a second bar there
+       would be chrome competing with content on a phone. -->
+  @if (showShellHeader()) {
+    <div class="shellbar"><halo-app-top-bar /></div>
+  }
+
+  <main class="halo-main">
+    <router-outlet />
+  </main>
+
+  <halo-splash />
+
+  @if (preAuth()) {
+    <!-- PRE-AUTH CHROME, one object. These two were a 38px circle pinned
+         top-right and a 48px circle pinned bottom-right, and the second one sat
+         INSIDE the onboarding CTA and outranked it (z 30 over 15), so a tap on
+         the right end of "Continue" opened the accessibility panel instead
+         (Maryna 2026-08-31). They are the same thing — shell controls a
+         signed-out visitor has no menu to reach — so they are now one plate in
+         one corner, and nothing floats over the page's primary action.
+         Theme is reachable before sign-in because after it the same control
+         lives in Settings behind the avatar, and a signed-out visitor has
+         neither avatar nor menu (Maryna 2026-08-29). -->
+    <div class="prechrome">
+      <button class="pre-theme" type="button"
+        [attr.aria-label]="vc.theme() === 'dark' ? ('settings.switchLight' | t) : ('settings.switchDark' | t)"
+        (click)="vc.toggleTheme()">
+        <halo-icon [name]="vc.theme() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+      </button>
+      <!-- Language, reachable BEFORE sign-in (Yoni 2026-09-07): a visitor who
+           cannot read the sign-in screen has no Settings to get to. Same 44px
+           coin as the theme toggle; the native select sits invisibly over the
+           globe so the OS picker does the work on every device. -->
+      @if (langs.length > 1) {
+      <label class="pre-lang" [title]="'lang.switch' | t: { lang: langDef.native }">
+        <halo-icon name="globe" [size]="18" />
+        <select [attr.aria-label]="'lang.nav' | t" (change)="onLang($event)">
+          @for (l of langs; track l.code) {
+            <option [value]="l.code" [selected]="l.code === lang" [attr.lang]="l.code">{{ l.native }}</option>
+          }
+        </select>
+      </label>
+      }
+      <halo-a11y-fab (press)="a11y.toggle('fab')" />
+    </div>
+  }
+  <halo-a11y-panel
+    [open]="a11y.panelOpen()" [anchor]="a11y.origin()"
+    [text]="a11y.text()" [contrast]="a11y.contrast()" [motion]="a11y.motion()"
+    (textChange)="a11y.set({ text: $any($event) })"
+    (contrastChange)="a11y.set({ contrast: $any($event) })"
+    (motionChange)="a11y.set({ motion: $any($event) })"
+    (close)="a11y.close()" />
+
+  <!-- Settings is a route (/settings → SettingsPage), not a sheet at app root
+       (2026-08-26) — see settings-panel.ts for why. -->
+  <halo-premium-sheet
+    [open]="upgrade.isOpen()"
+    [plans]="plans"
+    [selected]="upgrade.plan()"
+    (close)="upgrade.close()"
+    (unlock)="onUnlock($event)"
+  />
+
+  <halo-share-sheet
+    [open]="share.isOpen()"
+    [title]="share.context().title"
+    [sub]="share.context().sub ?? ''"
+    [url]="share.context().url ?? ''"
+    [showScope]="share.context().showScope ?? false"
+    (close)="share.close()"
+  />
+
+  <halo-toasts [toasts]="toast.toasts()" (dismiss)="toast.dismiss($event)" (act)="toast.run($event)" />
+</div>

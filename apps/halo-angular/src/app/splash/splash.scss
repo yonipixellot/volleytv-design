@@ -1,0 +1,93 @@
+:host { display: contents; }
+
+.splash {
+  position: fixed; inset: 0; z-index: calc(var(--z-modal) + 10);
+  // The tenant's secondary, darkened twice, rather than three Hoops TV limes:
+  // a launch screen is the first thing a re-skin has to survive, and hard hexes
+  // here meant the next tenant would open the app on somebody else's brand
+  // (Maryna 2026-08-30). The two mixes reproduce the authored stops to within a
+  // couple of levels.
+  background: linear-gradient(180deg,
+    var(--secondary) 0%,
+    color-mix(in srgb, var(--secondary) 93%, black) 55%,
+    color-mix(in srgb, var(--secondary) 76%, black) 100%);
+  opacity: 1;
+  transition: opacity .38s var(--ease-out-soft);
+  cursor: pointer;
+}
+.splash.leaving { opacity: 0; pointer-events: none; }
+
+// Lockup card: 150 × 179 keeps the 120 × 143 proportions of VolleyTV_Logo.svg, so
+// the splash mark matches the get-started lockup pixel for pixel once it settles.
+.lockup {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  width: 150px; height: 179px; border-radius: 27px;
+  background: #0b1a22;
+  box-shadow: 0 24px 60px rgba(6, 18, 24, .35), inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.ball {
+  // art geometry, not layout: ball centre = 54/143 of the card, radius 31/120 (VolleyTV_Logo.svg)
+  position: absolute; left: 50%; top: 67px; width: 78px; height: 78px;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35));
+}
+.wm {
+  // art geometry: wordmark cap-top = 100/143 of the card, ink width 92/120
+  position: absolute; left: 50%; top: 126px; width: 115px; height: auto;
+  transform: translateX(-50%); display: block;
+}
+.tag {
+  // art geometry: tagline baseline = 133/143 of the card; type is 6.4/120 of the card width (two-thirds caption)
+  position: absolute; left: 0; right: 0; top: 157px; text-align: center;
+  font-family: var(--body); font-weight: 600; font-size: calc(var(--fs-caption) * 2 / 3); letter-spacing: .16em;
+  color: rgba(255, 255, 255, .72); white-space: nowrap;
+}
+// Motion (≈1.3 s, then the credit at 1.5 s and auto-dismiss at 3.6 s):
+//   card settles → ball serves in from above, spins, lands with a squash → wordmark
+//   wipes on → tagline fades. Reduced motion = final frame, no animation.
+.lockup.enter {
+  animation: splash-card .55s cubic-bezier(.2, .8, .3, 1) both;
+  .ball { animation: splash-serve .9s cubic-bezier(.3, .7, .3, 1) .12s both; }
+  .wm { animation: splash-wipe .55s cubic-bezier(.2, .8, .2, 1) .62s both; }
+  .tag { animation: splash-fade .45s ease-out .98s both; }
+}
+@keyframes splash-card {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
+  100% { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes splash-serve {
+  0%   { opacity: 0; transform: translate(-50%, -50%) translateY(-150px) rotate(-140deg) scale(.7); }
+  18%  { opacity: 1; }
+  62%  { transform: translate(-50%, -50%) translateY(0) rotate(0deg) scale(1); }
+  74%  { transform: translate(-50%, -50%) translateY(4px) rotate(4deg) scale(1.06, .9); }
+  88%  { transform: translate(-50%, -50%) translateY(-3px) rotate(1deg) scale(.98, 1.03); }
+  100% { transform: translate(-50%, -50%); }
+}
+@keyframes splash-wipe {
+  0%   { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(-50%) translateY(6px); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); transform: translateX(-50%); }
+}
+@keyframes splash-fade {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lockup.enter, .lockup.enter .ball, .lockup.enter .wm, .lockup.enter .tag { animation: none; }
+}
+.credit {
+  position: absolute; inset-inline-start: 0; inset-inline-end: 0; top: 64%;
+  display: flex; flex-direction: column; align-items: center; gap: var(--gap-snug);
+  text-align: center;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .5s var(--ease-out-soft), transform .5s var(--ease-out-soft);
+}
+.credit.on { opacity: 1; transform: none; }
+
+.by {
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-caption);
+  letter-spacing: .02em; color: rgba(14, 29, 44, .78);
+}
+.vendor {
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-title);
+  letter-spacing: .04em; text-transform: uppercase; color: #0b1a22;
+}

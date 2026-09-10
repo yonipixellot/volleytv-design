@@ -1,0 +1,53 @@
+<halo-settings-page activeKey="notifs" [title]="'settings.notifications' | t">
+  <!-- Single row (2026-08-26) — one master switch, one line that changes with
+       it. Simpler than the earlier centred hero: the label stays put so it
+       doesn't compete with the "Notifications" header above it, and only the
+       description line carries the state. -->
+  <div class="row main">
+    <div class="tx">
+      <span class="lb">{{ 'notif.allowAll' | t }}</span>
+      <span class="sub">
+        @if (allowed()) {
+          {{ 'notif.onSub' | t }}
+        } @else {
+          {{ 'notif.offSub' | t }}
+        }
+      </span>
+    </div>
+    <halo-toggle [on]="allowed()" (onChange)="allowed.set($event)" [ariaLabel]="'notif.allowAll' | t" />
+  </div>
+
+  <!-- Archived 2026-08-26 — per-type rows + the sharing-export channel card.
+       See the commented block in notifications.ts for how to bring them back.
+  @for (t of toggles(); track t.k) {
+    <div class="row">
+      <div class="tx">
+        <span class="lb">{{ t.label }}</span>
+        <span class="sub">{{ t.sub }}</span>
+      </div>
+      <halo-toggle [on]="prefs()[t.k]" (onChange)="setPref(t.k, $event)" [ariaLabel]="t.label" />
+    </div>
+  }
+  @if (channelToggles.length) {
+    <p class="eyebrow">Export &amp; sharing</p>
+    @for (t of channelToggles; track t.k) {
+      <div class="chcard">
+        <span class="lb">{{ t.label }}</span>
+        <span class="sub">{{ t.sub }}</span>
+        <div class="channels">
+          @for (c of t.channels; track c.key) {
+            <div class="ch">
+              <span class="cl">{{ c.label }}</span>
+              <halo-toggle
+                [on]="channelPrefs()[t.k][c.key]"
+                (onChange)="setChannel(t.k, c.key, $event)"
+                [ariaLabel]="t.label + ' — ' + c.label"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+  -->
+</halo-settings-page>

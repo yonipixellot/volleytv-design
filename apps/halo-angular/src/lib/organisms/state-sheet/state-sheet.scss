@@ -1,0 +1,127 @@
+:host { display: block; }
+
+.scrim {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: rgba(0, 0, 0, .5); backdrop-filter: blur(2px);
+  animation: fade var(--dur-med) ease;
+}
+.sheet {
+  position: fixed; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; z-index: calc(var(--z-modal) + 10);
+  margin: 0 auto; max-width: 440px;
+  max-height: 78vh; overflow-y: auto;
+  padding: var(--space-2) var(--pad-card-sm) calc(var(--pad-card) + env(safe-area-inset-bottom));
+  background: var(--card); border-top: 1px solid var(--hair);
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  box-shadow: var(--shadow-up);
+  animation: slideup var(--dur-slow) var(--ease-spring);
+}
+@keyframes fade { from { opacity: 0; } }
+@keyframes slideup { from { transform: translateY(16px); opacity: .6; } }
+
+// No close X — the scrim (click-outside) and Escape close the sheet, same
+// as the account menu's dropdown (Maryna 2026-08-25).
+.top { padding: var(--space-3) var(--space-3) var(--space-2); }
+.top h2 { margin: 0; font-family: var(--disp); font-weight: 800; font-size: var(--fs-title); color: var(--ink); }
+
+.row {
+  display: flex; align-items: center; gap: var(--gap-snug); width: 100%;
+  padding: var(--pad-card-sm) var(--pad-card-sm); border: 0; border-radius: var(--r-card-sm);
+  background: transparent; cursor: pointer; text-align: start;
+}
+@media (hover: hover) {
+  .row:hover { background: var(--card2); }
+}
+.row.on { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.row .nm {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.row.on .nm { color: var(--accent); }
+.row .sub { font-size: var(--fs-caption); color: var(--ink3); }
+.row .ck { color: var(--accent); }
+
+.divider { height: 1px; margin: var(--space-1) var(--space-3); background: var(--hair); }
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .sheet { animation: none; }
+}
+
+// ===================== Desktop web (Home only, >=1280px) =====================
+// Same pattern as the account menu (halo-menu-sheet): a centered bottom sheet
+// makes no sense next to a pointer-driven header icon, so this becomes a
+// compact dropdown anchored under its own trigger — the fedball roundel,
+// not the page edge, since the fedball isn't the rightmost header icon
+// (Maryna 2026-08-25).
+:host-context(.dhome) {
+  @media (min-width: 1280px) {
+    .scrim {
+      background: transparent;
+      backdrop-filter: none;
+      animation: none;
+    }
+
+    .sheet {
+      position: fixed;
+      // Aligns the dropdown's right edge with the fedball trigger's right
+      // edge: pad-x-wide (page gutter) + account trigger width (68px, measured —
+      // update if that trigger ever gains a name label) + 16px gap + bell
+      // width (38px) + 16px gap = 138px further in than the page edge.
+      top: 70px;
+      inset-inline-end: calc(var(--pad-x-wide) + 138px);
+      bottom: auto;
+      inset-inline-start: auto;
+      margin: 0;
+      width: 320px;
+      max-width: none;
+      max-height: min(480px, calc(100vh - 70px - 24px));
+      border-radius: 16px;
+      border-top: 1px solid var(--hair);
+      box-shadow: 0 24px 48px -20px rgba(0, 0, 0, .5), 0 4px 16px -8px rgba(0, 0, 0, .3);
+      animation: statesheet-dropdown-in var(--dur-med) var(--ease-out-soft) both;
+    }
+
+    // Compact rows so more of the 9-item list shows before the panel's own
+    // scroll kicks in (still on the 8px grid: 8/4 padding, not a rounded guess).
+    .row { padding: var(--space-2) var(--space-1); gap: var(--gap-snug); }
+    .balogo,
+    .row halo-crest { flex: none; }
+  }
+}
+
+// Dev/QA persona strip pushes the header down by its own height — same fix
+// as the account menu, mirrored here rather than shared, since the two
+// components don't share a stylesheet (Maryna 2026-08-25).
+:host-context(.dhome.has-devbar) {
+  @media (min-width: 1280px) {
+    .sheet {
+      top: 114px;
+      max-height: min(480px, calc(100vh - 114px - 24px));
+    }
+  }
+}
+
+@keyframes statesheet-dropdown-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: none !important; }
+}
+
+// BA STACKED logo on the national row — SQUARE plate exactly like the state
+// crests (white plate, 27% radius). Print colors fixed (gold ball, BA green
+// text) — the themeable fills would render white-on-white here.
+.balogo {
+  flex: none; width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 9.2px; // 34 * 0.27, matches halo-crest
+  background: var(--crest-plate);
+  outline: 1px solid var(--crest-edge);
+  outline-offset: -1px;   // above the logo art — see crest.scss
+
+  ::ng-deep .logo.svg { display: block; height: 30px; width: 30px; }
+  ::ng-deep .logo.svg svg { width: 100% !important; height: 100% !important; display: block; }
+  ::ng-deep svg .ic { fill: #ffce3a !important; }
+  ::ng-deep svg .tx { fill: #006341 !important; }
+}

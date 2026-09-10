@@ -1,0 +1,62 @@
+<div class="el halo-page halo-wide">
+  <halo-status-bar time="9:30" />
+
+  <header class="el-top">
+    <button class="back" type="button" [attr.aria-label]="'common.back' | t" (click)="back()">
+      <halo-icon name="chevron-left" [size]="17" />
+    </button>
+    <h1>{{ cfg().title }}</h1>
+    <span class="cnt">{{ countLabel() }}</span>
+  </header>
+
+  <!-- Filters OPEN — on a lane page filtering IS the task (PT WatchLaneAll).
+       Absent entirely on a lane whose content no filter dimension can match;
+       see `filtered` on LaneCfg. -->
+  @if (filtered()) {
+    <halo-event-filter-bar
+      [categories]="barCategories()" [selected]="barSelected()"
+      (toggleOption)="setFilter($event.cat, $event.value)" (clear)="clearFilters()" />
+  }
+
+  @if (!total()) {
+    <div class="el-empty">
+      <span class="ic"><halo-icon name="calendar" [size]="26" /></span>
+      <p class="t">{{ 'common.nothingHere' | t }}</p>
+      <p class="s">{{ cfg().empty }}</p>
+    </div>
+  }
+
+  <!-- ONE flat feed in date order, with NO day dividers at any width (Maryna
+       2026-09-02). The date is on every card already, and the Date pill above is
+       where a day is now chosen — a heading per day was repeating the card and
+       standing in for a filter that exists. On a wide screen it also broke the
+       grid: this lane holds one game per day, so every divider opened a group of
+       one and reset the row. -->
+  <div class="el-feed">
+    @for (it of itemsShown(); track it.title) {
+      <halo-rail-card class="cardfit" [title]="it.title" [sub]="it.sub" [date]="it.date!" [score]="it.score!"
+        [duration]="it.duration!" [thumb]="it.thumb" (open)="openVod(it.duration)" />
+    }
+    <!-- Live games: the same card as Home's Live now section. -->
+    @for (lg of liveShown(); track lg.home.name + lg.away.name) {
+      <halo-live-game-card class="wide" [home]="lg.home" [away]="lg.away" [meta]="lg.meta"
+        (open)="openLive()" />
+    }
+    <!-- Fixtures are information only: same card as Home's Upcoming section. -->
+    @for (f of fixturesShown(); track f.day + f.time) {
+      <halo-upcoming-row [day]="f.day" [time]="f.time" [home]="f.home" [away]="f.away" />
+    }
+  </div>
+
+  <!-- The control that ends a list, not one that leaves it: this page is the
+       destination. Same slot and same treatment as "Show all N moments" on the
+       game page. -->
+  @if (remaining() > 0) {
+    <button class="halo-more" type="button" (click)="loadMore()">{{ 'common.loadMore' | t }}
+      <halo-icon name="chevron-down" [size]="14" /></button>
+  }
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav [items]="navItems()" active="" (select)="tabNav.go($event)" />
+  </div>
+</div>

@@ -1,0 +1,124 @@
+:host { display: block; }
+.tp { background: var(--screen); }
+
+.tbar {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-2) var(--pad-block-x) 2px;
+}
+
+.hero-tx { display: contents; }
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-1);
+  // carded hero on a clean surface — no brand-gradient smear (Yoni 2026-08-22)
+  margin: var(--space-2) var(--pad-block-x) 0;
+  padding: var(--space-6) var(--space-5) var(--space-6);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-1);
+}
+.hero .nm {
+  margin: var(--space-3) 0 0;
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-d-sm);
+  letter-spacing: -.01em; color: var(--ink); text-transform: uppercase;
+}
+.hero .sub { margin: 0; font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink2); }
+// The three counts, as halo-stat-grid's inline layout. Full width of the card
+// so the dividers reach its padding, which is what makes them read as one table
+// rather than three floating numbers.
+.counts-grid { width: 100%; margin-top: var(--space-4); }
+// The look is .halo-follow-pill, shared with the follow row and the
+// Manage-following list. Only the hero's own placement is left.
+.folbtn { margin-top: var(--space-3); }
+
+/* ladder-card carries the page inset itself — the stack only spaces vertically */
+.stack { padding-bottom: var(--space-6); }
+
+/* …and so the See all under a stack has to carry it too, or it runs to the
+   screen edge while the cards above it sit 16px in. Shed inside the desktop
+   column below, exactly as the card is. */
+.halo-more { margin-inline: var(--pad-block-x); }
+
+
+// ---------------------------------------------------------------------------
+// TWO PANES, from 1024 — the shared .halo-split frame, the one You and Game
+// already use.
+//
+// This page was adapted once before, as a full-width masthead with a two-up
+// grid under it. That read fine on its own and wrong beside its siblings: You
+// pins the athlete while clips scroll, Game pins the score while video scrolls,
+// and Team is the same shape — an identity the page is ABOUT, and a list that
+// moves. A page that answers the same question differently from its two
+// neighbours is a page the reader has to learn twice (Maryna 2026-08-30).
+//
+// In the rail the hero keeps the PHONE composition — crest over name over the
+// action — because that is what a 320px column wants. So the masthead row that
+// used to appear at 1024 is gone rather than restyled.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  // The page owns the gutter here, the way You and Game do: inside the split
+  // the two columns start at the content edge, not at the viewport's.
+  .tp { padding-inline: var(--pad-block-x); }
+
+  // The shell's own header carries the way back from here; a second control
+  // under it is chrome competing with content (same call as Game and the
+  // events lane).
+  .tbar { display: none; }
+
+  // The rail's card sits at the top of its column and stops — the crest, the
+  // name and the one action are all it holds. It also gets ROOM: at 320px wide
+  // the phone's insets left an 84px crest, a display-size name, two metadata
+  // lines and a pill stacked almost touching, which reads as a cramped card
+  // rather than a calm one. The card is the only thing in its column; the space
+  // is there to spend (Maryna 2026-08-30).
+  // EVERY GAP IN THIS CARD IS STATED BY THE CHILD BELOW IT, and the flex gap is
+  // zero. With a gap AND per-child margins the painted distance was the sum of
+  // two numbers, so "20" above the counts and "24" below them actually rendered
+  // 28 and 32, and no single value in the file matched what was on screen
+  // (Maryna 2026-08-30).
+  .halo-split-rail .hero {
+    margin: 0;
+    padding: var(--space-8) var(--space-6);
+    gap: 0;
+  }
+  .halo-split-rail .hero .nm { margin-top: var(--space-5); }
+  .halo-split-rail .hero .sub { margin-top: var(--space-2); }
+  .halo-split-rail .counts-grid { margin-top: var(--space-6); }
+  .halo-split-rail .folbtn { margin-top: var(--space-6); }
+
+  // The section headings and the stacks already inset themselves for the phone;
+  // inside the split the column owns the gutter.
+  .halo-split-main > halo-section-header { display: block; }
+  .halo-split-main ::ng-deep halo-section-header .esec { padding-inline: 0; }
+  // The FIRST heading in the column takes the rail's own top inset instead of
+  // the 32px a heading normally puts between itself and the content above it —
+  // there is nothing above it. That lands both columns' first element on one
+  // line: the rail card's top edge and the heading's box at the same y.
+  .halo-split-main > halo-section-header:first-of-type ::ng-deep .esec {
+    padding-top: var(--space-6);
+  }
+  .halo-split-main halo-ladder-card { padding-inline: 0; }
+  .halo-split-main .halo-more { margin-inline: 0; }
+
+  // TWO PER ROW, from 1024 — and the point is as much what happens with ONE.
+  // As a stack, a lone card (a single live game, a single fixture) stretched to
+  // the full column: 837px of card holding two team rows and a button, next to
+  // sections where the same card is half that. A grid gives it one column and
+  // leaves the other empty, so a card is the same size whatever the section
+  // happens to hold (Maryna 2026-08-30).
+  //
+  // Two, not three at 1600: the measure grows there, and the extra room is
+  // better spent on wider cards than on a third narrow one.
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--stack);
+    align-items: start;
+    padding-bottom: 0;
+  }
+}

@@ -1,0 +1,81 @@
+:host { display: block; }
+
+.fld-label {
+  display: block; margin: var(--space-1) 0 var(--space-2);
+  font-size: var(--fs-caption); font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent);
+}
+
+.entry {
+  padding: var(--space-3) var(--space-4); border-radius: var(--r-field);
+  background: var(--card2); border: 1px solid var(--hair);
+}
+.entry.err { border-color: color-mix(in srgb, var(--live) 55%, transparent); }
+.entry .inp {
+  width: 100%; border: 0; background: transparent; outline: none;
+  font-size: var(--fs-body); color: var(--ink);
+}
+.err-msg { margin: var(--space-2) 0 0; font-size: var(--fs-caption); color: var(--live); }
+.hint { margin: var(--space-3) 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--ink3); }
+
+.linkbox {
+  margin-top: var(--space-1); padding: var(--space-3) var(--space-4); border-radius: var(--r-field);
+  background: var(--card2); border: 1px solid var(--hair);
+  font-size: var(--fs-body); color: var(--ink2); word-break: break-all;
+}
+
+.notified {
+  display: inline-flex; align-items: center; gap: var(--gap-tight);
+  margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--r-field);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  font-size: var(--fs-caption); color: var(--accent);
+}
+
+.pending {
+  display: inline-flex; align-items: center; margin-bottom: var(--space-4);
+  padding: var(--space-1) var(--space-3); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  font-size: var(--fs-caption); font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cmono {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: var(--r-field);
+  background: var(--brand-grad); color: var(--brand-grad-ink);
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-body);
+}
+
+/* Confirmation hero (athlete claimed / parent linked). */
+.confirm {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--space-7) var(--space-1) 0;
+}
+.confirm .ring {
+  width: 76px; height: 76px; border-radius: 50%;
+  display: grid; place-items: center; margin-bottom: var(--space-5);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 32px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.c-eye {
+  font-size: var(--fs-caption); font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: var(--space-2);
+}
+.c-eye.left { text-align: start; }
+.c-eye.muted { color: var(--ink3); }
+
+// ---- account-model chooser (front door) ----
+.choice { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 12dvh; }
+.ch-logo { width: 116px; margin-bottom: var(--space-6); }
+.ch-acts { width: 100%; display: flex; flex-direction: column; gap: var(--gap-snug); margin-top: var(--space-6); }
+.ch-note { margin-top: var(--space-4); font-family: var(--body); font-size: var(--fs-caption); color: var(--ink3); }
+
+// Wide screens: the same single-column treatment as onboarding — this is one
+// short task, so it gets width for comfort, not a second panel.
+@media (min-width: 768px) {
+  :host { display: block; }
+}

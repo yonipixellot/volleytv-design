@@ -1,0 +1,114 @@
+:host { display: block; padding: 0 var(--space-6); }
+
+/* Carousel card variant — fixed width, no page-gutter padding (the rail owns
+   the scroll padding), full-height so cards in a row align. */
+:host(.card) { display: inline-block; padding: 0; width: 288px; vertical-align: top; }
+:host(.card) .uprow { width: 100%; height: 100%; }
+
+:host-context(.dhome).card {
+  @media (min-width: 768px) { display: block; width: 100%; }
+}
+
+.uprow {
+  position: relative;
+  width: 100%;
+  text-align: start;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+  padding: var(--pad-card);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-loose);
+  overflow: hidden;
+}
+
+.updeco {
+  position: absolute;
+  inset-inline-end: -34px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 1px solid var(--hair);
+  opacity: .7;
+  pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--hair2);
+  }
+}
+
+.update {
+  flex: none;
+  // 76px = 60 of content + the 16 padding. Measured, not guessed: the two lines
+  // are "SAT" and "17 MAY", and the wider of them is the date at 48px, 56px at
+  // the largest accessibility text step. The whole date on ONE line is what does
+  // not fit: "SAT 17 MAY" is 79px and the worst case "WED 28 SEP" is 81, so a
+  // column wide enough for it is 112px of a 288px card.
+  width: 76px;
+  border-inline-end: 1px solid var(--hair);
+  padding-inline-end: var(--space-4);
+}
+.dd {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  // The width above is sized for the worst case, so this should never trigger —
+  // it is here so a longer localised day name overflows visibly instead of
+  // silently changing the card's height.
+  white-space: nowrap;
+}
+/* The date and its month, on the line under the weekday. Same colour, size and
+   tracking as the weekday above it, so the two lines read as one date block
+   rather than as a label with a caption under it (Maryna 2026-09-03). */
+.dm {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.tt {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-sm);
+  line-height: .9;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-top: var(--space-1);
+}
+
+.upteams {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-snug);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+.u { display: flex; align-items: center; gap: var(--gap-snug); }
+.u .nm {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* No hover here on purpose: .uprow is a <div> with no click, no output and no
+   role — a fixture card, not a control. A hover state on it would advertise an
+   action that does not exist (Maryna 2026-08-28). */

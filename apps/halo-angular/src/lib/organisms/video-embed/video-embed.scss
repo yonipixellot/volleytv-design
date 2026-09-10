@@ -1,0 +1,93 @@
+:host { display: block; }
+
+.ve {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  cursor: pointer;
+  padding: 0;
+  text-align: start;
+}
+
+.th { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; }
+.poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.scr { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 4%, transparent), color-mix(in srgb, var(--scrim-ink) 50%, transparent)); }
+
+.kind {
+  position: absolute;
+  top: 12px;
+  inset-inline-start: 12px;
+  z-index: 2;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--on-media);
+  background: rgba(0, 0, 0, .62);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+// gold play, bottom-left — matches the home rail-card
+.play {
+  position: absolute;
+  inset-inline-start: 13px;
+  bottom: 13px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  // play disc stays lime in both themes (--accent flips to purple in light)
+  background: var(--secondary);
+  color: var(--on-secondary);
+  box-shadow: var(--shadow-2);
+}
+
+.dur {
+  position: absolute;
+  inset-inline-end: 11px;
+  bottom: 12px;
+  z-index: 2;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
+  color: var(--on-media);
+  background: rgba(0, 0, 0, .62);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+}
+
+.foot { display: block; padding: var(--space-3) var(--space-4) var(--space-4); }
+.ttl {
+  display: block;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+}
+.sub {
+  display: block;
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-top: var(--space-1);
+}
+
+// missing/failed poster → branded frame instead of a broken-image glyph
+.thfall {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: var(--player-frame); color: var(--on-media); opacity: .55;
+}
+
+/* Hover, press depth and reduced-motion come from .halo-media-card — the shared
+   media-card recipe in styles.scss. */

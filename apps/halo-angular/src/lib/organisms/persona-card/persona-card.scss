@@ -1,0 +1,81 @@
+:host { display: block; }
+
+.pc {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-loose);
+  text-align: start;
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  padding: var(--pad-card);
+  transition: border-color var(--dur-med), background var(--dur-med), transform var(--dur-fast);
+
+  @media (hover: hover) {
+    &:hover { background: var(--card2); }
+  }
+  &:active { transform: scale(.995); }
+}
+
+// Recommended emphasis — accent halo + ring + tinted well.
+.pc.featured {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background:
+    radial-gradient(ellipse 70% 80% at 20% 20%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 60%),
+    var(--card);
+  box-shadow: 0 12px 34px -16px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.pc.disabled { opacity: .5; cursor: default; }
+@media (hover: hover) {
+  .pc.disabled:hover { background: var(--card); }
+}
+
+.well {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-field);
+  background: var(--card2);
+  border: 1px solid var(--hair);
+  color: var(--ink2);
+}
+.pc.featured .well {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+}
+
+.txt { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.ttl {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.sub {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-body);
+  color: var(--ink3);
+}
+
+.chev { color: var(--ink3); flex: none; }
+
+.soon {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  background: var(--card2);
+  border: 1px solid var(--hair);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  flex: none;
+}

@@ -1,0 +1,77 @@
+:host { display: block; }
+
+.fs { display: flex; flex-direction: column; gap: var(--gap-tight); }
+
+.lbl {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-field);
+  transition: border-color var(--dur-med), box-shadow var(--dur-med);
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  &.err {
+    border-color: var(--live);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 16%, transparent);
+  }
+}
+
+.fs.disabled { opacity: .55; }
+.fs.disabled .sel { cursor: default; }
+
+.msg {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+}
+.msg.err { color: var(--live); font-weight: 600; }
+
+.sel {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-body-lg);
+  // Matches form-field's .inp exactly. Without it a select picked its own line
+  // box and came out a pixel shorter than the date input beside it in a 2-up row.
+  line-height: 1.25;
+  padding-block: var(--pad-field-y) var(--pad-field-y); padding-inline: var(--pad-field-x) var(--space-9);
+  cursor: pointer;
+
+  // .fs owns the focus state, so the select must not draw its own. `outline:
+  // none` above suppresses the baseline's outline but not its 4px halo, which
+  // painted a second ring inside the first (see form-field's .inp).
+  &:focus-visible { outline: none; box-shadow: none; }
+  color-scheme: dark;
+}
+:host-context([data-theme='light']) .sel { color-scheme: light; }
+
+.wrap.placeholder .sel { color: var(--ink3); }
+
+.chev {
+  position: absolute;
+  inset-inline-end: 12px;
+  color: var(--ink3);
+  pointer-events: none;
+}

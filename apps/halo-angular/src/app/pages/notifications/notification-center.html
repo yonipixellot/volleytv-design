@@ -1,0 +1,79 @@
+<div class="nc" [class.halo-page]="mode() === 'page'" [class.nc--pop]="mode() === 'popover'">
+  @if (mode() === 'page') {
+    <halo-status-bar time="9:30" />
+
+    <!-- halo-page-top: the shared header for X-dismissible destinations, so this
+         and Settings stay identical. Clear (quiet text link) is projected in
+         between the title and the X. -->
+    <halo-page-top [title]="'settings.notifications' | t" [dismissLabel]="'nc.close' | t" (dismiss)="close()">
+      @if (store.all().length) {
+        <halo-button slot="actions" variant="link" (press)="clear()">{{ 'nc.clearAll' | t }}</halo-button>
+      }
+    </halo-page-top>
+  } @else {
+    <!-- No X and no repeated title chrome: the bell you just pressed said what
+         this is, and the popover closes by clicking away. Clear all keeps its
+         place, because it is the one action the feed itself owns. -->
+    <div class="nc-pop-top">
+      <span class="nc-pop-t">{{ 'settings.notifications' | t }}</span>
+      @if (store.all().length) {
+        <halo-button variant="link" (press)="clear()">{{ 'nc.clearAll' | t }}</halo-button>
+      }
+    </div>
+  }
+
+  @if (!store.all().length) {
+    <div class="nc-empty">
+      <span class="ic"><halo-icon name="bell" [size]="26" /></span>
+      <p class="t">{{ 'nc.caughtUp' | t }}</p>
+      <p class="s">{{ 'nc.caughtUpSub' | t }}</p>
+    </div>
+  }
+
+  @if (store.today().length) {
+    <p class="nc-lab">{{ 'nc.today' | t }}</p>
+    <div class="nc-list">
+      @for (n of store.today(); track n.id) {
+        <button class="nrow" type="button" [class.unread]="!n.read" (click)="open(n)">
+          <span class="tile" [class.live]="n.type === 'live'"><halo-icon [name]="icon(n.type)" [size]="17" /></span>
+          <span class="tx">
+            <span class="nm">{{ n.title }}</span>
+            <span class="bd">{{ n.body }}</span>
+          </span>
+          <span class="meta">
+            <span class="tm">{{ n.time }}</span>
+            <!-- Always in the DOM, state via a class: an @if would destroy the
+                 node the instant `read` flips, and a destroyed element cannot
+                 be transitioned out. Keeping it also stops the row reflowing
+                 when the dot goes. -->
+            <span class="dot" [class.gone]="n.read" aria-hidden="true"></span>
+          </span>
+        </button>
+      }
+    </div>
+  }
+
+  @if (store.earlier().length) {
+    <p class="nc-lab">{{ 'nc.earlier' | t }}</p>
+    <div class="nc-list">
+      @for (n of store.earlier(); track n.id) {
+        <button class="nrow" type="button" [class.unread]="!n.read" (click)="open(n)">
+          <span class="tile" [class.live]="n.type === 'live'"><halo-icon [name]="icon(n.type)" [size]="17" /></span>
+          <span class="tx">
+            <span class="nm">{{ n.title }}</span>
+            <span class="bd">{{ n.body }}</span>
+          </span>
+          <span class="meta">
+            <span class="tm">{{ n.time }}</span>
+            <!-- Always in the DOM, state via a class: an @if would destroy the
+                 node the instant `read` flips, and a destroyed element cannot
+                 be transitioned out. Keeping it also stops the row reflowing
+                 when the dot goes. -->
+            <span class="dot" [class.gone]="n.read" aria-hidden="true"></span>
+          </span>
+        </button>
+      }
+    </div>
+  }
+
+</div>

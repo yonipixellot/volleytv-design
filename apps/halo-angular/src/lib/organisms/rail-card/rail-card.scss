@@ -1,0 +1,106 @@
+:host { display: inline-block; }
+
+:host-context(.dhome) {
+  @media (min-width: 768px) { display: block; }
+}
+
+.vcard {
+  width: 302px;
+  text-align: start;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+
+  :host-context(.dhome) & {
+    @media (min-width: 768px) { width: 100%; }
+  }
+}
+
+.th { position: relative; aspect-ratio: 16 / 9; overflow: hidden; }
+.th > img { width: 100%; height: 100%; object-fit: cover; }
+.th .scr {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 2%, transparent), color-mix(in srgb, var(--scrim-ink) 50%, transparent));
+}
+
+.pl {
+  position: absolute;
+  inset-inline-start: 13px;
+  bottom: 13px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  // play disc stays lime in both themes (--accent flips to purple in light)
+  background: var(--secondary);
+  color: var(--on-secondary);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-1);
+}
+
+.dur {
+  position: absolute;
+  inset-inline-end: 11px;
+  bottom: 12px;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--on-media);
+  background: rgba(0, 0, 0, .62);
+  padding: 3px var(--space-2);
+  border-radius: 6px;
+}
+
+.ft { padding: var(--space-3) var(--pad-card) var(--pad-card); }
+.dt {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.nm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-tight);
+  margin-top: var(--space-2);
+}
+.nm-t {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+// Size, weight and colour only — halo-score owns the face and the dash.
+.sc {
+  font-weight: 700;
+  font-size: var(--fs-heading);
+  color: var(--accent);
+  flex: none;
+}
+.sub {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  margin-top: var(--space-1);
+}
+
+// missing/failed thumb → branded frame instead of a broken-image glyph
+.thfall {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: var(--player-frame); color: var(--on-media); opacity: .55;
+}
+
+/* Hover, press depth and reduced-motion all come from .halo-media-card — the
+   shared media-card recipe in styles.scss. Nothing card-specific is left. */
+
+

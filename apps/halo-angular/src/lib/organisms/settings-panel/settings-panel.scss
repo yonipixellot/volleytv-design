@@ -1,0 +1,276 @@
+// In-flow page, not an overlay (2026-08-26) — this used to be a fixed-position
+// drawer pinned to the viewport's top/bottom, which meant it sat *under* the
+// dev bar and clipped its own status-bar row, and it needed its own enter
+// animation nothing else in the app had. It now lays out inside the routed
+// page region like Notification Center, so the dev bar and the clock/battery
+// row simply stay where they are. Flex column so Sign out can still hold the
+// bottom edge.
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+// Root carries no horizontal padding — each block below applies --pad-x itself,
+// exactly like Notification Center, so the shared status-bar/page-top
+// components sit flush the same way on both screens. No explicit page
+// background either (2026-08-26 fix, was `background: var(--card)`) — the
+// page shows the shell's --screen through, same as every other routed page,
+// including hoopstv dark's purple-tinted screen. Painting a flat --card here
+// was papering over that skin's ambient tint app-wide, not just muting BA's.
+.pnl {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  // No bottom nav dock here — same family as Notification Center and the
+  // settings sub-pages, so .halo-page's dock clearance isn't wanted.
+  padding: 0 0 calc(var(--space-5) + env(safe-area-inset-bottom));
+}
+
+// The BA skin tints surfaces green; settings should read as a neutral dark
+// panel there. Scoped to BA specifically (2026-08-26 fix) — this used to match
+// any dark theme, so it also flattened hoopstv dark's intentional purple
+// --card/--card2 down to neutral grey, the one screen in the app not reading
+// on-brand for that skin.
+:host-context([data-skin='ba'][data-theme='dark']) .pnl {
+  --card: #0d0e11;
+  --card2: #16171b;
+  --hair: rgba(255, 255, 255, .08);
+}
+
+// Header lives in halo-page-top (shared with Notification Center).
+
+// identity card — halo-avatar (photo with a monogram fallback) + persona eyebrow.
+.acct {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--pad-card-sm);
+  /* 16px under the header — it measured 0 and the card touched the title row.
+     26px below it, more than the 12px between groups: the card is a different
+     KIND of thing (who you are) than the setting groups under it, so the
+     reading order is card → ACCOUNT → APP, with the biggest step at the biggest
+     change (2026-08-27). */
+  margin: var(--space-4) var(--pad-x) var(--space-6);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  background: var(--card2);
+  color: var(--ink);
+}
+.acct .who { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.acct .who .eb {
+  font-family: var(--body);
+  font-style: normal;
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1px;
+}
+.acct .who b { font-family: var(--disp); font-weight: 800; font-size: var(--fs-heading); text-transform: uppercase; letter-spacing: .01em; }
+.acct .who small { font-size: var(--fs-caption); color: var(--ink2); }
+
+// section label
+.sec {
+  /* Rhythm: 12px above a group label, 8px below it. Measured ink-to-ink, not
+     box-to-box: each row already carries 9px of its own padding and centres its
+     label in a 56px box, so a 26px margin became 43px of visible air between
+     one group's last line and the next group's label, and 54px before Sign out.
+     The margins are only part of that, which is why the row padding came down
+     with them (2026-08-27).
+     Left inset matches the icon chips at 28px (was 26px, 2px off them). */
+  margin: var(--space-3) calc(var(--pad-x) + var(--space-2)) var(--space-2);
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+// The card above already owns the step into the first group; without this the
+// card's 26px and this label's 12px would add to 38px there.
+.sec:first-of-type { margin-top: 0; }
+
+// Rows sit flush inside a group: proximity does the grouping, the label and the
+// 26px step above it do the separating.
+.rows { display: flex; flex-direction: column; padding: 0 var(--pad-x); }
+// Sign out sits FLUSH with the list, like every other row (2026-08-27). It is
+// one terminal action, not a new group, so a group-sized step above it read as
+// a hole: rows inside a group are 34px apart ink-to-ink, and any margin here
+// pushed that to 46px. Its red mark and label carry the difference in kind;
+// spacing is left to express grouping only.
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  // 7px, not 9: with a 38px icon chip the row still clears 52px, past the 44px
+  // touch minimum, and the list stops reading as spaced-out paragraphs.
+  padding: var(--space-2) var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: start;
+  border-radius: var(--r-field);
+  font-family: var(--body);
+}
+@media (hover: hover) {
+  .row:hover { background: var(--card2); }
+}
+
+// icon-chip — rounded square, low-tint secondary, settled icon colour
+.row .ic {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  // --accent, not --secondary: the accent follows the theme lead per skin
+  // (hoopstv: lime in dark, PURPLE in light — Yoni 2026-08-23)
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  color: color-mix(in srgb, var(--accent) 78%, var(--ink));
+}
+.row .tx { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.row .tx .lb { font-weight: 700; font-size: var(--fs-body-lg); }
+.row .tx small { font-size: var(--fs-caption); color: var(--ink2); }
+.row .val { font-size: var(--fs-body); color: var(--ink2); font-weight: 600; }
+.row .ar { color: var(--ink4); }
+.row .tag {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .12em;
+  color: var(--ink3);
+  border: 1px solid var(--hair);
+  padding: 3px var(--space-2);
+  border-radius: var(--r-pill);
+}
+
+// sign out — pinned to the bottom, muted (danger only on the mark)
+.signout {
+  // pad-x here + the row's own 6px = the same inset as the rows in .rows
+  /* Follows the list instead of being pinned to the page bottom. `margin-top:
+     auto` made the gap before it depend on how much content happened to fill
+     the viewport: with the tighter rows it grew to 85px of visible air between
+     the last setting and this label, and it would grow further on a taller
+     screen. The step now matches a group step, and the red mark keeps it
+     distinct (2026-08-27). */
+  margin: 0 var(--pad-x);
+}
+.signout .ic {
+  background: color-mix(in srgb, var(--live-strong) 12%, transparent);
+  border-color: color-mix(in srgb, var(--live-strong) 22%, transparent);
+  // ink uses --live (theme-aware indicator red): bright on the dark panel,
+  // AA-dark on light. --live-strong is a FILL red — as text on dark it's 3.8:1.
+  color: var(--live);
+}
+.signout .lb { color: var(--live); }
+
+// No enter animation and no scrim keyframes any more (2026-08-26): as a routed
+// page this arrives the way Notification Center does — the route swaps, nothing
+// slides or fades. Nothing to gate behind prefers-reduced-motion either.
+
+// ---------------------------------------------------------------------------
+// Popover variant — the same content hanging off the header avatar from the
+// tablet band up. Only the page chrome changes: the surface, the edge and the
+// scrolling belong to the popover shell in halo-app-header, so everything here
+// is about not behaving like a page any more.
+// ---------------------------------------------------------------------------
+:host:has(.pnl--pop) { display: contents; }
+
+.pnl--pop {
+  // A page grows to fill the routed region; a menu is exactly as tall as its
+  // own content and lets the shell cap it.
+  flex: 0 0 auto;
+  // No safe-area inset either: that clears a phone's home indicator, and this
+  // variant never reaches the bottom of a phone screen.
+  padding: var(--space-2) 0;
+
+  // The identity card loses its own frame. Inside a card it was a card on a
+  // card, and the popover's own edge is already doing that job.
+  .acct {
+    margin: 0 var(--space-2) var(--space-2);
+    border: 0;
+    background: transparent;
+    padding: var(--space-2);
+  }
+  // A hairline instead of a gap: with the card unframed above it, the first
+  // group needs an edge to sit under, and vertical air alone stopped reading as
+  // a boundary at this width.
+  // 8px rather than 12 above and below the rule. Measured: at 12 the menu was
+  // 555px and a 660px-tall window scrolled it by 18 — a scrollbar that costs a
+  // gesture and reveals a row and a half. The whole thing now measures 532 and
+  // no realistic window scrolls it; below ~640 it does, which is honest.
+  .sec {
+    margin: var(--space-2) var(--space-3) var(--space-2);
+    border-top: 1px solid var(--hair);
+    padding-top: var(--space-2);
+  }
+  .sec:first-of-type { margin-top: 0; }
+
+  .rows { padding: 0 var(--space-2); }
+  .signout { margin: 0 var(--space-2); }
+
+  // Rows tighten: a menu is scanned, not read, and the subtitles carry the
+  // detail that the page's roomier rhythm was giving them space for. 4px, not
+  // 8: with a 38px chip the row still measures 46 and clears the 44px touch
+  // floor, and eight rows × 8px was 64px of the height that was forcing a
+  // pointless 100px scroll on a short laptop window.
+  .row { padding: var(--space-1) var(--space-2); }
+  .row .tx .lb { font-size: var(--fs-body); }
+}
+
+// Language pane — replaces the menu in place, with a way back at the top. Same
+// surface, same width, so nothing moves under the pointer when it swaps.
+.pane-top {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  padding: 0 var(--space-2) var(--space-2);
+}
+.pane-back {
+  flex: none;
+  // 44px of hit area from the WCAG 2.5.8 floor, while the glyph stays small.
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .pane-back:hover { background: var(--card2); }
+}
+.pane-t {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+}
+
+// The tick sits where the icon chip sits on every other row, so the two panes
+// share one left edge and the list does not shift when it swaps.
+.lang-opt:not([aria-current]) .ck { visibility: hidden; }
+.lang-opt .ck {
+  flex: none;
+  width: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.pane-note {
+  margin: var(--space-2) var(--space-3) 0;
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink3);
+}

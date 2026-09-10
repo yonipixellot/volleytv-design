@@ -1,0 +1,26 @@
+:host { display: block; }
+
+.bl { position: relative; }
+
+// blurred + inert underlay when locked
+.bl.locked .bl-body {
+  filter: blur(7px);
+  pointer-events: none;
+  user-select: none;
+  opacity: .82;
+}
+
+// the premium-ticket gate, centred over the blurred content
+.bl-over {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--screen) 34%, transparent);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  border-radius: var(--r-card);
+}
+.bl-over halo-premium-ticket { width: 100%; max-width: 300px; }

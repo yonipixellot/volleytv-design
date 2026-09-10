@@ -1,0 +1,60 @@
+name: Clean up old GitHub Pages previews
+
+on:
+  schedule:
+    - cron: '17 3 * * *' # daily, off the hour to avoid the top-of-hour pile-up
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Shared with pages.yml / pages-preview.yml - see pages.yml for why.
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare gh-pages buffer
+        run: .github/scripts/pages-buffer.sh prepare
+
+      - name: Remove previews untouched for 7+ days
+        id: prune
+        run: |
+          cutoff=$(( $(date +%s) - 7*24*60*60 ))
+          removed=()
+          for dir in pages-buffer/previews/pr-*/; do
+            [ -d "$dir" ] || continue
+            rel="${dir#pages-buffer/}"
+            rel="${rel%/}"
+            last=$(git -C pages-buffer log -1 --format=%ct -- "$rel" || echo 0)
+            if [ "$last" -lt "$cutoff" ]; then
+              echo "Removing stale preview: $rel (last updated $(date -d "@$last"))"
+              rm -rf "$dir"
+              removed+=("$rel")
+            fi
+          done
+          if [ "${#removed[@]}" -eq 0 ]; then
+            echo "Nothing to clean up."
+          fi
+
+      - name: Publish buffer to gh-pages
+        run: |
+          .github/scripts/pages-buffer.sh publish "cleanup: prune previews older than 7 days"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-buffer
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,132 @@
+:host { display: block; }
+
+.sh {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  padding: var(--space-5);
+  background:
+    radial-gradient(ellipse 60% 100% at 12% 30%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 60%),
+    var(--card);
+  border: 1px solid var(--hair);
+}
+
+.eye {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  // Status left, when right. They answer two different questions — is it over,
+  // and when was it — so pushing them apart lets each be found on its own edge
+  // rather than read as one run of text (Maryna 2026-08-30).
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+.eye .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--r-pill);
+}
+.eye .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.eye .when {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  letter-spacing: .01em;
+  color: var(--ink3);
+}
+
+.rows { display: flex; flex-direction: column; gap: var(--gap-tight); }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--pad-card) var(--pad-card);
+  border-radius: var(--r-card-sm);
+  background: var(--card2);
+}
+.row.win { background: color-mix(in srgb, var(--accent) 7%, var(--card2)); }
+
+.nm {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wpill {
+  flex: none;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--on-accent);
+  background: var(--accent);
+  padding: 3px var(--space-2);
+  border-radius: 5px;
+}
+
+// The score, once, as the card's headline. It replaces the two row-end numerals
+// (.sc) that made the reader do the comparing themselves (Maryna 2026-08-30).
+.bigline {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 var(--space-4);
+}
+// Size and weight only. The colour is NEUTRAL here even though the winning half
+// is accent: `winner` puts the accent on that half from inside the atom, so the
+// dash between them keeps ink instead of inheriting the accent and reading as a
+// third team colour (Maryna 2026-08-30).
+.bigline halo-score {
+  font-weight: 700;
+  font-size: var(--fs-d-2xl);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+// Action slot. Nothing projected → no box and no space, so a viewer without the
+// Editor sees a card that simply ends after the rows.
+.act { margin-top: var(--space-4); display: grid; }
+.act:not(:has(*)) { display: none; }
+
+// own/followed team name links to /team/:id — name look, link behavior
+.nm-link {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  text-align: start; font: inherit; color: inherit;
+  &:active { color: var(--accent); }
+}
+/* Split: focus-visible is not pointer-only — a keyboard user has no pointer
+   but does need the affordance. Only the hover half is scoped. */
+.nm-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+}
+@media (hover: hover) {
+  .nm-link:hover {
+    color: var(--accent);
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  }
+}
+
+// a11y 2.5.8: >=24px hit area for inline name links (padding grows the target,
+// negative margin keeps the layout)
+.nm-link { padding-block: 3px; margin-block: -3px; font-weight: 700; }  // 700: the font:inherit shorthand above resets the name's own weight

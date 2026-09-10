@@ -1,0 +1,31 @@
+:host { display: block; }
+
+.shot {
+  display: block;
+  // Fits the box on both axes: `auto` sizes with max-* rather than against them,
+  // so on a short screen the card gives height and keeps its proportion, instead
+  // of overflowing and taking the whole page into scroll.
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  margin-inline: auto;
+
+  // drop-shadow, not box-shadow: the artwork's corners are TRANSPARENT and it
+  // draws its own rounded edge, so a box shadow would trace a rectangle and
+  // show as four square ears behind a rounded card. drop-shadow follows the
+  // alpha, so it hugs their corner at any scale — no radius of ours to keep in
+  // sync with theirs.
+  //
+  // Authored rather than --shadow-3 because that token carries a spread
+  // (-18px) and the drop-shadow filter has no spread parameter. Same intent,
+  // shorter blur to make up for the missing negative spread.
+  filter: drop-shadow(var(--shot-shadow));
+  --shot-shadow: 0 16px 30px rgba(0, 0, 0, .55);
+}
+
+// The card sits on --screen, which flips with the theme, so the shadow does too:
+// on the light canvas the dark-theme value reads as grime rather than lift.
+:host-context([data-theme='light']) .shot {
+  --shot-shadow: 0 16px 30px rgba(16, 24, 40, .18);
+}

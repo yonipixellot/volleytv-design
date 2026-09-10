@@ -1,0 +1,174 @@
+// The screen inset, like every other block. It was --space-6 (24px), which put
+// the card 8px further in than the section heading that introduces it on both
+// pages that stack them — Games and Team — so a column of cards read as
+// indented from its own title. One inset governs the screen (Maryna 2026-08-29).
+:host { display: block; padding: 0 var(--pad-block-x); }
+
+.lad {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 22px;
+  padding: var(--pad-card);
+  text-align: start;
+}
+/* Every interactive affordance is scoped to a card that IS interactive: an
+   upcoming fixture (.static) is information, so it takes no pointer, no hover
+   and no transition — it had kept the accent hover border (2026-08-27). */
+.lad:not(.static) {
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+}
+@media (hover: hover) {
+  // THE CARD'S HOVER STANDS DOWN WHILE THE POINTER IS ON THE CTA. They are two
+  // different destinations — the card opens the game page, the button opens the
+  // video — and lighting both at once tells the viewer nothing about which one
+  // the next click will give them (Maryna 2026-08-30). Same reasoning as the
+  // innermost-control press rule, applied to hover.
+  .lad:not(.static):hover:not(:has(.cta:hover)) {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--hair));
+  }
+}
+.lad-open {
+  position: absolute; inset: 0; z-index: 0;
+  background: transparent; border: 0; padding: 0; border-radius: inherit; cursor: pointer;
+}
+.lad-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lad .cta, .lad .lchip { position: relative; z-index: 1; }   // real controls stay clickable above the overlay
+
+.lad-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+
+.lchip {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+}
+.lchip.live { background: var(--live-strong); color: #fff; box-shadow: 0 0 16px -4px var(--live); }
+.lchip.live .pz { width: 5px; height: 5px; border-radius: 50%; background: #fff; }
+.lchip.fin, .lchip.up { background: var(--card2); color: var(--ink2); }
+
+.lrnd { font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink3); }
+
+.trow {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--space-2) 0;
+
+  & + .trow { border-top: 1px solid var(--hair2); }
+}
+/* A lost row reads quieter, but not through opacity: at .62 the crest monogram composited to
+   4.47:1 on its tile (a11y audit 2026-09-02 G32). Mute the TEXT with tokens; the tile stays full. */
+.trow.lo .nm { color: var(--ink2); }
+.trow.lo .sc { color: var(--ink3); }
+.trow .nm {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trow .sc {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-sm);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.trow.win .sc { color: var(--accent); }
+.trow .tm { font-family: var(--body); font-weight: 600; font-size: var(--fs-body-lg); color: var(--ink3); }
+
+.lad-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hair);
+}
+.lad-foot .mt { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+.cta {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .02em;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+// a11y 2.5.8: >=24px hit area; later rule so it beats the block's padding shorthand
+.cta { padding-block: var(--pad-control-y); margin-block: calc(var(--pad-control-y) * -1); }
+
+// ---- CTA variants (Yoni exploration 2026-08-22) ----
+.lrnd.sm { margin-inline-start: auto; margin-inline-end: var(--space-3); }
+.cta.chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: var(--pad-control-y) var(--space-3); border: 0; cursor: pointer;   // >=24px hit height
+  border-radius: var(--r-pill);
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  margin-block: calc(var(--space-1) * -1);
+}
+.cta.chip.live { color: var(--live); background: color-mix(in srgb, var(--live) 13%, transparent); }
+
+.cta.block {
+  display: flex; align-items: center; justify-content: center; gap: var(--gap-tight);
+  width: 100%; margin-top: var(--space-3);
+  padding: var(--space-3); border: 0; cursor: pointer;
+  border-radius: 11px;
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-body);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.cta.block.live { color: var(--live); background: color-mix(in srgb, var(--live) 12%, transparent); }
+
+.lad { position: relative; }
+.cta.disc {
+  position: absolute; inset-inline-end: 16px; top: 50%; transform: translateY(-14%);
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; cursor: pointer; border-radius: 50%;
+  color: var(--on-accent); background: var(--accent);
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.cta.disc.live { color: #fff; background: var(--live-strong, var(--live)); box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--live) 70%, transparent); }
+// disc mode: clear the floating disc so scores don't run under it
+.lad:has(.cta.disc) .trow { margin-inline-end: 56px; }
+
+// ---------------------------------------------------------------------------
+// CTA HOVER — the button answers for itself.
+//
+// Every variant had a pointer and no hover, so the only thing that reacted was
+// the card underneath it. The tinted variants deepen their own tint (12 → 22%),
+// the solid disc goes to the pressed accent, and the bare text link quietens
+// the way every other text action in the app does.
+// ---------------------------------------------------------------------------
+@media (hover: hover) {
+  .cta:not(.chip):not(.block):not(.disc):hover { opacity: .78; }
+
+  .cta.chip:hover  { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  .cta.chip.live:hover  { background: color-mix(in srgb, var(--live) 22%, transparent); }
+
+  .cta.block:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  .cta.block.live:hover { background: color-mix(in srgb, var(--live) 22%, transparent); }
+
+  .cta.disc:hover { background: var(--accent-deep); }
+  .cta.disc.live:hover { background: color-mix(in srgb, var(--live-strong) 86%, black); }
+}
+
+.cta { transition: background var(--dur-fast) ease, opacity var(--dur-fast) ease; }

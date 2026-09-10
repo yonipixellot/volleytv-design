@@ -1,0 +1,55 @@
+<halo-settings-page activeKey="coach" [title]="'settings.coachAdmin' | t">
+  @if (lastRevoked()) {
+    <div class="toast">
+      {{ 'coach.revokedToast' | t: { name: lastRevoked() ?? '' } }}
+    </div>
+  }
+
+  <div class="teams">
+    @for (tm of teams(); track tm.id) {
+      <div class="team">
+        <div class="thead">
+          <span class="crest">{{ tm.mono }}</span>
+          <div class="tx">
+            <span class="nm">{{ tm.name }}</span>
+            <span class="link">{{ inviteLinkFor(tm.id) }}</span>
+          </div>
+          <button class="copy" type="button" [class.done]="copiedTeamId() === tm.id" (click)="copy(tm.id)">
+            {{ copiedTeamId() === tm.id ? ('ob.copied' | t) : ('ob.copyLink' | t) }}
+          </button>
+        </div>
+
+        @if (tm.roster.length === 0) {
+          <div class="noclaims">{{ 'coach.noClaims' | t }}</div>
+        } @else {
+          <div class="claims">
+            @for (p of tm.roster; track p.id) {
+              <div class="claim">
+                <div class="tx">
+                  <span class="pn">{{ p.name }} <em>#{{ p.number }}</em></span>
+                  <span class="em">{{ p.email }}</span>
+                </div>
+                <button class="revoke" type="button"
+                        (click)="confirmTarget.set({ teamId: tm.id, playerId: p.id, playerName: p.name })">
+                  {{ 'coach.revoke' | t }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</halo-settings-page>
+
+@if (confirmTarget(); as t) {
+  <div class="scrim" (click)="confirmTarget.set(null)"></div>
+  <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'coach.revokeQ' | t: { name: t.playerName }">
+    <h2>{{ 'coach.revokeQ' | t: { name: t.playerName } }}</h2>
+    <p class="lead">{{ 'coach.revokeLead' | t }}</p>
+    <div class="row">
+      <button class="stay" type="button" (click)="confirmTarget.set(null)">{{ 'ob.cancel' | t }}</button>
+      <button class="conf" type="button" (click)="confirmRevoke()">{{ 'coach.revoke' | t }}</button>
+    </div>
+  </div>
+}

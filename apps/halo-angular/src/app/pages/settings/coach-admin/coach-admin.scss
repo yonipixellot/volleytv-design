@@ -1,0 +1,100 @@
+.toast {
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4);
+  border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+  font-size: var(--fs-caption); line-height: 1.5; color: var(--ink2);
+}
+
+.teams { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.thead {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
+  border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.thead .crest {
+  width: 42px; height: 42px; flex: none; display: grid; place-items: center;
+  border-radius: var(--r-field);
+  background: var(--brand-grad); color: var(--brand-grad-ink);
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-body);
+}
+.thead .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+// Same reasoning as Manage following's row: this is the title of a team's row in
+// a list of teams, so it takes the body face like every other one in the app.
+.thead .nm {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.thead .link {
+  font-size: var(--fs-caption); color: var(--ink3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.thead .copy {
+  flex: none; padding: var(--space-2) var(--space-3); border-radius: var(--r-field);
+  background: var(--card2); border: 1px solid var(--hair);
+  color: var(--ink); font-size: var(--fs-caption); font-weight: 700; cursor: pointer;
+}
+.thead .copy.done {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.claims { display: flex; flex-direction: column; gap: var(--gap-tight); }
+.claim {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-3); border-radius: var(--r-card-sm);
+  background: var(--card2); border: 1px solid var(--hair);
+}
+.claim .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.claim .pn {
+  font-weight: 700; font-size: var(--fs-body); color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.claim .pn em { font-style: normal; color: var(--ink3); font-weight: 600; }
+.claim .em {
+  font-size: var(--fs-caption); color: var(--ink3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.claim .revoke {
+  flex: none; padding: var(--space-2) var(--space-3); border-radius: var(--r-field);
+  background: color-mix(in srgb, var(--live) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--live) 32%, transparent);
+  color: var(--live); font-size: var(--fs-caption); font-weight: 700; cursor: pointer;
+}
+
+.noclaims {
+  padding: var(--space-4); text-align: center;
+  border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px dashed var(--hair);
+  font-size: var(--fs-caption); line-height: 1.5; color: var(--ink3);
+}
+
+// ---- Revoke confirm sheet ----
+.scrim {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: rgba(0, 0, 0, .6); backdrop-filter: blur(2px);
+}
+.sheet {
+  position: fixed; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; z-index: calc(var(--z-modal) + 10);
+  margin: 0 auto; max-width: 440px;
+  padding: var(--space-6) var(--pad-x) calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: var(--card); border-top: 1px solid color-mix(in srgb, var(--live) 45%, transparent);
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  box-shadow: var(--shadow-up);
+}
+.sheet h2 { margin: 0 0 var(--space-2); font-family: var(--disp); font-weight: 800; font-size: var(--fs-title); color: var(--ink); }
+.sheet .lead { margin: 0 0 var(--pad-card); font-size: var(--fs-body); line-height: 1.55; color: var(--ink2); }
+.sheet .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-snug); }
+.sheet .stay {
+  padding: var(--pad-card-sm); border-radius: var(--r-field);
+  background: var(--card2); border: 1px solid var(--hair);
+  color: var(--ink); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}
+.sheet .conf {
+  padding: var(--pad-card-sm); border-radius: var(--r-field);
+  background: color-mix(in srgb, var(--live) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--live) 55%, transparent);
+  color: var(--live); font-weight: 700; font-size: var(--fs-body); cursor: pointer;
+}

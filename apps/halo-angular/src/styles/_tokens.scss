@@ -1,0 +1,645 @@
+// ============================================================================
+// Halo design tokens — CSS custom properties.
+// Mirrors src/styles/tokens/design-tokens.json (the platform-neutral source).
+//
+// ARCHITECTURE (white-label, admin-driven):
+//   • Two BRAND KNOBS the client sets from the external admin app:
+//         --primary / --on-primary
+//         --secondary / --on-secondary
+//     They can be overridden at RUNTIME by setting these vars inline on the
+//     `.halo` root (inline style beats any skin rule), so the admin app just
+//     injects `style="--primary:#..;--secondary:#.."` — no rebuild.
+//   • Everything interactive is DERIVED from the knobs:
+//         --accent / --accent-deep / --on-accent  (the CTA/highlight colour)
+//         --brand-grad / --brand-ring / --brand-core  (branded ornaments)
+//     so changing the two knobs re-colours the whole app via the cascade.
+//   • The BASE theme is brand-NEUTRAL (restrained defaults). A SKIN (e.g. BA)
+//     only sets the knobs + which knob leads per theme, plus tinted surfaces.
+//   Components ONLY reference semantic tokens — never a brand colour name.
+//
+// Theming API:
+//   <div class="halo" data-skin="base|volleytv" data-theme="dark|light"
+//        [style="--primary:#..;--secondary:#.."]> … </div>
+// ============================================================================
+
+:root {
+  --disp: 'League Spartan', 'Antonio', 'Arial Narrow', sans-serif;
+  --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+
+  // ---- radii (shared across every skin/theme) ----
+  --r-pill: 100px;
+  --r-card: 24px;
+  --r-card-sm: 18px;
+  --r-field: 15px;
+  --r-phone: 46px;
+
+  // Where the brand mark sits on a brand-FIELD screen, measured from the top of
+  // the page area. Sign-in and the SSO handoff both anchor their lockup to it
+  // so the mark holds still across the two — a measured value tuned to one
+  // viewport drifted apart on every other height (2026-08-27).
+  // How much app chrome sits above the routed page. 0 in the product; the DEV
+  // bar publishes its measured height here while it is on screen, so anything
+  // that pins itself to the top of the page area (the auth brand panels) lands
+  // under it instead of behind it. Measured, not a constant: the bar wraps to
+  // two and three rows on narrow screens.
+  --devbar-h: 0px;
+
+  // The app header's measured height, published by halo-app-top-bar the same way
+  // the DEV bar publishes its own. 0 on the screens that render no header.
+  --topbar-h: 0px;
+
+  // Clearance for the pre-auth chrome cluster, which is fixed at --space-5 from
+  // the top and the right and is --space-11 tall (.prechrome in app.scss): 20 +
+  // 44 + 8 of air. It was 56, tuned when the only thing in that corner was a
+  // 38px circle that cleared the centred lockup by 9px — a pair of 44px controls
+  // does not, and they are opaque, so they HID the Hoops TV wordmark (Maryna
+  // 2026-08-31). The coupling is the point: change the cluster, this follows.
+  // Restored to 56 at 768, where the lockup moves into the brand panel and stops
+  // competing for the corner.
+  --brand-mark-top: calc(var(--space-5) + var(--space-11) + var(--space-2));
+
+  // The auth brand lockup — ONE size for every auth screen. The panel must not
+  // change when you switch between sign in and sign up, and it did: the provider
+  // screen drew the lockup as its own <img> capped at 260px while auth-shell drew
+  // it through halo-client-logo at a 148px inline height (≈124 wide), so the two
+  // screens were never the same panel. Sits here beside --brand-mark-top rather
+  // than in the theme blocks: it is a layout constant, and from inside a theme
+  // block .halo[data-theme] outranks the :root step-up below (Maryna 2026-08-29).
+  --auth-lockup-w: 124px;
+
+  // ---- team crest plate: uniform white chip behind every club logo, both
+  //      themes (logos are supplied white-bg; a shared plate keeps shapes even)
+  --crest-plate: #fff;
+  // The plate's own edge. A DARK neutral in both themes, not --hair, because
+  // the edge only has a job on a LIGHT surface: there the white plate sits on a
+  // white card and --hair's 12% ink was too faint to hold it, so a crest beside
+  // a team name simply dissolved (Maryna 2026-08-30). On dark the plate already
+  // separates itself and this reads as the printed edge of a badge.
+  --crest-edge: rgba(18, 22, 30, .22);
+
+  // Live red for FILLED badges carrying white text (AA 4.5:1). --live stays the
+  // bright indicator hue for dots/rings/glows where no text sits on it.
+  --live-strong: #d12b2f;
+
+  // ==========================================================================
+  // SKIN HOOKS — the three places a tenant used to reach INTO a shared
+  // component to override it. Each was a `:host-context(.halo[data-skin='…'])`
+  // rule living in `section-header`, `client-logo` and `a11y-panel`, which
+  // meant onboarding a second tenant would have meant editing shared components
+  // — exactly what the token layer exists to prevent (Maryna 2026-08-30).
+  //
+  // A hook carries the NEUTRAL answer here and the skin overrides the token.
+  // ==========================================================================
+
+  // Section heading ink. Neutral by default; Hoops TV's brand edit takes the
+  // accent. A LIVE-toned section always wins with --live: live is a status
+  // colour, never a brand one.
+  --section-ink: var(--ink);
+
+  // The federation emblem inside a themeable client logo. The `.ic` path
+  // normally flips with the theme; a federation whose crest is fixed artwork
+  // pins it here instead. BA's gold is the case that exists.
+  --fed-crest-ink: var(--accent);
+
+  // The accessibility fab. Glass by default — a tenant with a brand pairing for
+  // it (Hoops TV: White_on_Blaze) sets all three.
+  --fab-bg: color-mix(in srgb, var(--card) 88%, transparent);
+  --fab-ink: var(--ink);
+  --fab-edge: var(--hair);
+
+  // White text / icons / dots that sit OVER imagery, video posters or dark
+  // scrims — theme-independent (media is dark in both themes). Distinct from
+  // --on-player (the video-player chrome) so the two can diverge per skin.
+  --on-media: #fff;
+
+  // ==========================================================================
+  // SPACING — one 4px rhythm grid, addressed through SEMANTIC roles.
+  //
+  // Rule (see DESIGN.md, "The 4px Rhythm Rule"): every padding, margin and gap
+  // is a step on this grid, and components reference the SEMANTIC token for the
+  // role, never a raw px literal. A raw px spacing value in a component is a
+  // defect, not a style choice — that is what let four separate components each
+  // invent their own screen inset (22 / 22 / 26 / 26) and drift apart.
+  //
+  // Sub-4px values (1–3px) are NOT on the grid and never will be: they are
+  // sub-grid OPTICAL corrections (hairline offsets, cap-height compensation
+  // under League Spartan, geometric derivations). They stay legal, but each one
+  // must carry a one-line reason in the code. Without a reason it is a defect.
+  // (Maryna 2026-08-28)
+  // ==========================================================================
+
+  // ---- the grid: primitive steps, where N x 4 = the value. The number IS the
+  //      multiplier, so there is nothing to look up. Reach for a semantic token
+  //      first; use these only for one-off rhythm a role doesn't name. Anything
+  //      above space-12 is a layout dimension rather than rhythm — it stays a
+  //      literal and states its reason, same as a sub-grid optical value. ----
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;   // was 26px — off-grid, and it fought --pad-x at 22px
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+
+  // ---- layout rhythm: the page's own skeleton ----
+  // 16px, the platform norm (Material 16dp, iOS 16pt layout margins). It was
+  // 24 — which was never a decision, just 22 rounded up onto the grid
+  // (Maryna 2026-08-28).
+  --pad-x: 16px;          // screen content inset — cards, hero, rails, rows, headers
+  // Wide-screen inset, from the TABLET breakpoint up — 24.6px at 768, 32.8 at
+  // 1024, 41 at 1280, 64 at 2000. One clamp covers tablet and desktop, so the
+  // inset grows with the viewport instead of stepping at a breakpoint.
+  --pad-x-wide: clamp(24px, 3.2vw, 64px);
+  // THE INSET A PAGE-LEVEL BLOCK USES. Blocks read this, never --pad-x or
+  // --pad-x-wide directly; a route that owns a wide layout raises it once for
+  // its whole subtree (styles.scss for Home, games.scss for the Games column)
+  // and every block follows.
+  //
+  // Before this the choice was re-made per component: five organisms carried a
+  // near-identical `:host-context(.dhome) @media (min-width: 768px)` block, and
+  // Games — which uses a different route marker — got none of them, so its
+  // painted left edges came out at 421, 437 and 445 in one column against
+  // Home's single 41 (Maryna 2026-08-29).
+  --pad-block-x: var(--pad-x);
+
+  // THE MEASURES. A page declares which kind it is; it does not invent a number.
+  //
+  // There were ten in play — 720, 840, 940, 1028, 1080, 1120, 1180, 1360, 1400,
+  // 1560 — because each screen picked its own as it was adapted, and no two
+  // pages then lined up (Maryna 2026-08-30).
+  //
+  // --measure-task  a single-column task: one form, one list of rows, one
+  //                 decision. Wider puts a label at one end of the screen and
+  //                 its control at the other.
+  // --measure-page  a content page: cards, grids, media. One step up past 1600,
+  //                 which is a documented step in ONE token, not a new number.
+  // Full bleed      a page that is itself a grid (Home, Events). No measure,
+  //                 just --pad-block-x, and the grid adds columns.
+  --measure-task: 720px;
+  --measure-page: 1080px;
+
+  // Two rails, because they do two different jobs. --rail-w is the PAGE's rail:
+  // what stays true while the column beside it scrolls — the athlete on You, the
+  // two teams and the score on Game, the calendar on Games. --nav-w is a list of
+  // DESTINATIONS, like the settings sidebar.
+  // An earlier note here said a rail never holds a fact. That was written from
+  // one bad case and every rail we shipped then contradicted it; the test is
+  // whether the thing stays put while the reader moves (Maryna 2026-08-30).
+  --rail-w: 320px;
+  --nav-w: 220px;
+  // ONE desktop banner, reused on every page that carries one. The height is
+  // fixed rather than a ratio, because a ratio makes the banner a function of
+  // whatever column it lands in: Home's full-bleed row, the 840 schedule column
+  // and the You content column each produced a different banner off the same
+  // component. Width still follows the column, as it must; the height is the
+  // thing a reader compares across pages (Maryna 2026-08-30).
+  // 300 is the number Home's own rule named as its ceiling, and every page now
+  // gets it. Note it is TALLER than Home actually rendered at most widths: the
+  // 21/4 ratio bound the height before the cap did, so a 1440 screen showed 257.
+  // One reused height can only be one number, and this is the one the design had
+  // written down (Maryna 2026-08-30).
+  --ad-h: 300px;
+  --stack: 12px;          // vertical gap between stacked cards / rows
+  --rail-gap: 12px;       // horizontal gap between rail items
+  --nav-clear: 108px;     // bottom padding so content clears the docked nav
+
+  // Ceiling for the content canvas. Past this the layout stops growing and the
+  // body's ambient backdrop surrounds it — the same device-frame language the
+  // phone band already uses, rather than cards inflating forever. Sized so six
+  // columns land at ~340px, the width they hold from 1280 up.
+  --content-max: 2240px;
+
+  // --pad-section is GONE (2026-08-28). It was 26px "intentionally 4px wider"
+  // than --pad-x, which meant every section header and the status bar sat 4px
+  // off the cards they introduced. One inset governs the screen: --pad-x.
+
+  // ---- vertical block rhythm: ONE OWNER PER GAP. The space between two blocks
+  //      belongs to the block BELOW it, and every block contributes 0 at its
+  //      bottom edge. Sums are what made the same gap render 30px after a rail
+  //      and 32px after the ad banner: two components each owned half of it
+  //      (Maryna 2026-08-28).
+  --block-gap: 32px;      // above any new block on a page — heading, ad, rail group
+  // 16px against the 32px block gap = a clean 2:1. At 24 the ratio drops to
+  // 1.33:1 and the heading starts reading as floating between the block above
+  // and its own content, which is the one thing this asymmetry exists to stop.
+  --section-bottom: 16px; // a heading (or a heading group) to the content it introduces
+
+  // ---- component interiors ----
+  --pad-card: 16px;       // standard card / tile interior
+  --pad-card-sm: 12px;    // compact rows, dense list items
+  --pad-control-y: 8px;   // pills, chips, filter buttons
+  --pad-control-x: 16px;
+  --pad-field-y: 12px;    // inputs, text fields (clears the WCAG tap target)
+  --pad-field-x: 16px;
+
+  // ---- gaps inside a component ----
+  --gap-tight: 8px;       // icon → label, chip internals
+  --gap-snug: 12px;       // control rows, header clusters
+  --gap-loose: 16px;      // separated groups within one surface
+
+  // ---- type scale. Roles, not t-shirt sizes: the name says what the step is
+  //      FOR, so the choice is visible at the call site. Five body steps, not
+  //      ten — the old scale ran 9/10/11/12/13/14/15/16/18/20, seven of them
+  //      one pixel apart, which is a gradient rather than a hierarchy: nobody
+  //      can see 10 against 11. The floor is 12px, up from 9 (Maryna
+  //      2026-08-28).
+  //
+  //      This is a RATIO scale and is deliberately NOT on the 4px rhythm grid.
+  --fs-caption: 12px;   // meta, tags, badges, captions, eyebrow caps
+  --fs-body:    14px;   // body and list text — the default
+  --fs-body-lg: 16px;   // control labels, row titles, subtitles
+  --fs-title:   18px;   // card and row titles
+  --fs-heading: 20px;   // compact heading
+
+  //      Display (League Spartan) — numerals and shouted names. Consolidated
+  //      from eight steps to five: 26 sat 2px off 24, and 30/34 and 40/44 were
+  //      pairs nobody could tell apart. The two anchors are TUNED and stay:
+  //      d-xs matches Antonio@24's footprint for section headers, d-2xl is the
+  //      hero score fitted to the card.
+  --fs-d-xs:  20px;   // section header
+  --fs-d-sm:  24px;   // large label, sub-scores, medium numerals
+  --fs-d-md:  32px;   // large name / score
+  --fs-d-lg:  40px;   // hero name
+  --fs-d-2xl: 54px;   // hero score numeral
+
+  // ---- line-heights (unitless) ----
+  --lh-tight: 1;
+  --lh-snug:  1.2;
+  --lh-body:  1.5;
+
+  // ---- video-player surface: an always-dark chrome, theme-independent (video
+  //      letterboxes to black in both light and dark app themes). Kept as tokens
+  //      so a white-label skin can retint the player without touching the pages.
+  --player-bg:    #000;   // letterbox behind the video
+  --player-frame: #111;   // poster / frame placeholder while loading
+
+  // PREMIUM — fixed yellow-gold, deliberately NOT a brand knob: premium is
+  // Halo platform language and reads the same under every client skin (Yoni).
+  --premium: #ffce3a;
+  --premium-ink: #221600;
+  --premium-deep: #e7a915;
+
+  // SYSTEM — OS-style control colours, also skin-independent: a toggle reads
+  // as a switch, not as brand (Yoni 2026-08-22).
+  --sys-green: #34c759;
+  --on-player:    #fff;   // text, icons and white UI elements over the player
+  --on-player-chip: #0e1512; // dark text sitting on a white chip inside the player
+
+  // ---- breakpoints (min-width). CSS custom props can't be read inside @media,
+  //      so these are the CANONICAL values to hardcode in min-width queries for
+  //      the desktop build (shared vocabulary for Maryna's responsive layer).
+  --bp-tablet:  768px;
+  --bp-desktop: 1280px;
+
+  // ---- stacking ladder (theme-independent). Only OVERLAY surfaces live on
+  //      this ladder; component-internal layering (z 1–15) stays local.
+  //      Convention: scrim sits AT the band value, its panel at band + 1
+  //      (+10 in the modal band, preserving the legacy 130/140 pair).
+  --z-header:   20;   // sticky back-bar / top chrome
+  --z-pop:      30;   // page-local popovers + their scrims (calendar, filters)
+  --z-drawer:   60;   // side drawer (menu-sheet)
+  --z-sheet:    70;   // bottom sheets / fullscreen takeovers (premium, story viewer)
+  --z-sheet-hi: 80;   // sheets that must top other sheets (share)
+  --z-modal:    130;  // blocking modals + confirms (settings dialogs, state-sheet)
+
+  // ---- motion (theme-independent). Interactive feedback = fast, standard
+  //      hover/state = med, entrances (sheets, drawers) = slow. Ambient loops
+  //      (marquees, orbits, ≥.7s emphasis) stay bespoke — they're choreography,
+  //      not UI feedback.
+  // ---- pressed. One scale for every clickable thing, overridable where the
+  //      surface is large: 3% off a 40px control reads as a press, 3% off a
+  //      302px card reads as a lurch, so cards set --press-scale locally.
+  --press-scale: .97;
+
+  --dur-fast: .12s;
+  --dur-med:  .15s;
+  --dur-slow: .3s;
+  --ease-spring:   cubic-bezier(.2, .8, .2, 1);    // playful overshoot-ish snap
+  --ease-out-soft: cubic-bezier(.16, 1, .3, 1);    // long decelerating settle
+}
+
+// ---- Script-aware type (i18n) ----
+// League Spartan and Inter carry Latin only, and LS ships ascent/descent
+// overrides tuned to its own caps (see _fonts.scss), so a fallback glyph inside
+// it sits in the wrong box. For Hebrew and Japanese the whole stack swaps to a
+// family that owns the script: Noto (loaded at boot by i18n.ts for that
+// language only) first, then the OS face. Display and body share one family
+// per script; neither script has a "condensed sports caps" tradition to mimic.
+:root:lang(he) {
+  --disp: 'Noto Sans Hebrew', 'Arial Hebrew', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --body: 'Noto Sans Hebrew', 'Arial Hebrew', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+:root:lang(ja) {
+  --disp: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+  --body: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+}
+
+
+// The wide layout puts the lockup in the brand panel, so the corner is free and
+// the mark goes back to the offset that composition was tuned for.
+@media (min-width: 768px) {
+  :root { --brand-mark-top: 56px; }
+}
+
+// Short viewports: the mark comes closer to the top on BOTH field screens at
+// once, so they stay aligned with each other.
+// From 768 only. Below it the chrome plate occupies that corner, and 20px put
+// the mark row straight under it — on a short PHONE the space this saved is
+// space something else is now using, so the page scrolls a little more instead
+// (Maryna 2026-08-31).
+@media (min-width: 768px) and (max-height: 700px) {
+  :root { --brand-mark-top: 20px; }
+}
+
+
+// Shared derivations — depend only on the knobs, so they hold for every skin
+// unless a skin overrides them explicitly.
+@mixin brand-derivations {
+  --accent-deep: color-mix(in srgb, var(--accent) 84%, #000);
+  // Both series take the accent (Maryna 2026-08-28).
+  //
+  // --c-def used to be var(--pos), which painted the whole Defence identity —
+  // trend line, legend swatch, section-header band — in the "good" STATUS token:
+  // #37d886 for both, byte for byte. The chart could not say "this is defence"
+  // apart from "this is good news", and when the delta turned red the line
+  // stayed success-green.
+  //
+  // The fix is one colour rather than a second hue, because there is nothing to
+  // tell apart: Offence and Defence are separate cards with ONE series each and
+  // are never plotted together, and each section is already named in words. A
+  // colour band repeating that is a second device doing the first one's job.
+  // It also means no per-skin, per-theme palette work: --accent is already tuned
+  // for legibility in both themes of every skin, and a hand-picked second hue
+  // was not (the brand purple manages only 2.9:1 on hoopstv's dark --screen,
+  // under the 3:1 WCAG 1.4.11 wants of a graphical object).
+  // The two tokens stay separate so a skin CAN differentiate later.
+  --c-off: var(--accent);
+  --c-def: var(--accent);
+  --brand-grad: linear-gradient(150deg, var(--secondary), var(--primary));
+  --brand-grad-ink: var(--on-primary);
+  --brand-ring: var(--primary);
+  --brand-core: var(--secondary);
+  --brand-core-ink: var(--on-secondary);
+
+  // Monogram plate — a club with NO logo file falls back to its initials, and
+  // those must NOT borrow the brand fill: --primary is reserved for a PERSON's
+  // number circle, so the two kinds stay tellable apart at rail size
+  // (2026-08-27). It is an ALIAS of the raised-surface token, not a colour of
+  // its own: the first cut mixed --ink into --screen and landed on a
+  // DESATURATED grey (#2a2934 on hoopstv dark) that read as foreign beside
+  // this skin's purple-tinted #1c1730 cards — and as grey beside BA's
+  // green-tinted ones. Riding --card2 makes the disc the same material as
+  // every card and icon chip, and each skin tints it for free.
+  --mono-plate: var(--card2);
+
+  // Brand FIELD — a full-screen saturated brand surface, deliberately dark in
+  // BOTH themes (a "keep-dark" branded takeover, like the SSO handoff). Two
+  // screens share it: sign-in, where the provider's white card floats on it,
+  // and the handoff right after, so the pair reads as one continuous handover
+  // instead of dark → purple → dark (2026-08-27). Derived from the knobs, so a
+  // white-label skin gets its own field (BA: deep green) with no literal — this
+  // replaces the hardcoded #3a0091 that used to live in sso.scss.
+  --brand-field: color-mix(in srgb, var(--primary) 55%, #050310);
+  --brand-field-glow: color-mix(in srgb, var(--secondary) 10%, transparent);
+}
+
+// ===========================================================================
+// BASE (neutral) · DARK  — the brand-agnostic default
+// ===========================================================================
+.halo[data-theme='dark'] {
+  // brand knobs (admin-editable; neutral defaults)
+  --primary: #5c86ff;
+  // Dark ink on the bright fill (BA-dark's gold+dark-ink pattern): white on
+  // #5c86ff is 3.33:1 across every filled control, dark ink is 5.72:1. The
+  // knob itself must stay bright — it doubles as text-accent on dark surfaces.
+  --on-primary: #08120c;
+  --secondary: #8b5cff;
+  --on-secondary: #ffffff;
+
+  // interactive accent = primary by default
+  --accent: var(--primary);
+  --on-accent: var(--on-primary);
+
+  --ink: #eef1f6;
+  --ink2: rgba(238, 241, 246, .60);
+  --ink3: rgba(238, 241, 246, .52);   // a11y: AA (4.5:1) on dark surfaces — was .40 (~3.5:1)
+  --ink4: rgba(238, 241, 246, .22);
+
+  --pos: #37d886;
+  --on-pos: #08120c;   // dark ink on the bright dark-theme green (AA)
+  --live: #ff5a5f;
+
+  --card: #16181d;
+  --card2: #1e2126;
+  --hair: rgba(255, 255, 255, .09);
+  --hair2: rgba(255, 255, 255, .055);
+  --band: rgba(255, 255, 255, .05);
+  --ring: rgba(255, 255, 255, .26);   // raised ring behind story avatars
+  --court: #14161a;
+  --courtline: rgba(255, 255, 255, .22);
+  --screen: #0b0c0f;
+
+  // elevation (per-theme): 1 = knobs/chips · 2 = cards/tiles · 3 = floating
+  // nav/popovers/hero cards · up = bottom sheets. --edge = hairline top-light
+  // on floats. Brand-accent GLOWS are not elevation — they stay color-mix'd.
+  --shadow-1:  0 4px 12px -4px rgba(0, 0, 0, .5);
+  --shadow-2:  0 8px 20px -10px rgba(0, 0, 0, .5);
+  --shadow-3:  0 20px 44px -18px rgba(0, 0, 0, .6);
+  --shadow-up: 0 -18px 50px -16px rgba(0, 0, 0, .55);
+  --edge: inset 0 1px 0 rgba(255, 255, 255, .07);
+  // image-overlay hue — scrims/veils mix from this (skins may tint it)
+  --scrim-ink: #000000;
+  --premium-text: #ffce3a;   // gold as TEXT on dark surfaces
+  --bg:
+    radial-gradient(128% 54% at 50% -16%, rgba(92, 134, 255, .16), transparent 60%),
+    radial-gradient(90% 42% at 50% 122%, rgba(139, 92, 255, .06), transparent 60%),
+    linear-gradient(180deg, #0d0e12 0%, #0a0b0e 55%, #08090b 100%);
+
+  @include brand-derivations;
+}
+
+// ===========================================================================
+// BASE (neutral) · LIGHT
+// ===========================================================================
+.halo[data-theme='light'] {
+  --primary: #3358ff;
+  --on-primary: #ffffff;
+  --secondary: #6a3fff;
+  --on-secondary: #ffffff;
+
+  --accent: var(--primary);
+  --on-accent: var(--on-primary);
+
+  --ink: #12141a;
+  --ink2: rgba(18, 20, 26, .62);
+  --ink3: rgba(18, 20, 26, .62);   // a11y: AA (4.5:1) on light surfaces — was .42 (~2.7:1)
+  --ink4: rgba(18, 20, 26, .26);
+
+  // a11y NOTE: on-tint text must clear AA on the DARKEST common surface
+  // (--screen #eef0f4), not just white — that's the binding constraint.
+  --pos: #0a7d43;   // fresher/brighter green (Yoni: light greens read too dark),
+                    // still AA: 4.6:1 as text on --screen, 5.2:1 white-on-fill
+  --on-pos: #fff;   // white ink on the light-theme green (dark ink would fail AA)
+  --live: #bd2226;  // 5.8:1 on --screen, 6.1 on white, 4.8 on the red tint (#efe1dd) — #c8272b read 4.48/4.35 as text on tinted surfaces (a11y audit 2026-09-02 G16)
+
+  --card: #ffffff;
+  --card2: #f2f4f7;
+  --hair: rgba(18, 22, 30, .12);
+  --hair2: rgba(18, 22, 30, .06);
+  --band: rgba(18, 22, 30, .05);
+  --ring: rgba(8, 30, 18, .16);
+  --court: #eef1f5;
+  --courtline: rgba(18, 22, 30, .24);
+  --screen: #eef0f4;
+
+  --shadow-1:  0 2px 8px -3px rgba(16, 24, 40, .14);
+  --shadow-2:  0 8px 20px -10px rgba(16, 24, 40, .14);
+  --shadow-3:  0 20px 44px -18px rgba(16, 24, 40, .22);
+  --shadow-up: 0 -18px 50px -16px rgba(16, 24, 40, .16);
+  --edge: inset 0 1px 0 rgba(255, 255, 255, .85);
+  --scrim-ink: #000000;
+  --premium-text: #8a6100;   // gold text needs a deep shade for AA on light
+  --bg:
+    radial-gradient(135% 70% at 50% -24%, rgba(51, 88, 255, .10), transparent 62%),
+    radial-gradient(95% 52% at 50% 122%, rgba(106, 63, 255, .06), transparent 62%),
+    linear-gradient(180deg, #f7f8fb 0%, #eef0f4 100%);
+
+  @include brand-derivations;
+}
+
+// ===========================================================================
+// SKIN · Volley TV — placeholder tenant brand for the volleyball click-dummy.
+// Coral #FF6B35 + Deep Teal #0F5C6E, ink #0B1A22. Dark is CORAL-led (the
+// bright-secondary pattern), light is TEAL-led. Measured 2026-09-08:
+// coral on dark screen 6.8:1 · ink on coral 6.3:1 · teal on light screen 7.1:1
+// · white on teal 7.6:1 (see A11Y-AUDIT.md).
+// ===========================================================================
+.halo[data-skin='volleytv'][data-theme='dark'] {
+  // ---- skin hooks (see the block at :root) ----
+  --section-ink: var(--accent);       // coral / teal section titles
+  --fed-crest-ink: var(--accent);     // region crests follow the accent
+  --fab-bg: #ff6b35;
+  --fab-ink: #0b1a22;
+  --fab-edge: transparent;
+
+  --primary: #0f5c6e;      // Volley TV deep teal
+  --on-primary: #ffffff;   // 7.6:1 on the teal fill
+  --secondary: #ff6b35;    // Volley TV coral
+  --on-secondary: #0b1a22; // ink — 6.3:1 on coral
+
+  // dark is CORAL-led → accent = secondary
+  --accent: var(--secondary);
+  --on-accent: var(--on-secondary);
+  --accent-deep: #d9531f;
+
+  --card: #121c21;
+  --card2: #182329;
+  --court: #101a1e;
+  --screen: #0a1014;
+  --bg:
+    radial-gradient(128% 54% at 50% -16%, rgba(255, 107, 53, .16), transparent 60%),
+    radial-gradient(90% 42% at 50% 122%, rgba(15, 92, 110, .14), transparent 60%),
+    linear-gradient(180deg, #0c1418 0%, #0a1014 55%, #070c0f 100%);
+
+  --scrim-ink: #061218;    // teal-ink scrim over imagery instead of black
+
+  --brand-grad: linear-gradient(150deg, #ff8a5c, #e0521c);
+  --brand-grad-ink: #0b1a22;
+}
+
+.halo[data-skin='volleytv'][data-theme='light'] {
+  // ---- skin hooks (see the block at :root) ----
+  --section-ink: var(--accent);
+  --fed-crest-ink: var(--accent);
+  --fab-bg: #ff6b35;
+  --fab-ink: #0b1a22;
+  --fab-edge: transparent;
+
+  --primary: #0f5c6e;
+  --on-primary: #ffffff;
+  --secondary: #ff6b35;
+  --on-secondary: #0b1a22;
+
+  // light is TEAL-led → accent = primary (7.1:1 on --screen)
+  --accent: var(--primary);
+  --on-accent: var(--on-primary);
+  --accent-deep: #0a4452;
+
+  // surfaces: a whisper of cool teal, never grey-blue
+  --card: #ffffff;
+  --card2: #f1f6f6;
+  --court: #edf3f3;
+  --screen: #f4f8f8;
+  --bg:
+    radial-gradient(135% 70% at 50% -24%, rgba(15, 92, 110, .10), transparent 62%),
+    radial-gradient(95% 52% at 50% 122%, rgba(255, 107, 53, .07), transparent 62%),
+    linear-gradient(180deg, #fbfdfd 0%, #f4f8f8 100%);
+
+  --scrim-ink: #082a33;
+
+  --brand-grad: linear-gradient(150deg, #1a7d92, #0a4452);
+  --brand-grad-ink: #ffffff;
+}
+
+// ===========================================================================
+// Layer-2 accessibility preferences (PT AccessibilityPanel port) — applied by
+// the shell as data attributes from A11yPrefs; first-party token re-derivation.
+// ===========================================================================
+.halo[data-a11y-text='large'] {
+  // One step up the ladder for readable text. The display scale lifts only
+  // where it carries WORDS (section headers, page titles) — the rest of it is
+  // score numerals fitted to their cards, and growing those breaks the layout
+  // without helping anyone read.
+  --fs-caption: 13px;
+  --fs-body:    16px;
+  --fs-body-lg: 18px;
+  --fs-title:   20px;
+  --fs-heading: 22px;
+  --fs-d-xs:    22px;
+  --fs-d-sm:    26px;
+}
+// Extra large — third step: another ~2px per token (~+30% over base).
+//
+// This block used to set --fs-xs / --fs-sm / --fs-md / --fs-lg / --fs-lg2 /
+// --fs-xl / --fs-2xl / --fs-3xl: token names from an earlier scale that nothing
+// reads any more. So it overrode nothing, and because the three text steps are
+// separate attribute selectors rather than a cascade, xlarge did not inherit
+// `large` either — it fell all the way back to the BASE scale. Turning the text
+// up from Large to Extra large made it SMALLER, which is the one thing an
+// accessibility control must never do (Maryna 2026-08-30).
+.halo[data-a11y-text='xlarge'] {
+  --fs-caption: 14px;
+  --fs-body:    18px;
+  --fs-body-lg: 20px;
+  --fs-title:   22px;
+  --fs-heading: 24px;
+  --fs-d-xs:    24px;
+  --fs-d-sm:    28px;
+}
+.halo[data-a11y-contrast='high'] {
+  --ink2: color-mix(in srgb, var(--ink) 88%, transparent);
+  --ink3: color-mix(in srgb, var(--ink) 80%, transparent);
+  --hair: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.halo[data-a11y-motion='reduce'] *,
+.halo[data-a11y-motion='reduce'] *::before,
+.halo[data-a11y-motion='reduce'] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+  scroll-behavior: auto !important;
+}
+
+// From the split-screen band the lockup owns a tall panel of its own and steps up.
+// One value, so both auth screens step together. Declared at the END of the file
+// on purpose: it targets :root exactly like the base value above, so specificity
+// cannot break the tie and source order is the only thing that decides.
+@media (min-width: 1024px) {
+  :root { --auth-lockup-w: 220px; }
+}

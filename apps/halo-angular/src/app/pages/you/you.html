@@ -1,0 +1,318 @@
+<div class="you halo-page halo-wide">
+  <div class="topbar">
+    <halo-status-bar time="9:30" />
+    <halo-app-top-bar activeNav="you" />
+  </div>
+
+  <h1 class="sr-only">{{ 'you.srTitle' | t: { name: selProfile().name } }}</h1>
+
+  <!-- Two panes from 1024. `display: contents` below that, so the phone keeps
+       the single column it has always had (Maryna 2026-08-30). -->
+  <div class="ymain halo-split">
+  <aside class="yrail halo-split-rail">
+  <!-- One panel, not three loose blocks: crest, name, team and the season
+       figures read as a single player card (Maryna 2026-08-30). -->
+  <div class="ycard">
+
+  <!-- Child picker (PT ProfileSwitchCluster) — parents switch whose profile
+       the You tab shows: You (when also an athlete) + the linked kids.
+       PARENTS ONLY (2026-08-27): a multi-team athlete switches TEAMS, and that
+       now happens on the card's team line, where the value being changed is
+       actually shown. -->
+  @if (showSwitcher() && !switcherIsTeam()) {
+    <div class="kidswitch">
+      <button class="ks-pill" type="button" [attr.aria-expanded]="switcherOpen()"
+        aria-haspopup="listbox" (click)="switcherOpen.set(!switcherOpen())">
+        <span class="ks-avs" aria-hidden="true">
+          @for (p of profiles(); track p.id) { <span class="ks-av">{{ p.avatar }}</span> }
+        </span>
+        {{ selProfile().pill }}
+        <halo-icon class="halo-chev" name="chevron-down" [size]="12" />
+      </button>
+      @if (switcherOpen()) {
+        <button class="ks-away" type="button" [attr.aria-label]="switcherIsTeam() ? ('you.closeTeamPicker' | t) : ('you.closeProfilePicker' | t)" (click)="switcherOpen.set(false)"></button>
+        <div class="ks-menu" role="listbox" [attr.aria-label]="switcherIsTeam() ? ('you.whichTeam' | t) : ('you.whoseProfile' | t)">
+          @for (p of profiles(); track p.id) {
+            <button class="ks-opt" type="button" role="option" [attr.aria-selected]="p.id === selProfile().id"
+              [class.on]="p.id === selProfile().id" (click)="pickProfile(p.id)">
+              <span class="ks-av big">{{ p.avatar }}</span>
+              <span class="ks-txt"><span class="ks-nm">{{ switcherIsTeam() ? p.pill : (p.id === 'self' ? ('common.you' | t) + ' · ' + p.name : p.name) }}</span><span class="ks-mt">{{ p.team }}</span></span>
+              @if (p.id === selProfile().id) { <halo-icon name="check" [size]="15" /> }
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Identity + active team. The team line opens the picker when the athlete
+       has more than one team; with one it's a plain line. -->
+  <halo-profile-identity
+    [name]="selProfile().name" [number]="selProfile().number"
+    [metaLines]="selProfile().metaLines"
+    [teams]="identityTeams()" [activeTeamId]="activeTeamId()"
+    (pick)="pickTeam($event)"
+    [teamLinks]="teamLinks" (openTeam)="openTeamId($event)" />
+
+    <!-- The athlete's headline numbers, under the name that owns them, at EVERY
+         width. There used to be a second copy inside the Stats tab and CSS
+         picked one per band, which meant the phone's only copy sat behind a tab
+         that Basic is not offered: the same athlete saw their averages on a
+         desktop and nowhere on their phone (Maryna 2026-08-31). One copy, in the
+         card, so the figures are also on screen while you browse CLIPS. -->
+    @if (!statsEmpty()) {
+      <halo-stat-grid class="avg" [label]="'you.averages' | t" [cells]="season()" [flush]="true" />
+    }
+  </div>
+  </aside>
+
+  <div class="ycontent halo-split-main">
+  <!-- Level 1 (page sections) is the filled pill since 2026-08-27; level 2
+       below it is the quieter underline row. -->
+  <!-- One account with nothing in it yet, so one message. The Clips/Stats
+       switcher and the filters under it go with the content they operate on:
+       offering a choice between two identical empty tabs is worse than offering
+       none (Maryna 2026-08-30). The rail stays — the name and the team are still
+       true, and they are what makes this a page rather than a blank. -->
+  @if (allEmpty()) {
+    <div class="you-blank">
+      <halo-empty-state icon="games" [title]="'you.nothingYet' | t"
+        [sub]="'you.emptyAll' | t" />
+    </div>
+  } @else {
+  <!-- One option is not a choice: with Stats withheld the strip would be a
+       single pill that does nothing when tapped. -->
+  @if (tabOptions().length > 1) {
+    <div class="l1tabs halo-split-tabs">
+      <halo-segmented-toggle [options]="tabOptions()" [value]="effectiveTab()" (valueChange)="setTab($event)" />
+    </div>
+  }
+
+  @switch (effectiveTab()) {
+    @case ('Stats') {
+      @if (statsEmpty()) {
+        <!-- Stats and clips arrive from different places — footage is cut, stats
+             are scored by an official — so either can be empty while the other
+             is not. The card's copy of the averages goes with it; a panel of
+             figures beside "no stats yet" is the page contradicting itself
+             (Maryna 2026-08-30). -->
+        <halo-empty-state icon="chart" [title]="'you.nothingYet' | t"
+          [sub]="'you.emptyStats' | t" />
+      } @else {
+      <!-- Stacked, not paired. Side by side halved each chart's width, and the
+           season trend is the one thing on this tab that reads better wide:
+           you are tracking a shape over 20 games (Maryna 2026-08-30). -->
+      <!-- Offence, the ad, the shot map, then Defence (Maryna 2026-08-30). The
+           ad sits after the first section rather than after both, so it breaks
+           ONE run of dense analytics instead of following two of them, and the
+           shot map — a picture — is what the reader lands on next. Defence closes
+           the tab. This order is in the template, so it is the same at every
+           width; nothing in CSS reorders these blocks. -->
+      <halo-section-header [title]="'you.offence' | t" [sub]="'you.offenceSub' | t" tone="accent" />
+      <halo-blur-lock [locked]="!premium()" [title]="'you.offencePremium' | t"
+        [note]="'you.offencePremiumNote' | t" (upgrade)="openUpgrade()">
+        <halo-analytics-card [gauge]="offGauge" [tiles]="offTiles" [chart]="offChart"
+          [statData]="offStatData" />
+      </halo-blur-lock>
+
+      <div class="halo-ad-wrap">
+        <halo-ad-slot creative="img/ads/asics-2.webp" sponsor="ASICS" href="#" />
+      </div>
+
+      <halo-section-header [title]="'you.shotMap' | t" [sub]="'you.shotMapSub' | t" tone="accent" />
+      <halo-blur-lock class="inset" [locked]="!premium()" [title]="'you.shotMapPremium' | t"
+        [note]="'you.shotMapPremiumNote' | t" (upgrade)="openUpgrade()">
+        <halo-shot-map [shotType]="'stat.kill' | t" />
+      </halo-blur-lock>
+
+      <halo-section-header [title]="'you.defence' | t" [sub]="'you.defenceSub' | t" tone="def" />
+      <halo-blur-lock [locked]="!premium()" [title]="'you.defencePremium' | t"
+        [note]="'you.defencePremiumNote' | t" (upgrade)="openUpgrade()">
+        <halo-analytics-card [gauge]="defGauge" [tiles]="defTiles" [chart]="defChart" />
+      </halo-blur-lock>
+      }
+    }
+
+    @case ('Clips') {
+      <!-- Filter bar — Source TOGGLE + Game · Date pills (Yuval 2026-08-23).
+           Coaches only have My clips, so the toggle hides for them. -->
+      <!-- Source is a connected segmented toggle on its own row; Game + Date
+           filters sit on the row below (Yuval 2026-08-23). -->
+      @if (!caps().isCoach) {
+        <div class="clip-src">
+          <halo-segmented-toggle mode="tabs" [options]="SRC_OPTS" [value]="srcSel()"
+            (valueChange)="srcSel.set($any($event))" />
+        </div>
+      }
+
+      <!-- Game · Date, on the SHARED filter bar. This page used to draw its own
+           pill, menu, backdrop, checkbox and radio — about ninety lines that
+           restated the bar, which is why the find field would have had to be
+           written twice (Maryna 2026-08-31). Date is a one-of list, so it comes
+           through as `single` with "All time" as its no-filter default. -->
+      <halo-event-filter-bar
+        [categories]="clipCategories()" [selected]="clipSelected()"
+        (toggleOption)="setClipFilter($event.cat, $event.value)" (clear)="clearFilters()" />
+
+      <!-- Per-game folders. -->
+      <!-- Two empties, and they are not the same thing. A filter that matched
+           nothing is the user's own doing and Clear undoes it; NO CONTENT is the
+           account's state and there is nothing to clear. The single branch that
+           used to be here offered "Clear filters" to someone who had set none
+           (Maryna 2026-08-30). -->
+      @if (filteredGames().length === 0) {
+        @if (filterActive()) {
+          <halo-empty-state icon="search" [title]="'you.noClipsMatch' | t"
+            [sub]="'you.noClipsMatchSub' | t">
+            <halo-button variant="glass" size="sm" (press)="clearFilters()">{{ 'cta.clearFilters' | t }}</halo-button>
+          </halo-empty-state>
+        } @else {
+          <halo-empty-state icon="play" [title]="'you.nothingYet' | t"
+            [sub]="'you.emptyClips' | t" />
+        }
+      } @else {
+        <div class="clip-folders">
+          @for (g of shownGames(); track g.id) {
+            <div class="folder" [class.open]="isFolderOpen(g.id)">
+              <div class="fold-head">
+                <!-- The whole row used to be role=button with the overflow <button> inside it
+                     (nested-interactive, 4.1.2). Now the toggle is a real button and the
+                     overflow trigger is its sibling (a11y audit 2026-09-02 G6). -->
+                <button class="fold-toggle" type="button" [attr.aria-expanded]="isFolderOpen(g.id)" (click)="toggleFolder(g.id)">
+                <halo-icon class="fh-chev halo-chev" name="chevron-down" [size]="14" />
+                <span class="fh-main">
+                  <!-- Plain text: the row itself is the toggle, so a link in it
+                       would make one tap mean two things (2026-08-27). -->
+                  <span class="fh-title">{{ 'you.vsOpponent' | t: { team: g.opponent } }}</span>
+                  <span class="fh-chips">
+                    <span class="fh-chip gold"><halo-score [pair]="g.score" /></span>
+                    <span class="fh-chip">{{ g.dateLabel }}</span>
+                    <span class="fh-chip">{{ plural(g.clips.length, 'count.clip1', 'count.clipN') }}</span>
+                  </span>
+                </span>
+                </button>
+                <!-- Overflow instead of two icon-only circles (2026-08-27) — the
+                     labels inside say what each action does; see you.ts. -->
+                <!-- The actions area swallows clicks. Anything that lands here
+                     was aimed at the overflow button, and a near-miss must do
+                     nothing rather than collapse the folder behind it. -->
+                <div class="fh-actions" (click)="$event.stopPropagation()">
+                  <button class="fh-more" type="button"
+                          [attr.aria-label]="'you.moreActions' | t: { team: g.opponent }"
+                          aria-haspopup="menu" [attr.aria-expanded]="isMenuOpen(g.id)"
+                          (click)="$event.stopPropagation(); toggleMenu(g.id)">
+                    <halo-icon name="more" [size]="16" />
+                  </button>
+                  @if (isMenuOpen(g.id)) {
+                    <button class="fh-away" type="button" [attr.aria-label]="'you.closeMenu' | t"
+                            (click)="$event.stopPropagation(); closeMenu()"></button>
+                    <!-- Destinations, not sentences. "Go to the game page" wrapped
+                         onto a second line here, and the verb was redundant
+                         anyway: choosing a menu item IS the going. Matches the
+                         app's other menus — "Manage following", "Coach admin",
+                         "Account & profile" (2026-08-28). The player's inline
+                         link keeps its verb: it sits in prose, not in a list. -->
+                    <div class="fh-menu" role="menu">
+                      <button class="fh-mitem" type="button" role="menuitem"
+                              (click)="$event.stopPropagation(); menuOpenGame()">
+                        <halo-icon name="scoreboard" [size]="15" /> {{ 'you.gamePage' | t }}
+                      </button>
+                      <button class="fh-mitem" type="button" role="menuitem"
+                              (click)="$event.stopPropagation(); menuEditClips()">
+                        <halo-icon name="edit" [size]="15" /> {{ 'common.editor' | t }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Always in the DOM, and inert while collapsed. An @if cannot be
+                   animated: the node arrived at full height in one frame, which
+                   measured as an instant 420px shove of everything below it
+                   (Maryna 2026-08-30). -->
+              <div class="fold-body" [inert]="!isFolderOpen(g.id)">
+                <div class="fold-clip">
+                <div class="fold-inner">
+                  <!-- Vertical moments. Create prompt when there are none —
+                       a coach's game moments are always empty (Create reel). -->
+                  <div class="clip-grid halo-reel-grid" haloGridColumns (columns)="clipCols.set($event)">
+                    @if (g.clips.length === 0) {
+                      <button class="create-tile" type="button" [attr.aria-label]="caps().isCoach ? ('you.createReelA11y' | t) : ('you.createClipA11y' | t)" (click)="notYetEditor()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5z" /></svg>
+                        <span>{{ caps().isCoach ? ('you.createReel' | t) : ('you.createClip' | t) }}</span>
+                      </button>
+                    }
+                    @for (c of clipsOf(g); track c.title) {
+                      <button class="clip-tile halo-media-card" type="button" [class.locked]="clipLocked(c)"
+                        [attr.aria-label]="clipLocked(c) ? ('common.premiumUpgradeA11y' | t: { title: c.title }) : (c.title + ', ' + c.dur)"
+                        (click)="onClipTap(c)">
+                        <span class="ct-th">
+                          <img [src]="c.thumb" alt="" loading="lazy" />
+                          <span class="ct-scr" aria-hidden="true"></span>
+                          <span class="ct-dur num" aria-hidden="true">{{ c.dur }}</span>
+                          @if (clipLocked(c)) {
+                            <span class="ct-lock" aria-hidden="true"><span class="lk-disc"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.2L17.6 20 12 16.4 6.4 20 8 13.2 3 9l6.4-.7L12 2z"/></svg></span><span class="lk-w">{{ 'common.premium' | t }}</span></span>
+                          } @else {
+                            <span class="ct-play halo-media-play" aria-hidden="true"><halo-icon name="play" [size]="15" /></span>
+                            <!-- Download is a My-clips affordance only — AI Moments are auto-generated, not exports (Yuval 2026-08-24). -->
+                            @if (srcMode() === 'my') {
+                              <span class="ct-dl" role="button" tabindex="0" [attr.aria-label]="'you.downloadA11y' | t: { title: c.title }"
+                                (click)="$event.stopPropagation(); downloadClip(c)"
+                                (keydown.enter)="$event.stopPropagation(); downloadClip(c)"><halo-icon name="download" [size]="14" /></span>
+                            }
+                          }
+                        </span>
+                        <span class="ct-ft"><span class="ct-title">{{ c.title }}</span></span>
+                      </button>
+                    }
+                  </div>
+                  <!-- One folder is one game, so "all of it" is a knowable
+                       number and the grid reveals in place. Same control as the
+                       game page's moments. -->
+                  @if (clipsHidden(g) > 0 || clipsAllShown(g)) {
+                    <!-- aria-expanded, not a swapped icon name: the global
+                         `[aria-expanded='true'] .halo-chev` rule already turns the
+                         chevron, and the attribute is what tells a screen reader
+                         the state, which a changed label alone does not. -->
+                    <button class="halo-more" type="button" [attr.data-clips-toggle]="g.id"
+                      [attr.aria-expanded]="clipsAllShown(g)" (click)="toggleAllClips(g.id)">{{ clipsAllShown(g) ? ('fol.showLess' | t) : ('you.showAllClips' | t: { n: g.clips.length }) }}
+                      <halo-icon [name]="clipsAllShown(g) ? 'chevron-up' : 'chevron-down'" [size]="14" /></button>
+                  }
+
+                  <!-- Horizontal (16:9) videos row — MY-CLIPS mode only (the
+                       vertical+horizontal mix); AI moments stay vertical-only.
+                       No divider text (Yuval 2026-08-23). -->
+                  @if (srcMode() === 'my' && g.videos.length) {
+                    <div class="th-rail">
+                      @for (v of g.videos; track v.title) {
+                        <halo-rail-card [title]="v.title" [sub]="v.kind" [duration]="v.dur" [thumb]="v.thumb" (open)="openVod(v.kind, v.dur)" />
+                      }
+                    </div>
+                  }
+                </div>
+                </div>
+              </div>
+            </div>
+          }
+            @if (foldersLeft() > 0) {
+              <!-- Inside the folder list, so the container's inset and gap apply
+                   rather than a rule of this control's own. Folders are games and
+                   a season is a long list of them, so this pages rather than
+                   revealing everything at once. -->
+              <button class="halo-more" type="button" (click)="loadMoreFolders()">{{ 'common.loadMore' | t }}
+                <halo-icon name="chevron-down" [size]="14" /></button>
+            }
+        </div>
+      }
+    }
+
+  }
+  }
+
+  </div>
+  </div>
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav active="you" (select)="tabNav.go($event)" />
+  </div>
+</div>

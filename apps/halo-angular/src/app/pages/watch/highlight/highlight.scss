@@ -1,0 +1,457 @@
+:host { display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+// Off on the phone: there is no surround there to fill.
+.ambient { display: none; }
+
+// Inside the app shell the flex chain (.shell → .halo-main → :host) hands us
+// the viewport MINUS the dev bar — a hard 100dvh here overshoots it and cuts
+// the bottom CTA off-screen (Yoni 2026-08-23). The dvh floor still covers
+// standalone contexts (Storybook renders the page without the shell).
+.hv {
+  position: relative;
+  flex: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--player-bg);
+  color: var(--on-player);
+  overflow: hidden;
+}
+:host-context(.shell) .hv { min-height: 0; }
+
+// Below 768 the deck contributes nothing: `display: contents` leaves .hv the
+// host's direct child, so the phone layout is exactly what it was. The
+// neighbours and the corner close are hidden rather than absent, so the same
+// markup serves both widths (see the .deck block under the 768 media query).
+.deck { display: contents; }
+.side, .nav, .deckx { display: none; }
+
+.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--scrim-ink) 50%, transparent) 0%, transparent 18%, transparent 42%,
+    color-mix(in srgb, var(--scrim-ink) 50%, transparent) 62%, color-mix(in srgb, var(--scrim-ink) 82%, transparent) 82%, color-mix(in srgb, var(--scrim-ink) 95%, transparent) 100%);
+}
+
+.segs {
+  position: absolute;
+  top: 14px;
+  inset-inline: 0;
+  z-index: 5;
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+}
+.seg { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .28); overflow: hidden; }
+.seg .fill { display: block; width: 0; height: 100%; border-radius: 3px; background: var(--on-player); }
+.seg .fill.done { width: 100%; }
+.seg .fill.on { width: 100%; }
+
+.top {
+  position: absolute;
+  top: 28px;
+  inset-inline: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+}
+.topright { display: flex; align-items: center; gap: var(--gap-snug); }
+.section {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--on-player);
+  background: rgba(0, 0, 0, .6);   /* was .32: white text over a bright court frame bottomed out at 2.2:1 (a11y audit 2026-09-02 G34) */
+  padding-block: var(--space-1) var(--space-1); padding-inline: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.section .jz {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+}
+.ix {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  color: rgba(255, 255, 255, .82);
+  background: rgba(0, 0, 0, .66);   /* .66 for the lighter index ink (4.49 at .6); was .32: white text over a bright court frame bottomed out at 2.2:1 (a11y audit 2026-09-02 G34) */
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+// Close (✕) and Share now use the shared <halo-icon-button> atom (surface).
+
+.zone {
+  position: absolute;
+  top: 70px;
+  bottom: 120px;
+  z-index: 4;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.zone.left { inset-inline-start: 0; width: 32%; }
+.zone.right { inset-inline-end: 0; width: 68%; }
+
+.cap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 5;
+  padding: 0 var(--pad-x) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-snug);
+}
+.titleblock { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-tight); }
+.ttl {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-sm);
+  line-height: 1.02;
+  letter-spacing: -.005em;
+  text-transform: uppercase;
+  color: var(--on-player);
+}
+.yours {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--on-accent);
+  background: var(--accent);
+  padding: 3px var(--space-2);
+  border-radius: 6px;
+}
+// Teammate's reel — same slot, quiet treatment: the accent fill is the "this
+// is yours" signal, so someone else's reel must not borrow it.
+.yours.other {
+  color: rgba(255, 255, 255, .88);
+  background: rgba(255, 255, 255, .14);
+}
+.team { font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: rgba(255, 255, 255, .82); }
+
+.scorecard {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  background: rgba(0, 0, 0, .6);   /* was .34 — see G34 */
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--r-card-sm);
+  padding: var(--space-3) var(--space-3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.scorecard .tm {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  flex: 1;
+  min-width: 0;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--on-player);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scorecard .tm.r { justify-content: flex-end; }
+.scorecard .crest {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--on-player);
+  color: var(--on-player-chip);
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+}
+// Size, weight and colour only — halo-score owns the face and the dash.
+.scorecard .sc {
+  flex: none;
+  font-weight: 800;
+  font-size: var(--fs-title);
+  color: var(--on-player);
+}
+
+.actions { display: flex; align-items: center; gap: var(--gap-snug); margin-top: var(--space-1); }
+.full {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-body);
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--r-field);
+  padding: var(--space-4) var(--space-5);
+}
+
+/* ---- Tier gating (own reel) ---- */
+/* Locked slide: the moment's own footage reads as REAL through a light blur
+   (PT/Yuval v11 — you buy what you can almost see). */
+.bg.blur { filter: blur(7px) saturate(1.08); transform: scale(1.06); }
+
+/* Warm gold frost over the blurred footage — play reads through, pitch card
+   stays legible over the bottom. */
+.goldfrost {
+  position: absolute; inset: 0; z-index: 6; pointer-events: none;
+  background: linear-gradient(180deg, rgba(10, 12, 18, .12) 0%, rgba(16, 12, 6, .34) 46%, rgba(6, 8, 13, .74) 100%);
+}
+
+/* Gold premium progress segments (dig/block). */
+.seg:has(.fill.premium) { background: color-mix(in srgb, var(--premium) 30%, transparent); }
+.seg .fill.premium { background: var(--premium); }
+
+/* Ticket stub — the locked moment as an event ticket (Yoni's pick). Gold side
+   rail with vertical PREMIUM, body with title + meta, perforated tear-off
+   holding the CTA. Gold is the fixed --premium token, so no client skin
+   re-tints the premium language automatically. */
+.lockwrap {
+  position: absolute;
+  inset-inline-start: 24px; inset-inline-end: 24px; bottom: 170px;
+  z-index: 7;
+  margin: 0 auto;
+  max-width: 330px;
+  display: flex;
+  flex-direction: column;
+  animation: lockcard-in var(--dur-slow) var(--ease-out-soft) both;
+}
+@keyframes lockcard-in { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lockwrap { animation: none; } }
+
+/* Terminal upsell end-card — same ticket language, centred on a dim veil. */
+.endcard {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--space-7);
+  background: rgba(6, 8, 6, .9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.endcard halo-premium-ticket { width: 100%; max-width: 330px; }
+
+
+// ---------------------------------------------------------------------------
+// A vertical reel is a vertical stage.
+//
+// PRODUCT.md is explicit that format follows content meaning: game footage is
+// horizontal 16:9, an athlete's own reel is vertical 9:16, and the two are not
+// interchangeable. This page was letting the second one behave like the first —
+// at 1440 the 9:16 clip filled a 1440x900 landscape frame, the story chrome ran
+// the full viewport, and the one call to action was a 1500px-wide button.
+//
+// Nothing inside .hv had to change: every piece of chrome here is positioned
+// against it, so bounding the stage brings the progress segments, the index,
+// the caption and the CTA back with it (Maryna 2026-08-29).
+// ---------------------------------------------------------------------------
+@media (min-width: 768px) {
+  :host {
+    // GRID, not flex, for one reason: the deck's children size themselves as a
+    // fraction of its height (the reel fills it, a neighbour takes 58% of it),
+    // and a percentage needs a definite height to resolve against. A flex item
+    // sized by `flex-grow` does not give one — measured, `.hv` came out 0x0 and
+    // the neighbour stretched to full height instead. A grid TRACK does
+    // (Maryna 2026-08-30).
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+
+    // A DEFINITE height, the same fix the two players needed. Nothing in the
+    // chain above had one — `.shell` carries `min-height: 100dvh`, a floor —
+    // so the grid track fell back to its CONTENT, the reel sized itself to
+    // that, and the page grew 76px past the viewport with a scrollbar to
+    // match. With the height stated, the track is a real fraction of the room
+    // the app actually left, and every percentage under it means something.
+    // Both bar tokens read 0 when their bar is absent (Maryna 2026-08-30).
+    :host-context(.shell) & {
+      height: calc(100dvh - var(--devbar-h, 0px) - var(--topbar-h, 0px));
+    }
+    background: var(--player-bg);
+    // Room for the frame to be a frame. Flush to the viewport its rounded
+    // corners read as a crop rather than an edge, and the 16px costs the stage
+    // 18px of width at 1024 tall.
+    padding-block: var(--space-4);
+  }
+
+  .ambient {
+    display: block;
+    position: absolute;
+    // Past the edges on purpose: a blur samples beyond its own box and would
+    // otherwise feather to transparent at the frame.
+    inset: -8%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(48px) saturate(1.4) brightness(.42);
+    // The reel changes clip every few seconds; crossing between two frames is
+    // one authored moment, not an entrance effect on every element.
+    transition: background-image var(--dur-slow) ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ambient { transition: none; }
+  }
+
+  // The deck becomes the row. The reel keeps the middle; the neighbouring reels
+  // and their arrows take the room either side of it, which on a landscape
+  // window is room the 9:16 frame cannot use anyway.
+  .deck {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    height: 100%;
+    min-height: 0;
+  }
+
+  .hv {
+    // Bounded by HEIGHT, not width: a desktop window is wider than it is tall,
+    // so the height is what the stage has to fit inside.
+    flex: 0 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: 9 / 16;
+    border-radius: var(--r-card);
+    // Reads as a lit stage against the ambient surround rather than a hole in
+    // it. Colourless, per the shadow rule.
+    box-shadow: var(--shadow-3);
+  }
+
+  // A NEIGHBOURING REEL — from 1024, where the window is landscape and there is
+  // room beside a 9:16 frame. At 768-1023 the reel already takes most of the
+  // width and the neighbours were sliced in half by the viewport edge, name and
+  // all, which advertises a card you cannot read (Maryna 2026-08-30). The
+  // arrows stay at every desktop width, so switching reels never depends on
+  // them being visible.
+  @media (min-width: 1024px) {
+    .side {
+      display: block;
+      position: relative;
+      flex: none;
+      height: 58%;
+      aspect-ratio: 9 / 16;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      border-radius: var(--r-card-sm);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--card);
+      opacity: .5;
+      transition: opacity var(--dur-med) ease;
+    }
+    @media (hover: hover) {
+      .side:hover { opacity: .85; }
+    }
+    .side:focus-visible { opacity: .85; }
+    .side img { width: 100%; height: 100%; object-fit: cover; }
+    // The name sits ON the card, over a scrim, the way the reel's own caption
+    // does — a label under it would need room the row does not have.
+    .side-t {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      padding: var(--space-6) var(--space-3) var(--space-3);
+      font-family: var(--disp);
+      font-weight: 700;
+      font-size: var(--fs-body);
+      color: var(--on-player);
+      text-align: start;
+      background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--scrim-ink) 80%, transparent));
+    }
+  }
+
+  // The arrow in the gap. Placed BETWEEN the neighbour and the reel rather than
+  // over either, so it never covers footage and never needs to know how wide
+  // the 9:16 frame turned out to be.
+  .nav {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: rgba(255, 255, 255, .1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--on-player);
+    cursor: pointer;
+    transition: background var(--dur-fast) ease;
+  }
+  @media (hover: hover) {
+    .nav:hover { background: rgba(255, 255, 255, .2); }
+  }
+
+  // Single-clip mode: no neighbours, and no reserved slots either — the clip
+  // takes the middle of the full width the way any other player would.
+  .deck.solo .side,
+  .deck.solo .nav { display: none; }
+
+  // Either end of the deck: the slot keeps its box so the reel stays centred
+  // instead of sliding sideways on the first and last player.
+  .nav.ghost { visibility: hidden; }
+  @media (min-width: 1024px) {
+    .side.ghost { visibility: hidden; }
+  }
+
+  // The page's close, in the page's corner — the reel's own stands down here.
+  .deckx {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: var(--space-4);
+    inset-inline-end: var(--space-4);
+    z-index: 5;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: rgba(255, 255, 255, .1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--on-player);
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .deckx:hover { background: rgba(255, 255, 255, .2); }
+  }
+  // One exit per width: the reel's own close is for the phone, where there is
+  // no page around the reel to put a corner in.
+  .top .topright halo-icon-button { display: none; }
+}

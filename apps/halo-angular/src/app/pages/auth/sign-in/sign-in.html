@@ -1,0 +1,109 @@
+<!-- Default sign-in = the identity provider's own card, embedded 1:1 (their
+     page, never restyled or re-themed by us, in either mode), floating on the
+     shared brand FIELD. One field, one object: no brand card of ours above it,
+     because their card is already a card and our boxed lockup is another one —
+     stacked, the screen read as three nested plates (2026-08-27). The field is
+     the same surface the SSO handoff uses, so tapping through continues on the
+     same colour instead of cutting back to the dark canvas.
+     Both the email and the one-time code are entered inside THEIR page, so our
+     email/code screens are not in this flow: the tap stands in for the whole
+     provider round-trip and lands where their redirect would. -->
+@if (stage() === 'preview') {
+<div class="idpfield">
+  <h1 class="sr-only">{{ 'auth.signInToHalo' | t }}</h1>
+
+  <button class="if-tap" type="button" (click)="enterIdp()">
+    <!-- The OFFICIAL lockup, same pairing and proportion as the app header
+         (brandmark : wordmark = 20 : 13, 7px gap), scaled up for this screen.
+         Green colorway in BOTH themes: the field is a keep-dark surface, so the
+         header's purple-on-light swap must not follow it here. -->
+    <span class="if-mark">
+      <!-- Two lockups, one shown at a time. The horizontal pair keeps the
+           header's proportion on a phone, where the mark sits in a narrow
+           column; the split panel is tall and empty beside it, so there it
+           takes the official STACKED lockup instead — the same artwork the
+           other auth screens already use (Maryna 2026-08-29). -->
+      @if (brandmarkSrc()) { <img class="if-bm" [src]="brandmarkSrc()" alt="" /> }
+      <!-- Guarded: a runtime logo override (DEV bar) fills the brandmark and
+           blanks the wordmark, and an empty src renders as a broken-image glyph. -->
+      @if (wordmarkSrc()) { <img class="if-wm" [src]="wordmarkSrc()" [alt]="clientName()" /> }
+      <img class="if-lockup" [src]="logoSrc()" [alt]="clientName()" />
+    </span>
+    <!-- The mark holds the top; everything under it centres in the remaining
+         space, so the lockup lands at the same y as on the handoff screen at
+         ANY viewport height. -->
+    <span class="if-body">
+      <span class="if-title">{{ 'auth.signInWith' | t: { idp: idpName() } }}</span>
+
+      <!-- DEV: the provider's IFRAME goes here. This is a picture of their card,
+           standing in for it — nothing in it can be typed into, and the hint
+           below says as much. See halo-auth-embed for the whole story. -->
+      <halo-auth-embed class="if-card" [shotSrc]="idpShotSrc()" />
+
+      <span class="if-hint">{{ idpHint() }} <span aria-hidden="true">&rarr;</span></span>
+    </span>
+  </button>
+</div>
+}
+
+<!-- Our own single sign-on screen — NOT in the provider flow any more (their
+     page takes the email and the code). Kept for non-provider tenants and
+     reachable at ?sso=1, and it still starts the BA chain:
+     email → the IdP mails a code → /auth/verify-code. -->
+@if (stage() === 'sso') {
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <h1 class="sr-only">{{ 'auth.signInToHalo' | t }}</h1>
+
+  <p class="sso-lead">{{ 'auth.ssoLead' | t: { cred: credentialName() } }}</p>
+  <div class="fields">
+    <halo-form-field [label]="'auth.email' | t" type="email" placeholder="you@example.com"
+      inputmode="email" autocomplete="email"
+      [value]="ssoEmail()" (valueChange)="ssoEmail.set($event)" />
+  </div>
+  <halo-button class="cta" variant="primary" [block]="true" [disabled]="!ssoValid()"
+    (press)="sso()">{{ 'auth.continueClubId' | t: { cred: credentialName() } }}</halo-button>
+  <p class="sso-note">{{ 'auth.ssoNote' | t }}</p>
+  <p class="terms" [innerHTML]="'auth.termsContinue' | t"></p>
+  <button class="link classic-link" type="button" (click)="setStage('classic')">{{ 'auth.preferClassic' | t }}</button>
+</halo-auth-shell>
+}
+
+<!-- Classic email + password — the V1 / non-SSO tenant variant, kept reachable
+     at /auth/sign-in?classic=1 (it is not part of the BA-PT journey). -->
+@if (stage() === 'classic') {
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <h1 class="sr-only">{{ 'auth.signInToHalo' | t }}</h1>
+
+  <halo-segmented-toggle [options]="modes" [value]="mode()"
+    (valueChange)="mode.set($event); onMode($event)" />
+
+  <div class="fields">
+    <halo-form-field [label]="'auth.email' | t" type="email" placeholder="you@school.com"
+      inputmode="email" autocomplete="email"
+      [value]="email()" (valueChange)="email.set($event)" />
+
+    <halo-form-field [label]="'auth.password' | t" [type]="pwType()" placeholder="••••••••"
+      autocomplete="current-password"
+      [value]="password()" (valueChange)="password.set($event)">
+      <button slot-right class="pw-toggle" type="button" (click)="showPw.set(!showPw())">
+        {{ showPw() ? ('auth.hide' | t) : ('auth.show' | t) }}
+      </button>
+    </halo-form-field>
+  </div>
+
+  <halo-button class="cta" variant="primary" [block]="true" [disabled]="!valid()"
+    (press)="submit()">{{ 'auth.signIn' | t }}</halo-button>
+
+  <button class="link" type="button" (click)="forgot()">{{ 'auth.forgotQ' | t }}</button>
+
+  <div class="or"><span>{{ 'auth.or' | t }}</span></div>
+
+  <div class="socials">
+    <halo-social-button provider="apple" [label]="'auth.continueApple' | t" />
+    <halo-social-button provider="google" [label]="'auth.continueGoogle' | t" />
+  </div>
+
+  <p class="terms" [innerHTML]="'auth.termsContinue' | t"></p>
+  <button class="link classic-link" type="button" (click)="setStage('sso')">{{ 'auth.backToSso' | t }}</button>
+</halo-auth-shell>
+}

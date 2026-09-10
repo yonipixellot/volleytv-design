@@ -1,0 +1,27 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  @if (!sent()) {
+    <div class="head">
+      <h1>{{ 'auth.resetPassword' | t }}</h1>
+      <p>{{ 'auth.resetLead' | t }}</p>
+    </div>
+
+    <div class="fields">
+      <halo-form-field [label]="'auth.email' | t" type="email" placeholder="you@school.com"
+        inputmode="email" autocomplete="email"
+        [value]="email()" (valueChange)="email.set($event)" />
+    </div>
+
+    <halo-button class="cta" variant="primary" [block]="true" [disabled]="!valid()"
+      (press)="submit()">{{ 'auth.sendReset' | t }}</halo-button>
+
+    <button class="link" type="button" (click)="backToSignIn()">{{ 'auth.backToSignIn' | t }}</button>
+  } @else {
+    <div class="head">
+      <h1>{{ 'auth.checkInbox' | t }}</h1>
+      <p>{{ 'auth.resetSent' | t }}</p>
+    </div>
+
+    <halo-button class="cta" variant="glass" [block]="true"
+      (press)="backToSignIn()">{{ 'auth.backToSignIn' | t }}</halo-button>
+  }
+</halo-auth-shell>

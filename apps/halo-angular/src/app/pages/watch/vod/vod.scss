@@ -1,0 +1,350 @@
+:host { display: block; }
+
+.vod {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--player-bg);
+  color: var(--on-player);
+  display: flex;
+  flex-direction: column;
+}
+
+.x {
+  position: absolute;
+  top: 16px;
+  inset-inline-end: 16px;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50%;
+  color: var(--on-player);
+  cursor: pointer;
+}
+
+/* ── The close button is a phone affordance ────────────────────────────────
+   Below 1024 the player is a takeover: no header, no dock, nothing but the
+   video, so it has to carry its own exit. From 1024 the app header is above it
+   (app.ts, showShellHeader) and the exits are the ones the web already has —
+   the wordmark, the nav, the browser's back. A floating glass circle on top of
+   the footage is then one more thing painted over the game for no reason, and
+   it sits exactly where a desktop player's system controls are expected to be.
+   Netflix keeps its X because its player IS the page; YouTube and Twitch, which
+   keep their chrome, have none (Maryna 2026-08-30). */
+@media (min-width: 1024px) {
+  .x { display: none; }
+}
+
+.stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-5); }
+
+.frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--player-frame); overflow: hidden; }
+.vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Pseudo-fullscreen ─────────────────────────────────────────────────────
+   A fixed viewport overlay instead of the Fullscreen API — see the long note
+   on `fs` in vod.ts for why (iPhone has no Element.requestFullscreen, and its
+   only native video fullscreen would delete our chrome along with the ticket's
+   team names and game link).
+
+   `.shell` caps the app at 430px, but a fixed element escapes an ancestor's
+   width — the takeover really does fill the viewport. */
+/* Under the DEV bar, not behind it. The bar is the one thing in the app that
+   outranks a --z-sheet takeover (z-index 9999), so `inset: 0` put the takeover's
+   own top row — the team names and the game link — underneath it and they simply
+   were not there (Maryna 2026-08-30). Offsetting by --devbar-h is the same
+   contract every other pinned surface uses, and the token is 0 in the product,
+   so this is still edge-to-edge fullscreen for a real viewer. */
+.vod.fs {
+  position: fixed;
+  inset: var(--devbar-h, 0px) 0 0;
+  z-index: var(--z-sheet);
+  width: 100vw;
+  height: calc(100dvh - var(--devbar-h, 0px));
+  min-height: 0;
+}
+/* All fullscreen chrome lives inside .frame so the portrait rotate below carries
+   it. The outer close button and the metadata block are not in the frame, so
+   both stand down: exit is the control bar's own toggle. */
+.vod.fs .x,
+.vod.fs .title { display: none; }
+.vod.fs .stage { gap: 0; }
+
+/* Landscape (and any wide viewport): the frame simply fills the screen.
+   `contain`, not `cover` — at full width a 16/9 box is TALLER than a phone in
+   landscape, so `cover` was cropping the top and bottom off the game. */
+.vod.fs .frame {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+}
+.vod.fs .vid { object-fit: contain; }
+
+/* Portrait: rotate the frame rather than ask for an orientation lock —
+   `screen.orientation.lock()` is Android-only, so this is how mobile web
+   players fake YouTube's turn-to-landscape on iOS too. Chrome rotates with the
+   frame, so everything reads correctly once the phone is turned.
+
+   CHOSEN over letterboxing (Maryna 2026-08-28). The alternative was: don't
+   rotate, fill the width, keep the chrome horizontal, and let the viewer turn
+   the phone so the OS rotates the page. Rotating wins more video; the accepted
+   cost is that a viewer holding the phone upright sees sideways text until they
+   turn it, because iOS cannot be asked to rotate for us.
+
+   Consequence to keep in mind: frame-left maps to viewport-TOP under this
+   rotation (measured — .fstop's first item lands at viewport y≈16), so the team
+   names and the game link sit where a notch / Dynamic Island lives in portrait.
+   env(safe-area-inset-*) does NOT rotate with a transform, so an inset here has
+   to be applied on the rotated axis (frame padding-left absorbing
+   safe-area-inset-top). Unverified without a device — do not guess it in. */
+@media (orientation: portrait) {
+  .vod.fs .frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100dvh - var(--devbar-h, 0px));
+    height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
+
+/* ── Fullscreen top overlay: team names + link to the game page ─────────────
+   Both LEFT, together, not split to the two corners with space-between
+   (Maryna 2026-08-28). Three reasons the far corner was wrong:
+   · the link refers to the game the team names identify, and in landscape
+     space-between put 700px+ of nothing between the two halves of one pair;
+   · the top-right of a video player is where system controls live (close,
+     cast, PiP, more) — content navigation is a different category;
+   · it is the corner a landscape notch / Dynamic Island lands in, and the
+     rotated frame cannot read env(safe-area-inset-*) anyway.
+   Same shape as YouTube and Netflix: title top-left, its action beside it. */
+.fstop {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  // STACKED, not side by side (Maryna 2026-08-28). Beside the names it broke
+  // two ways, both measured on a 375x667 phone with real club names
+  // ("Harbour Blues Under 16 Girls Division 2"):
+  //   · it needed exactly 667px of a 667px frame — zero headroom, so a slightly
+  //     longer name pushes the link off screen. The names have no ellipsis
+  //     (white-space: normal), so they wrap rather than truncate, and each extra
+  //     line eats more of the row.
+  //   · align-items: center cannot align 15px names with a 12px link on a shared
+  //     baseline, and once the names wrap to two lines the link centres against
+  //     the whole block, which is what made it read as sitting too high.
+  // Stacked, the names get the full row and wrap harmlessly, and the 12px gap is
+  // the same title→action rhythm the inline metadata block uses.
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-6);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 62%, transparent), transparent);
+}
+.fs-match {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--on-player);
+}
+.fs-v { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: rgba(255, 255, 255, .6); }
+
+/* A filled primary button, not a quiet text link (product 2026-09-07): in
+   testing the accent-text link over the footage was simply not seen, and the
+   route to the game page is the one piece of navigation the player carries.
+   Both placements render through halo-button so there is no bespoke button CSS
+   here; only the size differs. Fullscreen takes `sm` (32px) because the button
+   sits inside the top scrim and every extra row of it is video lost on a phone;
+   inline under the player takes the default 44px, where room is not the issue. */
+.fs-link { flex: none; }
+
+/* Below 768: last row of the metadata block, the third of THREE visual blocks —
+   chips / title+meta / this button — which read as equally separated, so the
+   two gaps between them must match (Maryna 2026-08-28). No hairline above it:
+   in this codebase a border-top means repeated rows (ladder-card) or a
+   container edge (state-sheet), never a single action. Hugs its label, start-
+   aligned under the title, not stretched across the block. */
+.gamelink { margin-top: var(--space-3); }
+
+/* From 768: text left, button right, centred on the text block (Maryna
+   2026-09-07). Under the text on a wide screen a 44px button read as a slab and
+   pushed the block a whole row taller; beside it, at `sm`, it is part of the
+   metadata rather than a section of its own. The text keeps `flex: 1` and
+   `min-width: 0` so a long pair of club names wraps inside its own column and
+   never shoves the button off the edge. */
+@media (min-width: 768px) {
+  .title { display: flex; align-items: center; gap: var(--space-5); }
+  .titletext { flex: 1; min-width: 0; }
+  .gamelink { flex: none; margin-top: 0; }
+}
+
+/* ── Loader ────────────────────────────────────────────────────────────────
+   Two states, because they are not the same event: `load` is first paint with
+   no controls to offer yet, `buf` is a stall during playback where the controls
+   must stay reachable. Same spinner as the SSO identify screen. */
+.load,
+.buf {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+}
+.load { background: var(--player-frame); }
+.buf { background: color-mix(in srgb, var(--scrim-ink) 30%, transparent); pointer-events: none; }
+.spin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, .22);
+  border-top-color: var(--accent);
+  animation: vod-spin 1s linear infinite;
+}
+@keyframes vod-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  // Essential feedback, so it slows rather than stops (a11y token 2.3.3).
+  .spin { animation-duration: 2.4s; }
+}
+
+.controls {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--space-6) var(--space-3) var(--space-3);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--scrim-ink) 65%, transparent));
+}
+.ctl { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border: 0; background: transparent; color: var(--on-player); cursor: pointer; }
+.time { flex: none; font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: rgba(255, 255, 255, .82); font-variant-numeric: tabular-nums; }
+.scrub { position: relative; flex: 1; height: 4px; border-radius: 3px; background: rgba(255, 255, 255, .28); }
+// width / left come from progressPct() in the template, so the fill and knob
+// stay in step with the two time labels instead of a fixed 12% guess.
+// Downloaded-ahead range, under the played fill: a stall has to show that
+// there IS more buffered than played, or the spinner reads as a dead player.
+.scrub .buffered { position: absolute; inset-inline-start: 0; top: 0; height: 100%; border-radius: 3px; background: rgba(255, 255, 255, .34); }
+.scrub .prog { position: absolute; inset-inline-start: 0; top: 0; height: 100%; border-radius: 3px; background: var(--accent); }
+.scrub .knob { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; background: var(--on-player); transform: translate(-50%, -50%); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
+
+/* The bottom padding keeps the last row off the viewport edge. The page is
+   exactly viewport-tall, so anything the metadata block grows by comes out of
+   the frame (the stage is a flex column and the video absorbs the difference),
+   never out of a scrollbar: a player with nothing to scroll to must not scroll. */
+/* --pad-block-x, not --pad-x: the player carries `.halo-wide`, so its inset is
+   the wide gutter past 768 and lands on the same line as the header's wordmark.
+   At --pad-x it sat 25px inside it, which reads as a misalignment because it is
+   one — the metadata is page-level content, not chrome over the video. */
+.title { padding: 0 var(--pad-block-x) var(--space-5); }
+.chiprow { display: flex; align-items: center; gap: var(--gap-tight); margin-bottom: var(--space-3); }
+.chip {
+  display: inline-block;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .16em;
+  padding: var(--space-1) var(--pad-control-y);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .12);
+  color: var(--on-player);
+}
+// Size, weight and colour only — halo-score owns the face and the dash.
+.scorechip {
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--on-player);
+  background: rgba(255, 255, 255, .1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 8px;
+}
+
+// missing-video fallback
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--gap-tight);
+  padding: 0 var(--pad-x);
+}
+.fb-ic {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .5);
+  margin-bottom: var(--space-4);
+}
+.fb-t { font-family: var(--disp); font-weight: 700; font-size: var(--fs-title); color: var(--on-player); }
+.fb-s { font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: rgba(255, 255, 255, .55); }
+.ttl { font-family: var(--disp); font-weight: 700; font-size: var(--fs-heading); color: var(--on-player); }
+.meta { margin-top: var(--space-1); font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: rgba(255, 255, 255, .6); }
+
+// ---------------------------------------------------------------------------
+// The stage is bounded by the viewport, not only by its own ratio.
+//
+// `.frame` was width:100% + aspect-ratio 16/9, so its height was the viewport
+// WIDTH times 9/16 with nothing to stop it. Measured at 1920x1000 that made a
+// 1180px-tall player inside 955px of room: the video ran off the bottom and the
+// controls — play, the scrubber, fullscreen — sat at 1055-1125, entirely below
+// the fold. You had to SCROLL a video player to reach its play button.
+//
+// max-height clamps it, and `contain` is what makes the clamp safe: when the
+// box is forced wider than 16:9 the footage letterboxes inside it instead of
+// being cropped. Game footage is never cropped — PRODUCT.md is explicit that
+// the format carries meaning. At 16:9, which is every phone and most desktop
+// windows, `contain` and `cover` render identically (Maryna 2026-08-29).
+// ---------------------------------------------------------------------------
+:host { display: flex; flex-direction: column; }
+
+.vod {
+  // A DEFINITE height, not a floor. `min-height: 100dvh` is only a minimum, so
+  // nothing in the chain — shell, main, host — had a resolved height and the
+  // frame's `max-height: 100%` had nothing to resolve against. With the height
+  // fixed, every percentage below it means something and the player fits the
+  // window instead of growing past it.
+  // Minus the header as well as the dev bar, since the header arrived on the
+  // watch routes (app.ts, showShellHeader). Both are measured tokens published
+  // by the bars themselves, and both read 0 when their bar is not on screen —
+  // so this one expression is right on a phone, under the dev bar, and under
+  // the desktop header, with no band-specific copy.
+  //
+  // `:not(.fs)` because fullscreen is the opposite deal: the takeover is fixed
+  // to the viewport and is supposed to cover the bars, not sit under them. This
+  // rule is later in the file than the `.fs` block, so without the guard it won
+  // on source order and left the takeover short by exactly the chrome it had
+  // just painted over — a black band under the video and the team names pushed
+  // off the top edge (2026-08-30).
+  :host-context(.shell) &:not(.fs) {
+    min-height: 0;
+    height: calc(100dvh - var(--devbar-h, 0px) - var(--topbar-h, 0px));
+  }
+}
+/* ── The frame is the page, the ratio is the video's ────────────────────────
+   The stage spans the full width and the footage sits inside it at its own
+   proportions (`contain`, never cropped — PRODUCT.md is explicit that the format
+   carries meaning). A desktop window is wider than 16:9, so once the height is
+   clamped there is dark either side of the picture; that surround belongs to the
+   player, and the control bar runs the width of the player, not of the picture.
+   The alternative — shrinking the frame onto the footage — was tried on
+   2026-08-30 and rejected: it makes the player's width jump with whatever
+   aspect the source happens to have (Maryna 2026-08-30). */
+.stage { min-height: 0; }
+.frame { max-height: 100%; }
+.vid { object-fit: contain; }

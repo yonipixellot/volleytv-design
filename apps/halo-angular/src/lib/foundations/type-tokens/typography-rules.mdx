@@ -1,0 +1,193 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens/Typography · Rules" />
+
+# Typography: the rules
+
+Two faces, two scales, and one rule that matters more than it looks: **`font-size` always
+resolves to a token**. See **Tokens › Typography** for the rendered specimens.
+
+`bun run lint:spacing` fails on a hardcoded `font-size`.
+
+---
+
+## Why a literal is a real defect, not untidiness
+
+The app ships an accessibility text-size control. Turning it up re-derives the whole `--fs-*`
+scale:
+
+```scss
+.halo[data-a11y-text='large'] {
+  --fs-body: 16px;   // 14 at default
+  --fs-title: 20px;  // 18 at default
+  // …
+}
+```
+
+A hardcoded `font-size: 14px` is the one value that control **cannot reach**. Everything
+around it grows, that label does not, and the layout tears — for exactly the user who asked
+for bigger text. That is why this is linted rather than reviewed.
+
+---
+
+## The body scale — Inter, five steps
+
+Five, not ten. The old scale ran 9/10/11/12/13/14/15/16/18/20, seven of those a single pixel
+apart, which is a gradient rather than a hierarchy: nobody can see 10 against 11. The floor
+is now 12px, up from 9.
+
+| Token | Size | Use for |
+| --- | --- | --- |
+| `--fs-heading` | 20px | compact heading |
+| `--fs-title` | 18px | card and row titles |
+| `--fs-body-lg` | 16px | control labels, row titles, subtitles |
+| `--fs-body` | 14px | body and list text — the default |
+| `--fs-caption` | 12px | meta, tags, badges, captions, eyebrow caps |
+
+Names are roles, not t-shirt sizes, so the choice is visible where it is made: `--fs-caption`
+says what the step is for, `--fs-xs` only said it was small.
+
+## The display scale — League Spartan, five steps
+
+Numerals and shouted names. Consolidated from eight steps: 26 sat 2px off 24, and 30/34 and
+40/44 were pairs nobody could tell apart.
+
+| Token | Size | Use for |
+| --- | --- | --- |
+| `--fs-d-2xl` | 54px | hero score numeral |
+| `--fs-d-lg` | 40px | hero name |
+| `--fs-d-md` | 32px | large name or score |
+| `--fs-d-sm` | 24px | large label, sub-scores, medium numerals |
+| `--fs-d-xs` | 20px | section header |
+
+Two of these are **tuned and should not be nudged**: `--fs-d-xs` matches Antonio@24's
+footprint so section headers keep their measured width, and `--fs-d-2xl` is fitted to the
+hero card.
+
+---
+
+## The traps
+
+**The Metric-Match Rule.** League Spartan ships ascent 70% / descent 22% with caps at 67%,
+so its caps float in an oversized box. `_fonts.scss` corrects this at the `@font-face`:
+
+```scss
+@font-face {
+  font-family: 'League Spartan';
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+```
+
+Never drop the display face into a layout without this, and never "fix" a heading that sits
+low by nudging its margin — check the metrics first. The hero score's asymmetric
+`8.4px / 8.7px` margins exist because of these metrics, and are the one sanctioned sub-grid
+value in the system.
+
+**The One Voice Rule.** A component is either display (League Spartan, shouting) or body
+(Inter, reading). Never both in one text node, and body text is never set in the display
+face.
+
+**The Ratio-Not-Grid Rule.** This is a ratio scale and is deliberately **not** on the 4px
+rhythm grid. 12/14/16/18/20 are the steps; the grid governs the space *around* type, never
+the type itself. Do not "round" `--fs-body-lg` to something divisible by four.
+
+---
+
+## Which face, and when
+
+The rule is about what the text **is**, not where it sits. Three things take League
+Spartan. Everything else is Inter, without exception.
+
+| League Spartan (`--disp`) | Examples |
+| --- | --- |
+| **Titles** — the name of a surface or a block | page title, panel title, sheet title, section header, empty-state headline |
+| **Names** — proper nouns | team, player, plan |
+| **Numbers** — figures read as figures | scores, prices, stats, counts |
+
+| Inter (`--body`) | Examples |
+| --- | --- |
+| **Everything you read as language** | sentences, subtitles, helper text |
+| **Everything you scan as interface** | list-row titles, form labels, values, buttons, meta |
+| **The small tracked caps** | eyebrows, group labels (12px, 800, uppercase) |
+
+**A list-row title is not a title.** This is the one that goes wrong. "Netsetters 1 is live"
+names an event inside a panel, not the panel itself, so it is Inter and the panel's own name
+above it is League Spartan. Set both the same and they stop having any rank between them,
+which is exactly what happened to the notifications popover: its name and its rows were both
+Inter 700 at 16px, so nothing said which contained which (Maryna 2026-08-29).
+
+**The row wins over the name.** Those first two rows collide on one case: a team name inside
+a list row is both a proper noun and a row title. The row wins. League Spartan is for a name
+being *presented* — a hero, a scoreline, a card headline — not for one being *listed*.
+
+The app already agreed: `halo-follow-row`, `halo-live-game-card` and the ladder row all set
+team names in Inter 700 / 16. Manage following and Coach admin were the two that did not, and
+in Manage following the name also looked a size smaller than the 14px it was set at, because
+the display face is condensed and carries less x-height than Inter at the same px.
+
+## Case is a separate axis from face
+
+Choosing League Spartan does not choose uppercase. Measured across the app, **67 of its 81
+uses are sentence case** — so "display is always uppercase" was never true here, and reading
+it that way is what makes the system look arbitrary.
+
+- A title that is a **label** goes uppercase: `NOTIFICATIONS`, a section header, a team name
+  shouted in a hero.
+- A title that is a **sentence** stays sentence case: "You're all caught up", "Check your
+  email". Uppercase turns a sentence into a slogan.
+- Body goes uppercase **only** at 12px, tracked, 800 — eyebrows and group labels. Nowhere else.
+
+## The panel test
+
+Every panel opens with one display line, and nothing under it competes:
+
+| Panel | Opens with | The rest |
+| --- | --- | --- |
+| Notifications | `NOTIFICATIONS`, display 700 / 20 / caps | rows in Inter 700 / 16 |
+| Account & settings | `TAL WEISS`, display 800 / 20 / caps | rows in Inter 700 / 14 |
+
+If two lines in one panel share a face and a size, one of them is in the wrong place.
+
+---
+
+
+## Do / Don't
+
+```scss
+/* ✗ Don't — invisible to the accessibility text control */
+.label { font-size: 13px; }
+
+/* ✓ Do */
+.label { font-size: var(--fs-body); }
+```
+
+```scss
+/* ✗ Don't — a size between two steps, because it "looked right" */
+.tag { font-size: 15px; }
+
+/* ✓ Do — pick the step, adjust weight or colour if it needs less presence */
+.tag { font-size: var(--fs-caption); font-weight: 700; color: var(--ink3); }
+```
+
+```scss
+/* ✓ Genuinely off the ladder? Then say why, and the linter accepts it. */
+// Off the display ladder on purpose: numerals fitted to the desktop hero card,
+// not a step anyone else reaches for. The ladder's 54 would shrink it 15%.
+.escore .v { font-size: 64px; }
+```
+
+---
+
+## Line height and weight
+
+Three line-height tokens: `--lh-tight` (1) for numerals and single-line display,
+`--lh-snug` (1.2) for titles, `--lh-body` (1.5) for anything read in more than one line.
+
+Weight is not a scale — the two families carry their own conventions. Display is 700 or 800;
+body runs 500 for text, 700 for titles and labels, 800 for the smallest tracked caps. Reach
+for weight before reaching for a size step you do not have.
+
+Case comes from "Case is a separate axis" above, not from the face. The older wording here
+said display was "always uppercase for headings", which the code has never done.

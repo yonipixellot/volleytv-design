@@ -1,0 +1,98 @@
+:host { display: contents; }
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: rgba(4, 6, 10, .62);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: scrim-in var(--dur-med) ease both;
+}
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: calc(var(--z-sheet) + 1);
+  width: min(430px, 100%);
+  transform: translateX(-50%);
+  max-height: 92vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: var(--pad-card-sm) var(--space-5) calc(var(--space-5) + env(safe-area-inset-bottom));
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-bottom: 0;
+  border-radius: 26px 26px 0 0;
+  box-shadow: var(--shadow-up);
+  outline: none;
+  animation: sheet-in var(--dur-slow) var(--ease-out-soft) both;
+}
+.sheet::-webkit-scrollbar { display: none; }
+
+.grip { display: block; width: 40px; height: 4px; margin: 2px auto var(--space-4); border-radius: var(--r-pill); background: var(--ink4); }
+
+.hd { margin: 0 0 var(--space-2); font-family: var(--disp); font-weight: 800; font-size: var(--fs-d-sm); line-height: 1.05; letter-spacing: -.01em; }
+.sub { margin: 0 0 var(--space-4); font-size: var(--fs-body); color: var(--ink2); line-height: 1.45; }
+
+.benes { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: flex; flex-direction: column; gap: var(--gap-tight); }
+.benes li { display: flex; align-items: flex-start; gap: var(--gap-tight); font-size: var(--fs-body); color: var(--ink); }
+.benes li halo-icon { color: var(--premium-text); flex: none; margin-top: 1px; }
+
+.plans { display: flex; flex-direction: column; gap: var(--gap-tight); margin-bottom: var(--space-4); }
+.plan {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'term price' 'blurb price';
+  gap: 1px var(--gap-snug);
+  align-items: center;
+  text-align: start;
+  padding-block: var(--space-3) var(--space-3); padding-inline: var(--space-4) var(--space-11);
+  border: 1.5px solid var(--hair);
+  border-radius: var(--r-field);
+  background: var(--card2);
+  color: var(--ink);
+  cursor: pointer;
+}
+.plan.on { border-color: var(--premium); background: color-mix(in srgb, var(--premium) 10%, var(--card2)); }
+.plan .term { grid-area: term; font-family: var(--body); font-weight: 800; font-size: var(--fs-body-lg); letter-spacing: -.01em; }
+.plan .price { grid-area: price; font-family: var(--disp); font-weight: 800; font-size: var(--fs-heading); }
+.plan .blurb { grid-area: blurb; font-size: var(--fs-caption); color: var(--ink2); }
+.plan .badge {
+  white-space: nowrap;   // "Most popular" spilled its pill by 3.5px (a11y audit 2026-09-02 G22)
+  position: absolute;
+  top: -8px;
+  inset-inline-start: 14px;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding-block: 3px 3px; padding-inline: var(--space-2) calc(var(--space-2) + .1em);   // + trailing letter-spacing, else the last glyph pokes past the pill
+  border-radius: var(--r-pill);
+  color: var(--premium-ink);
+  background: var(--premium);
+}
+.plan .tick {
+  position: absolute;
+  inset-inline-end: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--hair);
+  color: transparent;
+}
+.plan.on .tick { border-color: var(--premium); background: var(--premium); color: var(--premium-ink); }
+
+.acts { display: flex; flex-direction: column; gap: var(--space-1); }
+.acts halo-button { display: block; }
+
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-in { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .scrim, .sheet { animation: none; } }

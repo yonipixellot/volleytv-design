@@ -1,0 +1,35 @@
+:host { display: inline-flex; flex: none; }
+
+.tog {
+  position: relative;
+  width: 42px;
+  height: 25px;
+  border-radius: 100px;
+  border: 1px solid var(--hair);
+  background: var(--card2);
+  cursor: pointer;
+  padding: 0;
+}
+// Transition only kicks in once the toggle has painted its real initial
+// state once (`.settled`) — otherwise mounting already-on animates the
+// slide/color-fill as if the user had just tapped it (see toggle.ts).
+.tog.settled { transition: background var(--dur-med) ease, border-color var(--dur-med) ease; }
+.tog.on {
+  background: var(--sys-green);   // system green — never the client brand
+  border-color: transparent;
+}
+.tog:disabled { opacity: .45; cursor: not-allowed; }
+
+.tog .knob {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 3px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateY(-50%);
+  box-shadow: var(--shadow-1);
+}
+.tog.settled .knob { transition: left var(--dur-med) var(--ease-spring); }
+.tog.on .knob { inset-inline-start: 20px; }

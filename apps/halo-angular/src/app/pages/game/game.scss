@@ -1,0 +1,369 @@
+:host { display: block; }
+
+// The frame is .halo-split / .halo-split-rail / .halo-split-main /
+// .halo-split-tabs in styles.scss, shared with You. Only the outer wrapper needs
+// a rule here, and only when the page is NOT split: before tip-off there are no
+// tabs and no body, so .halo-split is withheld and this box must vanish.
+.gmain:not(.halo-split) { display: contents; }
+
+
+.gm { background: var(--screen); }
+.pad { padding: 0 var(--pad-block-x); }
+
+// The two full-length videos stack on the phone exactly as before.
+.vidrow, .vidcell { display: contents; }
+
+// top block — score card, Open Editor, tabs share one rhythm
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-loose);
+  padding: var(--space-2) var(--pad-block-x) 0;
+}
+
+// sub-tab strips (You/Team, Netsetters/Vikings): breathing room above from the
+// main tabs AND below from the content they scope (Yoni 2026-08-24).
+// 16px above matches the tier step on You (2026-08-27).
+// No bottom edge. What follows is a section heading, and the heading already
+// brings --block-gap; the two together put 48px between the scope underline and
+// the title it introduces (Maryna 2026-08-30). The block below owns the gap.
+.subtabs { padding-top: var(--space-4); }
+// The gap under a toggle row belongs to the content, once, the same way a
+// heading's does: the tabs sat flush against the highlights grid, so the tiles
+// read as part of the strip rather than as what it switches (Maryna 2026-09-03).
+// :not(.subtabs) so the second toggle row, the scope chips under the player
+// picker, keeps its own 16 and does not get a second one.
+.subtabs + .pad:not(.subtabs) { padding-top: var(--space-4); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+}
+
+// ---- highlights grid ----
+// .hgrid is .halo-reel-grid in the template — the shared 9:16 tile grid, the
+// same one You's clips use.
+
+// Vertical highlight tile, styled like the horizontal Home rail-card: media block
+// on top (gold play + duration), title in a footer BELOW the image.
+.htile {
+  display: block;
+  text-align: start;
+  border-radius: var(--r-card-sm);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  // Hover comes from .halo-media-card, shared with the rail card, the video
+  // card and You's clip tiles.
+}
+.htile .th { position: relative; display: block; aspect-ratio: 9 / 16; overflow: hidden; }
+.htile .th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.htile .scr { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 2%, transparent), color-mix(in srgb, var(--scrim-ink) 50%, transparent)); }
+.htile .share {
+  position: absolute; top: 8px; inset-inline-end: 8px; z-index: 2;
+  width: 24px; height: 24px; display: grid; place-items: center;
+  border-radius: 50%; background: rgba(0,0,0,.4); color: var(--on-media); backdrop-filter: blur(6px);
+}
+// Gold play button, anchored bottom-left — mirrors rail-card's `.pl`.
+.htile .hplay {
+  position: absolute; inset-inline-start: 8px; bottom: 8px; z-index: 2;
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border-radius: 50%; background: var(--secondary); color: var(--on-secondary);
+  box-shadow: var(--shadow-1); padding-inline-start: 1px;
+}
+.htile .hd {
+  position: absolute; inset-inline-end: 8px; bottom: 8px; z-index: 2;
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--on-media);
+  background: rgba(0,0,0,.55); padding: 3px var(--space-2); border-radius: 6px;
+}
+/* Per-clip premium lock (basic tier: dig/block). */
+.htile.locked .th img { filter: blur(7px) brightness(.6); transform: scale(1.06); }
+.htile.locked { border-color: color-mix(in srgb, var(--accent) 32%, var(--hair)); }
+.htile .hlock {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap-tight);
+  // quiet luxury veil — the blurred tease sells, the crest labels
+  background: linear-gradient(180deg, rgba(20, 16, 8, .25), rgba(14, 11, 6, .55));
+}
+.htile .hlock .lk-disc {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 50%;   // circle, per the icon-button rule
+  background: radial-gradient(120% 120% at 30% 20%,
+    color-mix(in srgb, var(--premium) 45%, #fff),
+    var(--premium) 55%,
+    color-mix(in srgb, var(--premium) 82%, #000));
+  color: var(--premium-ink);
+  box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--premium) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.htile .hlock .lk-w {
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  letter-spacing: .26em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--premium) 45%, #fff);
+}
+.htile .hcap { display: block; padding: var(--space-3) var(--space-3) var(--space-3); }
+.htile .ht { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--ink); overflow: hidden; min-height: calc(2 * var(--lh-snug, 1.25) * var(--fs-caption)); } // two lines on the phone grid (UI review U5)
+@media (min-width: 768px) { .htile .ht { display: block; -webkit-line-clamp: unset; white-space: nowrap; text-overflow: ellipsis; min-height: 0; } }
+// whose highlight — teammate tiles only (each tile is a different player)
+.htile .hwho { display: block; margin-top: 2px; font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+// ---- your game stats — bars breakdown (Yoni pick C, 2026-08-24): one card,
+// each stat a row = label · proportional bar · value. PTS is the hero (full,
+// accent); the rest fill vs a strong-single-game cap with a purple→lime bar.
+
+// Legend for the box score's deltas — sits above the card, in the same muted
+// register as .fine on the onboarding screens.
+.boxlegend {
+  margin: 0 0 var(--space-3);
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--ink3);
+}
+
+// ---- team stats — mobile head-to-head: label above, ONE full-width
+// centre-split bar between the values (home = accent, away = muted).
+// The old twin half-bars + centre label could not fit 390px legibly.
+.statcard { padding: var(--space-4) var(--space-4) var(--space-2); }
+.stat-head { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-snug); padding-bottom: var(--space-3); border-bottom: 1px solid var(--hair); }
+.th { display: inline-flex; align-items: center; gap: var(--gap-tight); font-family: var(--body); font-weight: 800; font-size: var(--fs-body); color: var(--ink); min-width: 0; }
+.th.r { text-align: end; }
+.th .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.th .dot.home { background: var(--accent); }
+.th .dot.away { background: var(--ink4); }
+.ts-row { padding: var(--space-3) 0 var(--space-3); border-bottom: 1px solid var(--hair2, var(--hair)); }
+.ts-row:last-child { border-bottom: 0; }
+.ts-lab { display: block; text-align: center; font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-bottom: var(--space-2); }
+.ts-line { display: flex; align-items: center; gap: var(--gap-snug); }
+.ts-v { min-width: 46px; font-family: var(--body); font-weight: 800; font-size: var(--fs-body); color: var(--ink3); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ts-v.r { text-align: end; }
+.ts-v.win { color: var(--ink); }
+.ts-sub { display: block; font-weight: 700; font-size: var(--fs-caption); color: var(--ink3); margin-top: 2px; }
+.ts-track { flex: 1; height: 6px; display: flex; gap: 3px; }
+.ts-fill { display: block; height: 100%; border-radius: 3px; }
+.ts-fill.h { background: var(--accent); }
+.ts-fill.a { flex: 1; background: color-mix(in srgb, var(--ink) 22%, transparent); }
+
+// ---- player stats table — five stat codes fit 390px, no scroll needed ----
+.ptable-wrap { overflow-x: auto; scrollbar-width: none; }
+.ptable-wrap::-webkit-scrollbar { display: none; }
+.ptable { padding: var(--space-2) var(--space-4) var(--space-3); }
+.pt-head, .pt-row { display: grid; grid-template-columns: minmax(92px, 1.15fr) repeat(5, minmax(0, 1fr)); align-items: center; gap: var(--space-1); }
+.pt-head { padding: var(--space-3) 0 var(--space-2); border-bottom: 1px solid var(--hair); }
+.pt-head .th-btn {
+  min-height: 24px;   // 2.5.8 target floor (a11y audit 2026-09-02 G29)
+  border: 0; background: transparent; cursor: pointer; padding: 0;
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption); letter-spacing: .02em;
+  text-transform: uppercase; color: var(--ink3); text-align: center; transition: color var(--dur-fast);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  min-width: 0; overflow: hidden; text-overflow: clip;   // never spill into the next column
+}
+@media (hover: hover) {
+  .pt-head .th-btn:hover { color: var(--ink2); }
+}
+.pt-head .th-btn.on { color: var(--accent); }
+.pt-head .th-btn.c-player { text-align: start; }
+.pt-row span { text-align: center; }
+.pt-row .c-player { text-align: start; }
+.pt-row { padding: var(--space-3) 0; font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink2); font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--hair2, var(--hair)); }
+.pt-row:last-child { border-bottom: 0; }
+.pt-row.self { color: var(--ink); }
+.pt-row.self .c-player { color: var(--accent); }
+.pt-row .pts { color: var(--ink); font-weight: 800; }
+.c-player { display: flex; align-items: center; gap: var(--gap-tight); color: var(--ink); min-width: 0; }
+.c-player .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jz {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 var(--space-1);
+  border-radius: 7px; background: var(--card2); border: 1px solid var(--hair);
+  font-family: var(--disp); font-weight: 700; font-size: var(--fs-caption); color: var(--accent);
+}
+
+
+/* ================= Pre-game (upcoming) ================= */
+// Scorebug hero — teams flank the tip-off time (mirrors score-hero language).
+.pre-hero { position: relative; overflow: hidden; border-radius: var(--r-card); padding: var(--space-5); border: 1px solid var(--hair);
+  background: radial-gradient(ellipse 60% 100% at 12% 30%, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 60%), var(--card); }
+.ph-eye { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-snug); margin-bottom: var(--space-4); }
+.ph-badge { display: inline-flex; align-items: center; gap: var(--gap-tight); font-weight: 800; font-size: var(--fs-caption); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); padding: var(--space-1) var(--space-2); border-radius: var(--r-pill); }
+.ph-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+// Countdown-style body — stacked + centred, so long names never squeeze at phone width.
+.ph-count { text-align: center; }
+.ph-k { display: block; font-size: var(--fs-caption); font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+.ph-big { display: block; font-family: var(--disp); font-weight: 600; font-size: clamp(42px, 13vw, 54px); line-height: .92; letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+  color: var(--ink); text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 40%, transparent); }
+.ph-at { display: block; font-size: var(--fs-caption); font-weight: 600; letter-spacing: .02em; color: var(--ink3); margin-top: var(--space-2); text-wrap: balance; }
+.ph-bar { height: 5px; border-radius: 100px; background: var(--card2); overflow: hidden; margin: var(--space-4) 0; }
+.ph-bar span { display: block; height: 100%; width: 22%; border-radius: 100px; background: linear-gradient(90deg, var(--accent-deep), var(--accent)); }
+.ph-teams { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--gap-snug); }
+.ph-tnm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); white-space: nowrap; }
+.ph-vs { font-weight: 700; font-size: var(--fs-caption); letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+
+// Open Editor — small green (secondary) pill in the score card's top-right.
+.scorewrap { position: relative; }
+// Full width, at the foot of the score card's own action slot. It used to be
+// absolutely positioned in the card's top-right corner, where it overlapped the
+// eyebrow and squeezed the team name into an ellipsis (Maryna 2026-08-30).
+.edit-pill { display: inline-flex; align-items: center; justify-content: center; gap: var(--gap-tight); cursor: pointer;
+  width: 100%; min-height: 44px;
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-body); letter-spacing: .04em; color: var(--on-primary); background: var(--primary); border: 0;
+  padding: var(--pad-control-y) var(--pad-control-x); border-radius: var(--r-pill); box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--primary) 70%, transparent); }
+@media (hover: hover) {
+  .edit-pill:hover { filter: brightness(1.08); }
+}
+
+// "Stats come after tipoff" explainer — what lands once the game plays.
+// processing empty state — final game, assets still rendering (?processing=1)
+.proc {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--space-11) var(--space-6);
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card);
+}
+.proc-ic {
+  width: 66px; height: 66px; display: grid; place-items: center; margin-bottom: var(--space-4);
+  border-radius: 50%; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+}
+.proc-t { margin: 0 0 var(--space-2); font-family: var(--disp); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.proc-b { margin: 0; max-width: 280px; font-family: var(--body); font-size: var(--fs-caption); line-height: 1.5; color: var(--ink3); }
+
+.coming { padding: var(--space-2) var(--space-1); }
+.cm-row { display: flex; align-items: flex-start; gap: var(--gap-snug); padding: var(--space-3) var(--space-2); }
+.cm-ic {
+  width: 36px; height: 36px; flex: none; display: grid; place-items: center;
+  border-radius: 12px; background: var(--card2); border: 1px solid var(--hair); color: var(--ink2);
+}
+.cm-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cm-t { font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); line-height: 1.25; letter-spacing: -0.005em; }
+.cm-b { font-size: var(--fs-caption); line-height: 1.45; color: var(--ink3); }
+
+// own team name links to /team/:id — name look, link behavior
+.nm-link {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  text-align: start; font: inherit; color: inherit;
+  &:active { color: var(--accent); }
+}
+/* Split: focus-visible is not pointer-only — a keyboard user has no pointer
+   but does need the affordance. Only the hover half is scoped. */
+.nm-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+}
+@media (hover: hover) {
+  .nm-link:hover {
+    color: var(--accent);
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  }
+}
+
+// a11y 2.5.8: >=24px hit area for inline name links (padding grows the target,
+// negative margin keeps the layout)
+.nm-link { padding-block: 3px; margin-block: -3px; font-weight: 700; }  // 700: the font:inherit shorthand above resets the name's own weight
+
+
+// ---------------------------------------------------------------------------
+// A masthead, not a rail.
+//
+// It WAS a rail: the scoreboard and the tabs pinned in a 340px column beside
+// the content. The rule that kills it is worth stating, because the same
+// question comes up on every page — A RAIL HOLDS CONTROLS, NOT FACTS. The
+// calendar on Games is a control: you operate it and the content answers, so it
+// earns a column that stays. A scoreboard operates nothing. Pinned, it left
+// roughly 700px of empty column under itself and split the page into two
+// starting points when it only ever had one (Maryna 2026-08-30).
+//
+// So the score is a band, the tabs sit under it, and the content runs full
+// measure below — the same shape as Team, and as You.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  // --measure-page is the CONTENT measure, gutters excluded — the same reading
+  // You and Team use. The page carries the gutter; the blocks carry the
+  // measure. With both on .gm the content came out 988px starting at 226, while
+  // You's came out 1080 starting at 180: one token, two answers (Maryna
+  // 2026-08-30).
+  .gm { padding-inline: var(--pad-block-x); }
+
+  // The phone's back bar goes. It carries a back control and the two team
+  // names, and from this band up the app header is on screen with its own nav,
+  // the browser's back is right above that, and the masthead directly below
+  // repeats both names WITH the score (Maryna 2026-08-30). The h1.sr-only after
+  // it is what actually names the page, so nothing is lost to assistive tech.
+  halo-back-bar { display: none; }
+
+  // Two panes, the shared .halo-split frame. `halo-split` is applied only when
+  // the game has been played — before tip-off there are no tabs and no body, so
+  // it keeps the single column (Maryna 2026-08-30).
+
+  .head,
+  .gbody {
+    width: 100%;
+    max-width: var(--measure-page);
+    margin-inline: auto;
+  }
+
+  // The page owns the inset, so the blocks inside contribute none — including
+  // the section headings, which otherwise sit 46px right of the video they
+  // introduce.
+  .gm .pad,
+  .gm .head { padding-inline: 0; }
+
+  // …and side by side once there is room. The heading travels with its own
+  // video, so each cell reads as one thing rather than as a heading that could
+  // belong to either.
+  .vidrow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    // --pad-block-x is the PAGE gutter, which is what separates the rail from
+    // the column, not two cards inside one row: at 46px the pair read as two
+    // blocks rather than one (Maryna 2026-08-30).
+    // 24, not the 12 the small-tile grids use: these are two large cards, and a
+    // gap that reads right between 150px reel tiles is too tight between 485px
+    // ones (Maryna 2026-08-30).
+    column-gap: var(--space-6);
+    align-items: start;
+    // The gap the headings used to bring. Zeroing their padding below put the
+    // first one hard against the tab strip; the row owns that space now, once,
+    // instead of each cell owning it and pushing the two videos onto different
+    // lines.
+    margin-top: var(--block-gap);
+  }
+  .vidcell { display: block; min-width: 0; }
+  .vidcell ::ng-deep halo-section-header .esec { padding-top: 0; }
+  // …and in the rail the top goes too. That 8px is the phone's rhythm above the
+  // masthead; here it pushed the painted card to 129 while You's starts at 121,
+  // so the two pages' rails began on different lines (Maryna 2026-08-30).
+  // Only when split — before tip-off .head is still a page block and keeps it.
+  .halo-split .head { padding-top: 0; }
+  .gm ::ng-deep halo-section-header .esec { padding-inline: 0; }
+
+  // The tabs are the page's own navigation, so they read at the size a control
+  // reads at, not at the width of the page.
+  .head halo-segmented-toggle { display: block; max-width: 420px; }
+
+  // The box score is set to two columns for the phone; here that is two very
+  // wide cells holding a two-digit number each. Five puts the game's stats on
+  // one line.
+  //
+  // Overriding the track list rather than --sg-cols on purpose: the component
+  // binds that property inline, and an inline style beats any stylesheet rule.
+  .gm ::ng-deep .sgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  // …and the summary stat joins that line instead of taking a band of its own.
+  // Five stats over two rows left the second one an empty cell wide, and the
+  // band above it repeated a shape the row already had (Maryna 2026-08-30). It
+  // keeps its accent value and tinted ground — the emphasis was never the span.
+  .gm ::ng-deep .cell.hero {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--gap-tight);
+    padding: var(--space-5) var(--space-3) var(--space-4);
+  }
+}
+

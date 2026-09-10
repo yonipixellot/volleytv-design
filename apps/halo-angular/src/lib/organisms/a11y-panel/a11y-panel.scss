@@ -1,0 +1,103 @@
+:host { display: contents; }
+
+.scrim {
+  position: fixed; inset: 0; z-index: var(--z-sheet);
+  background: rgba(0, 0, 0, .5);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+
+.sheet {
+  position: fixed; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; z-index: calc(var(--z-sheet) + 1);
+  margin: 0 auto; max-width: 430px;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  padding: var(--pad-card-sm) var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-up);
+}
+
+.grip { display: block; width: 40px; height: 4px; border-radius: 3px; background: var(--hair); margin: var(--space-1) auto var(--space-3); }
+
+.hd-row { display: flex; align-items: center; justify-content: space-between; }
+.hd {
+  margin: 0;
+  font-family: var(--disp); font-weight: 700; font-size: var(--fs-d-xs);
+  letter-spacing: .02em; text-transform: uppercase; color: var(--ink);
+}
+.x {
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--hair); background: var(--card2);
+  color: var(--ink2); cursor: pointer;
+}
+
+.sub { margin: var(--space-2) 0 var(--space-4); font-family: var(--body); font-size: var(--fs-caption); color: var(--ink3); }
+
+.grp { margin-bottom: var(--space-4); }
+.grp:last-child { margin-bottom: 0; }
+.lab {
+  display: block; margin-bottom: var(--space-2);
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--ink2);
+}
+
+// ---------------------------------------------------------------------------
+// DESKTOP — a popover on the fab, not a drawer on the floor.
+//
+// A bottom sheet is a thumb's answer to a phone. At 1280 it left a 430px strip
+// on the floor of a 1280px window, with a dimmed page above it and a drag grip
+// no mouse can drag (Maryna 2026-08-30). From 1024 the panel opens where its
+// trigger is, which is the same "opens a menu" language the header menu, the
+// month pill and the folder overflow already speak.
+//
+// THE SCRIM STAYS, BUT GOES CLEAR. It still catches the click-away and still
+// makes the dialog modal, so `aria-modal` remains true — what it stops doing is
+// hiding the page. These are text-size and contrast controls: the viewer has to
+// SEE the page behind them change, and a 50% scrim over a blur was hiding the
+// one thing the panel exists to alter.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  .scrim {
+    // Below the fab (see .afab), so the trigger stays a real toggle instead of
+    // every second press landing on the scrim — the scrim rule, again.
+    z-index: var(--z-pop);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .sheet {
+    // Anchored to the pre-auth chrome cluster, restated because the two are
+    // separate components: the cluster sits --space-5 from the top and the right
+    // and its controls are 44px tall, + --gap-snug of air (.prechrome in
+    // app.scss). It used to anchor bottom-right, to a trigger that is no longer
+    // there. Layout dimensions, not rhythm.
+    inset-inline-start: auto;
+    inset-inline-end: var(--space-5);
+    top: calc(var(--devbar-h, 0px) + var(--space-5) + var(--space-11) + var(--gap-snug));
+    bottom: auto;
+    z-index: calc(var(--z-pop) + 1);
+    width: 340px;
+    max-width: calc(100vw - 36px);
+    // Bounded so a raised text scale cannot push the panel off the bottom.
+    max-height: calc(100dvh - var(--devbar-h, 0px) - 140px);
+    overflow-y: auto;
+    margin: 0;
+    border: 1px solid var(--hair);
+    border-radius: var(--r-card);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-3);
+  }
+
+  // Opened from the header avatar's menu: under the header, at the same inset
+  // the header itself uses. The `max(...)` half is for the very wide bands,
+  // where the shell stops at --content-max and centres — there the avatar is
+  // not at the viewport's right edge, and the panel must follow the shell.
+  .sheet.at-menu {
+    top: calc(var(--devbar-h, 0px) + var(--topbar-h, 0px) + var(--space-2));
+    bottom: auto;
+    inset-inline-end: calc(max(0px, (100vw - var(--content-max)) / 2) + var(--pad-x-wide));
+  }
+
+  // A grip is a drag affordance, and there is nothing here to drag with a mouse.
+  .grip { display: none; }
+}

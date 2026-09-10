@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "halo-angular",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd apps/halo-angular && bun run ng serve --port ${PORT:-4200}"
+      ],
+      "port": 4200,
+      "autoPort": true
+    }
+  ]
+}

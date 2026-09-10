@@ -1,0 +1,86 @@
+:host {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: block;
+}
+
+.bb {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  // 12px on top, the same as the app header's row. It was 48 — device clearance
+  // for the mock status bar, which this component's ONE user does not render:
+  // /game is the only page with no halo-status-bar, so the 48px was not clearance
+  // for anything, it was a void above the back button (Maryna 2026-08-30).
+  padding: var(--space-3) var(--pad-x);
+  background: linear-gradient(180deg, var(--screen) 0%, var(--screen) 62%, transparent 100%);
+}
+
+.back {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hair);
+  background: var(--card);
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--dur-med);
+
+  @media (hover: hover) {
+    &:hover { background: var(--card2); }
+  }
+}
+
+.match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  min-width: 0;
+  flex: 1;
+}
+
+// mirrors the 38px back button so the centred title is truly centred
+.spacer { width: 38px; flex: none; }
+
+.bell {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hair);
+  background: var(--card);
+  border-radius: 50%;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: background var(--dur-med), color var(--dur-med), border-color var(--dur-med);
+
+  &.on {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+.nm {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vs {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  letter-spacing: .02em;
+  color: var(--ink3);
+  flex: none;
+}

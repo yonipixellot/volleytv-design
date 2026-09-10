@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Page Not Found</title>
+    <script>
+      // Redirect missing routes to the SPA's index.html
+      // This enables client-side routing for both root and subdirectory deployments
+      // On a github.io project site the repo name is the first path segment
+      // (/<repo>/...); on a custom domain or local server there is no prefix.
+      var repoBase = '';
+      var path = window.location.pathname;
+      if (window.location.hostname.endsWith('github.io')) {
+        var seg = path.split('/')[1];
+        if (seg) { repoBase = '/' + seg; path = path.slice(repoBase.length) || '/'; }
+      }
+      var isPreview = path.startsWith('/previews/');
+      var target;
+
+      if (isPreview) {
+        // For preview routes like /previews/pr-3/you -> /previews/pr-3/?p=you
+        var match = path.match(/^\/previews\/pr-(\d+)\/(.*)/);
+        if (match) {
+          var pr = match[1];
+          var route = match[2];
+          target = repoBase + '/previews/pr-' + pr + '/?p=' + encodeURIComponent('/' + route + window.location.search + window.location.hash);
+        }
+      } else {
+        // For root routes like /you -> /?p=you
+        var route = path.slice(1); // Remove leading /
+        if (route && route !== '404.html') {
+          target = repoBase + '/?p=' + encodeURIComponent('/' + route + window.location.search + window.location.hash);
+        }
+      }
+
+      if (target) {
+        window.location.replace(target);
+      }
+    </script>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>

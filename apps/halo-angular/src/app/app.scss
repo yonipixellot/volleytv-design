@@ -1,0 +1,155 @@
+// App shell — a centred phone-width canvas that paints the themed screen
+// background and hosts the routed pages. The per-page bottom-nav dock floats
+// over this frame and drives navigation.
+.shell {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--screen);
+  color: var(--ink);
+  // `clip` (not `hidden`) — hidden forces a scroll container that breaks the
+  // sticky topbar; clip still prevents horizontal scroll (Yoni 2026-08-24).
+  overflow-x: clip;
+  // Column flex so full-viewport pages (story player) can size themselves to
+  // the space UNDER the dev bar instead of a hard 100dvh that overshoots it.
+  display: flex;
+  flex-direction: column;
+}
+
+// The phone-width cap ends at the TABLET breakpoint, not the desktop one. Held
+// to 1280 it made every tablet a 430px column adrift in an empty screen: 44% of
+// an iPad portrait unused, 58% of a landscape, 66% at 1279px — and then the
+// whole viewport one pixel later. That is a cliff, not a responsive system, and
+// the text was truncating inside the column while 600px sat empty beside it.
+//
+// Pages without an adaptive layout render their mobile layout wider from here,
+// the same trade this file already accepted at 1280 (Maryna 2026-08-28).
+@media (min-width: 768px) {
+  // Not `none`: the canvas grows to --content-max and then stops, with the
+  // body's ambient backdrop surrounding it. Uncapped, a 2560px monitor gave
+  // 599px cards holding 12px text and a hero flattened to 6.8:1 — the layout
+  // stretched without ever being designed for the width (Maryna 2026-08-28).
+  .shell { max-width: var(--content-max); }
+}
+
+// Semantic <main> landmark wrapping the routed page. Fills whatever the dev
+// bar leaves so a routed page can flex to the exact remaining viewport.
+.halo-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+// ::ng-deep — router-created page elements don't carry this component's
+// _ngcontent attribute, so a scoped child selector never matches them.
+//
+// `1 1 auto`, not `1 0 auto`: a flex item's default `min-height: auto` already
+// stops it shrinking below its content, so ordinary pages behave exactly as
+// before. What shrink-1 adds is the ability for a page that opts in with
+// `min-height: 0` — the auth screens, which want to sit inside the space the
+// dev bar leaves and scroll internally — to actually do so. With shrink 0 it
+// could not, and the page won that fight on source order alone: it ties this
+// rule on specificity, so which stylesheet loaded last decided the layout.
+.halo-main > ::ng-deep :not(router-outlet) { flex: 1 1 auto; min-width: 0; }
+
+// Pre-auth theme toggle — top-right, mirroring the accessibility fab at the
+// bottom-right so the two sit as a pair of pre-auth utilities rather than one
+// stray control. Quiet by default: it is a preference, not a step in the flow.
+// The pre-auth chrome cluster — see app.html for why these two controls sit in
+// one corner. A cluster, NOT a surface: they were briefly a single pill holding a
+// plain icon and a filled one, which is this app's segmented-toggle signature
+// exactly (a track with the selected option filled), so it read as switching
+// between two modes. They are two unrelated actions, so each keeps its own
+// ground and --gap-snug of real air between them — no shared track, nothing to
+// mistake for a selection (Maryna 2026-08-31).
+//
+// 44px tall, which sits inside the 52px band `.ob` already reserves above every
+// onboarding step (onboarding.scss) rather than in the copy below it.
+.prechrome {
+  // ABSOLUTE, not fixed: it scrolls away with the page. Both of these are
+  // set-once preferences — a theme and a text/contrast/motion choice — not tools
+  // used while reading, so being permanently on screen bought nothing and cost a
+  // corner of every pre-auth screen: it sat over the lock chip on the team card
+  // as soon as you scrolled (Maryna 2026-08-31). WCAG 3.2.6 asks for a help
+  // mechanism in the same PLACE across pages, not for one that is always
+  // visible, and the place is unchanged. Positioned against .shell, which is
+  // already position: relative.
+  position: absolute;
+  top: var(--space-5);
+  inset-inline-end: var(--space-5);
+  // The token, not the 30 that used to be written here. This IS the layer the
+  // ladder reserves for page-local popovers and their chrome (_tokens.scss).
+  z-index: var(--z-pop);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+}
+// Above the accessibility panel's click-away scrim from 1024, where the panel is
+// a popover ON its trigger: a scrim that covers its own trigger turns a toggle
+// into "press, nothing; press, opens". Below 1024 the panel is a modal drawer
+// and the cluster belongs under it. This rule moved off .afab with the position.
+@media (min-width: 1024px) {
+  .prechrome { z-index: calc(var(--z-pop) + 2); }
+}
+
+.pre-lang {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--space-11);
+  height: var(--space-11);
+  border-radius: 50%;
+  color: var(--ink2);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  cursor: pointer;
+  // The select IS the control: full-size, invisible, on top, so the tap target
+  // and the focus ring belong to a real form element.
+  select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  &:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.pre-theme {
+  display: grid;
+  place-items: center;
+  // 44, up from 38, to match its neighbour — and 44 is the target size WCAG
+  // 2.5.5 asks for, which a control this small was under.
+  width: var(--space-11);
+  height: var(--space-11);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--ink2);
+  // OPAQUE. This was an 82% colour-mix over a blur, so the copy it covered read
+  // through it — a see-through circle floating over a paragraph reads as an
+  // accident rather than as chrome. Chrome may cover content; it may not
+  // half-cover it.
+  background: var(--card);
+  border: 1px solid var(--hair);
+  box-shadow: var(--shadow-2);
+  transition: color var(--dur-med), background var(--dur-med);
+}
+@media (hover: hover) {
+  .pre-theme:hover { color: var(--ink); background: var(--card2); }
+}
+// The dev bar occupies the top strip in this build, so the cluster clears it.
+// Measured rather than a hardcoded 44px: the bar wraps to three rows on a phone,
+// and a guess put this control on top of it there.
+.has-devbar .prechrome { top: calc(var(--space-5) + var(--devbar-h)); }
+
+
+/* Shell header for the drill-down routes (see App.showShellHeader). Hidden on
+   the phone, where the dock and the page's own back control do this job. */
+.shellbar { display: none; }
+@media (min-width: 1024px) {
+  .shellbar {
+    display: block;
+    position: sticky;
+    // Below the dev bar, same reason as .topbar in styles.scss.
+    top: var(--devbar-h, 0px);
+    z-index: var(--z-header);
+    background: var(--screen);
+  }
+}

@@ -1,0 +1,556 @@
+:host { display: block; }
+
+// Level 1 (page sections) is the shared filled pill; only its placement lives
+// here. The hand-rolled underline spec was deleted 2026-08-27 — it was the
+// third copy of the same values, and the pattern moved down a level.
+// The tab strip is .halo-tabs (styles.scss) — inset, top rhythm and the 320
+// cap all live there now, shared with Game.
+// The whole-account empty. A ground, not a bare centred block: in a 982px column
+// an unhosted message reads as a page that failed to load rather than one with
+// nothing to say yet.
+.you-blank {
+  margin: var(--space-3) var(--pad-block-x) 0;
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card);
+  padding: var(--space-8) var(--space-5);
+}
+// Level 2 (Moments / My clips) is the underline row, so it needs the page
+// gutter rather than the pill's own inset.
+// 16px under the pill: at 8px the two switchers read as one block instead
+// of a tier inside a tier (2026-08-27).
+.clip-src { padding: var(--space-4) var(--pad-block-x) 0; }
+
+.sponeye {
+  padding: var(--space-6) var(--pad-block-x) var(--space-2);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+// ---- Season averages hero (featured PTS + supporting stats) ----
+// Season averages use the shared halo-stat-grid (2026-08-27) — the grid itself
+// moved to the molecule; only its page placement stays here.
+// 28px above the label — the same opening padding a section header uses
+// (.esec in section-header.scss), because both are a label opening a block.
+// It sat at 2px, which made the Stats branch hug the pill while the Clips
+// branch stood 30px clear of it (2026-08-27).
+// A rule between who you are and how you played, and the card's own padding is
+// the inset, so the line stops short of the corners. This used to be a
+// page-level block with its own gutter, because it stood loose in the Stats tab
+// (Maryna 2026-08-31).
+halo-stat-grid.avg {
+  display: block;
+  margin: var(--space-5) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--hair);
+}
+
+// ---- Clips tab (proto "Clips" parity: filter bar + per-game folders) ----
+
+// Filter bar — Source · Game · Date pills.
+// Source segmented toggle — its own row above the Game/Date filters. The
+// Game/Date row itself is halo-event-filter-bar now, and it brings its own
+// rhythm and inset: this page states nothing about it. About ninety lines of
+// pill, menu, backdrop, checkbox and radio came out here (Maryna 2026-08-31).
+
+// Per-game folders (accordion).
+// The 16px under the filter row belongs HERE, not to the row: a block owns the
+// gap above it, once. The hand-rolled filter row used to pay it as its own
+// padding-bottom, and porting to the shared bar (which contributes nothing at
+// its bottom edge, by the rule) left the first folder touching the pills
+// (Maryna 2026-08-31).
+.clip-folders { display: flex; flex-direction: column; gap: var(--gap-loose); padding: var(--space-4) var(--pad-block-x) var(--space-3); }
+// No `overflow: hidden` here (2026-08-27): it clipped the header's overflow
+// menu. With a folder collapsed (78px) the menu opens below the header and
+// 71 of its 85px fell outside the card, so on My clips — where folders start
+// collapsed — it looked like the menu simply never opened. The clip is only
+// needed to keep .fold-body's own background inside the rounded corners, so
+// it now lives on .fold-body instead.
+.folder { border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--card); }
+.fold-head { display: flex; align-items: center; gap: var(--gap-snug); padding: var(--space-4) var(--space-4); }
+.fold-toggle { display: flex; align-items: center; gap: var(--gap-snug); flex: 1; min-width: 0; padding: 0; background: transparent; border: 0; color: inherit; font: inherit; text-align: start; cursor: pointer; border-radius: var(--r-card-sm); }
+// TONAL PRESS, NOT A SCALE. This button is the whole width of the card, so the
+// global 0.97 press scales it about its own centre and slides the chevron and
+// the title 21px inward at 2000px: pressing the row looks like the row jumping
+// sideways, and the panel it opens is the last thing you notice (Maryna
+// 2026-09-03). Exactly the lurch _tokens.scss warns about, back again because
+// the a11y pass (G6) turned this row from a role="button" div into a real
+// button. --press-scale is set locally, the way cards do it, so the global rule
+// still owns the behaviour and reads a 1 here.
+.fold-toggle { --press-scale: 1; }
+.fold-toggle:active { filter: brightness(.92); }
+@media (prefers-reduced-motion: reduce) { .fold-toggle:active { filter: brightness(.92); } }
+.fh-main, .fh-title { display: block; }
+// Down when shut, up when open, like every other disclosure chevron. It used to
+// point right and rotate to down, which is a tree-view idiom, not this app's.
+// The transition and the flip are .halo-chev's now.
+.fh-chev { color: var(--ink3); flex: none; }
+.fh-main { flex: 1; min-width: 0; }
+.fh-title {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  letter-spacing: -.006em;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fh-chips { display: flex; gap: var(--gap-tight); margin-top: var(--space-2); }
+.fh-chip {
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--ink2);
+  background: var(--card2);
+  border: 1px solid var(--hair);
+  padding: 3px var(--space-2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.fh-chip.gold {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+// Overflow trigger + its anchored menu. Same language as the month picker on
+// Games (.monthpill / .monthmenu / .scrim) so this reads as the app's existing
+// "opens a menu" control rather than a new invention.
+.fh-actions { position: relative; display: flex; align-items: center; flex: none; }
+.fh-more {
+  // 32px disc, but padding/margin push the HIT area to 44px (WCAG 2.5.8)
+  // without changing how the row looks.
+  width: 32px; height: 32px; flex: none;
+  display: grid; place-items: center;
+  padding: var(--space-2); margin: calc(var(--space-2) * -1);
+  box-sizing: content-box;
+  border-radius: 50%; cursor: pointer;
+  color: var(--ink2);
+  background: var(--card2); border: 1px solid var(--hair);
+}
+// A near-miss must not shut the panel. Hit-testing follows the border-radius,
+// so the four CORNERS of the 50px disc's box are transparent and fall through to
+// the row behind it — and that row is the folder's own toggle. Aiming at a 16px
+// icon and landing a couple of pixels wide collapsed everything (Maryna
+// 2026-08-30).
+//
+// The overlay is square, deliberately: a circular target drops exactly the
+// diagonal misses that a circle invites. It grows the target to 62px without
+// touching the 50px disc anyone can see. .fh-actions stops propagation, so
+// whatever still falls outside is inert rather than destructive.
+.fh-more::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--r-card-sm);
+}
+@media (hover: hover) {
+  .fh-more:hover { color: var(--ink); border-color: var(--hair2, var(--hair)); }
+}
+// Invisible click-away, matching games.scss's .monthwrap .scrim.
+.fh-away {
+  position: fixed; inset: 0; z-index: var(--z-pop);
+  background: transparent; border: 0; cursor: default;
+}
+.fh-menu {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: calc(var(--z-pop) + 1);
+  min-width: 186px; padding: var(--space-2);
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--shadow-3);
+}
+.fh-mitem {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  width: 100%; padding: var(--space-3) var(--space-3); border: 0; border-radius: var(--r-field);
+  background: transparent; cursor: pointer; text-align: start;
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-body); color: var(--ink2);
+}
+@media (hover: hover) {
+  .fh-mitem:hover { background: var(--card2); color: var(--ink); }
+}
+.fh-mitem halo-icon { color: var(--ink3); flex: none; }
+@media (hover: hover) {
+  .fh-mitem:hover halo-icon { color: var(--accent); }
+}
+
+// The animator. A grid row from 0fr to 1fr opens to the content's own height
+// without anyone having to know it in advance.
+.fold-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-med) ease;
+}
+.folder.open .fold-body { grid-template-rows: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .fold-body { transition: none; }
+}
+// The clipper carries NOTHING but the clip. Padding here would leave the
+// content visible inside it — children are clipped to the padding box, so 12px
+// of padding showed 24px of thumbnail under every collapsed header.
+.fold-clip { overflow: hidden; min-height: 0; }
+// -1px so the clipped corners sit inside .folder's 1px border. The top rule is
+// an inset shadow, not a border: a border is painted outside the content box
+// and would stay visible as a stray hairline under a collapsed header.
+.fold-inner {
+  padding: var(--space-3); background: var(--card2);
+  box-shadow: inset 0 1px 0 var(--hair);
+  border-radius: 0 0 calc(var(--r-card) - 1px) calc(var(--r-card) - 1px);
+}
+// .clip-grid is .halo-reel-grid in the template — the shared 9:16 tile grid,
+// the same one Game's highlights use.
+
+.create-tile {
+  // No fixed aspect — stretches to the row height of the taller clip tiles
+  // (image + title footer) so the first row stays even.
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: var(--r-card-sm);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  color: var(--accent);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  cursor: pointer;
+}
+
+// Vertical clip tile, styled like the horizontal Home rail-card: media block on
+// top (gold play button + duration chip), title in a footer BELOW the image.
+.clip-tile {
+  display: block;
+  text-align: start;
+  border-radius: var(--r-card-sm);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  // Hover comes from .halo-media-card, the shared media-card recipe.
+}
+.clip-tile .ct-th { position: relative; display: block; aspect-ratio: 9 / 16; overflow: hidden; }
+.clip-tile .ct-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.clip-tile .ct-scr { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 2%, transparent), color-mix(in srgb, var(--scrim-ink) 50%, transparent)); }
+/* Premium-locked clip (own reel, basic tier): blur + gold lock badge. */
+.clip-tile.locked .ct-th img { filter: blur(7px) brightness(.6); transform: scale(1.06); }
+.clip-tile.locked { border-color: color-mix(in srgb, var(--accent) 32%, var(--hair)); }
+.clip-tile .ct-lock {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap-tight);
+  // quiet luxury veil — the blurred tease sells, the crest labels
+  background: linear-gradient(180deg, rgba(20, 16, 8, .25), rgba(14, 11, 6, .55));
+}
+.clip-tile .ct-lock .lk-disc {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 50%;   // circle, per the icon-button rule
+  background: radial-gradient(120% 120% at 30% 20%,
+    color-mix(in srgb, var(--premium) 45%, #fff),
+    var(--premium) 55%,
+    color-mix(in srgb, var(--premium) 82%, #000));
+  color: var(--premium-ink);
+  box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--premium) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.clip-tile .ct-lock .lk-w {
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  letter-spacing: .26em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--premium) 45%, #fff);
+}
+.clip-tile .ct-dur {
+  position: absolute;
+  inset-inline-end: 8px;
+  bottom: 8px;
+  background: rgba(0, 0, 0, .55);
+  color: var(--on-media);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  padding: 3px var(--space-2);
+  border-radius: 6px;
+}
+// Play button, bottom-left — mirrors rail-card's `.pl`; lime in both themes.
+.clip-tile .ct-play {
+  position: absolute;
+  inset-inline-start: 8px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--on-secondary);
+  box-shadow: var(--shadow-1);
+  padding-inline-start: 1px;
+}
+.clip-tile .ct-dl {
+  position: absolute;
+  inset-inline-end: 8px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--on-player, #fff);
+  background: color-mix(in srgb, var(--scrim-ink, #000) 46%, transparent);
+  border: 1px solid rgba(255, 255, 255, .22);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.clip-tile .ct-ft { display: block; padding: var(--space-3) var(--space-3) var(--space-3); }
+.clip-tile .ct-title {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  overflow: hidden;
+  // Two lines on the phone grid: every play name is two words and a 3-column
+  // tile showed one of them ("Back-row …") — UI review U5, 2026-09-08.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  min-height: calc(2 * var(--lh-snug, 1.25) * var(--fs-caption));
+  
+}
+
+
+// ---- Milestones (upcoming) ----
+// Shot map's card is margin-less (parent-supplied inset) — inset its wrapper so
+// it matches the pad-x width of the other cards, and the lock overlay aligns.
+halo-blur-lock.inset { display: block; margin: 0 var(--pad-block-x); }
+
+/* Edit action — green (secondary) icon circle, matching the gold icon button beside it. */
+
+/* Team highlights — the game's 16:9 videos, under the athlete's own vertical
+   clips. The RATIO stays different because the content is: a reel is shot
+   portrait, a recap is not. Everything else is shared.
+   It was a horizontal scroller of 188px cards beside a 116px grid, so the two
+   rows sat on different tracks, and the card brought Home's type with it — a
+   16px title next to the tile's 12px, in the same folder (Maryna 2026-08-30). */
+.th-rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap-snug);
+  margin-top: var(--space-4);
+}
+// Two tracks wide: a 16:9 thumb in one clip column would be a 84px-tall stamp.
+// Landing on the SAME tracks is what makes the two rows read as one block.
+// The span goes on the HOST, not on .vcard inside it — the grid item is the
+// component element (same trap as the gauge's divider, 2026-08-30).
+.th-rail > halo-rail-card { grid-column: span 2; min-width: 0; }
+.th-rail ::ng-deep .vcard { width: 100%; border-radius: 14px; }
+// rail-card is Home's component, sized for a 302px rail. Here it is a folder
+// row, so its title steps down to the tile's.
+.th-rail ::ng-deep .nm-t { font-size: var(--fs-caption); }
+
+// ---- child picker (PT ProfileSwitchCluster, prototype-scale) ----
+// Inside the card, so the card's padding IS the inset: the page gutter it used
+// to carry landed the pill 32px from the card's right edge, double-inset. That
+// was already true in the wide panel before the phone got a card too (Maryna
+// 2026-08-31). The bottom gap is the switcher's, not the identity's — the
+// identity is a component and does not know it has a header above it.
+.kidswitch { position: relative; display: flex; justify-content: flex-end; padding: 0 0 var(--space-3); }
+.ks-pill {
+  display: inline-flex; align-items: center; gap: var(--gap-tight); cursor: pointer;
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--ink);
+  background: var(--card2); border: 1px solid var(--hair); border-radius: var(--r-pill);
+  padding-block: var(--space-1) var(--space-1); padding-inline: var(--space-2) var(--space-3); min-height: 34px;
+}
+.ks-avs { display: inline-flex; }
+.ks-av {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-caption);
+  background: var(--accent); color: var(--on-accent);
+  border: 2px solid var(--card2);
+  &:not(:first-child) { margin-inline-start: calc(var(--space-2) * -1); }
+  &:nth-child(2) { background: #2064cf; color: #fff; }
+  &:nth-child(3) { background: #8a4fd3; color: #fff; }
+}
+.ks-av.big { width: 34px; height: 34px; font-size: var(--fs-caption); border: 0; }
+.ks-away { position: fixed; inset: 0; z-index: var(--z-sheet); background: transparent; border: 0; cursor: default; }
+.ks-menu {
+  position: absolute; top: calc(100% + 6px); inset-inline-end: var(--pad-block-x); z-index: calc(var(--z-sheet) + 1);
+  min-width: 240px; display: flex; flex-direction: column; gap: 2px; padding: var(--space-2);
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+  box-shadow: var(--shadow-up);
+}
+.ks-opt {
+  display: flex; align-items: center; gap: var(--gap-snug); width: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-2) var(--space-3); min-height: 48px; color: var(--ink2);
+  background: none; border: 0; border-radius: 8px;
+}
+@media (hover: hover) {
+  .ks-opt:hover { background: var(--band); }
+}
+.ks-opt.on { color: var(--accent); }
+.ks-opt .ks-av:nth-child(1) { margin-inline-start: 0; }
+.ks-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ks-nm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); }
+.ks-mt { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+
+
+// THE PLAYER CARD, at every width. It was `display: contents` on the phone —
+// three loose blocks in the one column, with the identity drawing its own card
+// chrome and the averages hidden, because their live copy was inside the Stats
+// tab. Basic is not offered that tab, so on a phone a Basic athlete's figures
+// had nowhere to be (Maryna 2026-08-31).
+// The split frame itself is .halo-split / .halo-split-rail / .halo-split-main in
+// styles.scss.
+.ycard {
+  margin: var(--space-4) var(--pad-block-x) 0;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+  padding: var(--space-4);
+}
+// The panel is the card now, so the identity row is just a row: its own ground,
+// border, radius and margin come off at EVERY width (only the desktop used to
+// do this). The concentric rings go with them — they were filling an empty right
+// half, and a card with the season figures under the name has no empty half
+// left. halo-upcoming-row keeps the motif, so the decorative language survives.
+.yrail ::ng-deep .idrow {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.yrail ::ng-deep .iddeco { display: none; }
+
+// ---------------------------------------------------------------------------
+// You is a tab, and it should not read narrower than Home and Games beside it.
+// At 1440 it was a 720px column with 360px of empty screen on each side.
+//
+// Every block is centred to one CONTENT measure and contributes no inset of its
+// own, so a card's painted edge and a heading's text land on the same line. The
+// header stays full bleed: it belongs to the shell, not to this page.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  .you { padding-inline: var(--pad-block-x); }
+  // Two panes. The rail is FIXED, like the Games calendar: it is the page's
+  // subject and its switcher — for a parent it picks the child, for a
+  // multi-team athlete it picks the team — so it stays put while the right side
+  // scrolls. That is the same test the Game scoreboard failed: a rail holds
+  // controls, not facts.
+
+  // The panel's chrome is base now; wide only re-states its inset (the column
+  // already carries the page gutter) and centres it.
+  .ycard {
+    margin: 0;
+    padding: var(--space-6) var(--space-5);
+    text-align: center;
+  }
+  // Explicit column. A fixed item is out of flow, so without this the content
+  // auto-places into track 1 and lands underneath the rail.
+
+  // Same rule, a touch more air around it in the roomier panel.
+  halo-stat-grid.avg {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+  }
+  // The page's inset is on .you, so the header would take it twice — its own
+  // .gtop already insets the lockup. Home's wordmark sits at 46; without this
+  // You's sat at 92 (Maryna 2026-08-30).
+  .you > .topbar { margin-inline: calc(var(--pad-block-x) * -1); }
+  // The column already carries the page gutter, so nothing inside it adds one.
+  // Each of these keeps a --pad-block-x for the phone, where the block IS the
+  // page; here that put the tabs at 412 and every clips block at 458, and left
+  // the folders 92px short of the column's right edge (Maryna 2026-08-30).
+  .ycontent .l1tabs,
+  .ycontent .clip-src,
+  .ycontent .clip-folders { padding-inline: 0; }
+  // Same reason, one level in: the bar's inset lives on its own .efb.
+  .ycontent halo-event-filter-bar ::ng-deep .efb { padding-inline: 0; }
+  // The identity is the head of the panel, centred: disc over name over team.
+  // The phone keeps the row; only the direction changes here.
+  .yrail ::ng-deep .idrow {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-snug);
+  }
+  // `align-items: center` above makes every child shrink to its own content on
+  // the cross axis, so the text block measured 116px inside a 278px panel and
+  // the team name ellipsised with 162px of empty card beside it (Maryna
+  // 2026-08-30). The block takes the width; `.team` centres the line inside it.
+  .yrail ::ng-deep .idtxt { width: 100%; }
+  // Just the line, at body size, so the desktop team reads the way the phone's
+  // does. It had a pill; the pill was a second chip on a card that has none.
+  .you .yrail ::ng-deep .team { justify-content: center; }
+  .you .yrail ::ng-deep .team-nm { font-size: var(--fs-body); }
+
+  // BARE FIGURES. No ground, no border, no radius — structure comes from the
+  // rhythm, and the headline figure from the accent it already carries.
+  //
+  // They were tiles, and a tile here was the same recipe as the chart's stat
+  // chips: --card2 ground, --hair border, --r-card-sm corner, and the
+  // highlighted one tinted with the accent exactly like a SELECTED tab. Those
+  // chips are role="tab" and switch the chart; these are a readout. Two things
+  // that look the same have to behave the same, so the readout gives up the
+  // costume (Maryna 2026-08-30).
+  // The dividers come back, but only the dividers — and that whole treatment is
+  // the component's `flush` variant now, not four ::ng-deep overrides here. The
+  // team card needed the same thing, and a second copy of it was the moment to
+  // move it (Maryna 2026-08-30). See the `flush` input on halo-stat-grid.
+
+  // …so the blocks inside them contribute none either. Three different insets
+  // were in play — 46px on the ad, 24px on the identity row and on every
+  // `.card` — which put the page's painted left edges at 180, 204 and 226 in
+  // one column (Maryna 2026-08-29).
+  .you ::ng-deep halo-section-header .esec { padding-inline: 0; }
+
+  // One list: each of these carries a page gutter for the screens that drop it
+  // straight onto the page, and the column is the gutter here. ::ng-deep for the
+  // two that live inside a component that owns their scoping attribute.
+  .you ::ng-deep halo-analytics-card .card,
+  .you ::ng-deep .halo-ad-wrap .ad,
+  .you halo-blur-lock.inset { margin-inline: 0; }
+
+  // Two options do not need 1080px. The BLOCK keeps the measure so the control
+  // starts on the same left edge as everything else; the control itself stops
+  // at the width its labels ask for. A 540px hit area per option is the phone
+  // layout stretched, not a desktop control.
+  //
+  // 320, down from 420. The type is right — 16 is the level-1 tab size across
+  // Game, Home and the auth screens, and dropping it here alone would make an
+  // identical-looking control behave differently per page. What was wrong was
+  // the RATIO: 40px of word in a 205px segment left 165px of empty pill, and the
+  // eye reads that as oversized type (Maryna 2026-08-30). 420 is sized for three
+  // or four long labels, which is Game, not this. Not fit-content: the control
+  // would then change width with the labels, so Clips and Stats would sit on
+  // differently sized switches.
+
+  // Stats takes the whole column, like Clips. It had a 900px reading cap, which
+  // put a section heading at 982 over a card at 900 — a heading wider than the
+  // thing it introduces (Maryna 2026-08-30).
+
+  // The videos row lands on the SAME tracks as the reel grid above it, which is
+  // what makes the two rows read as one block.
+  .th-rail { grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); }
+
+}
+
+// A click-away scrim must not cover the button that opened it — see DESIGN.md,
+// Interaction. Measured on four menus before this fix.
+//
+// WHILE OPEN, and only then. The lift was unconditional, so an ordinary row
+// button sat at 31 against the header's 20 and scrolled over the app chrome
+// (Maryna 2026-08-30). A closed trigger has no scrim to out-rank and belongs in
+// the page's own flow.
+// Keyed on aria-expanded for the same reason .halo-chev is: it is the state the
+// control already publishes, so the paint order cannot disagree with what the
+// control says about itself.
+.fh-more,
+.ks-pill { position: relative; }
+
+.fh-more[aria-expanded='true'] { z-index: calc(var(--z-pop) + 1); }
+// The profile switcher's scrim sits a layer higher, so its trigger does too.
+.ks-pill[aria-expanded='true'] { z-index: calc(var(--z-sheet) + 1); }
+
+@media (min-width: 768px) {
+  .clip-tile .ct-title { display: block; -webkit-line-clamp: unset; white-space: nowrap; text-overflow: ellipsis; min-height: 0; }
+}

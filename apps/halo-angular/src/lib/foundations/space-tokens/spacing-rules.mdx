@@ -1,0 +1,156 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens/Spacing · Rules" />
+
+# Spacing: the rules
+
+Every padding, margin and gap in Halo resolves to a **token**, on one **4px rhythm grid**.
+This page is the working version; the full spec lives in `DESIGN.md` at the repo root.
+
+A raw px spacing value in a component is a **defect**, not a style choice. That is not a
+preference — it is what let four separate components each invent their own screen inset and
+drift to 22 / 22 / 26 / 26px, with no way to tell which was right.
+
+`bun run lint:spacing` fails the build on any raw padding, margin or gap.
+
+---
+
+## How to pick a value
+
+Work down this list and stop at the first hit. Most of the time you stop at step 1 or 2.
+
+**1. Is it page-level rhythm? Use the utility, not a token.**
+
+The utilities already own the right token, so the page just applies a class:
+
+| Class | What it gives you |
+| --- | --- |
+| `.halo-page` | bottom clearance for the floating nav dock |
+| `.halo-stack` | vertical gap between stacked cards / rows (`--stack`) |
+| `.halo-rail` | horizontal scrolling rail with the screen inset + `--rail-gap` |
+| `.halo-nav-dock` | the centred floating dock position |
+
+**2. Does a role token name what you are spacing?** Use it. One change re-spaces every
+component that plays that role — this is the whole mechanism by which a new page adapts
+for free.
+
+| Token | Value | Use for |
+| --- | --- | --- |
+| `--pad-x` | 16px | the screen content inset — anything meeting the screen edge |
+| `--pad-card` | 16px | a standard card or tile interior |
+| `--pad-card-sm` | 12px | a compact row or dense list item interior |
+| `--pad-control-y` / `--pad-control-x` | 8 / 16px | button, chip, pill and tab interiors |
+| `--pad-field-y` / `--pad-field-x` | 12 / 16px | input and field interiors |
+| `--gap-tight` | 8px | icon → label, chip internals |
+| `--gap-snug` | 12px | control rows, header clusters |
+| `--gap-loose` | 16px | separated groups inside one surface |
+| `--block-gap` | 32px | between two page-level blocks — owned by the LOWER one |
+| `--section-bottom` | 16px | a heading to the content it introduces |
+
+The pair is deliberately asymmetric at 2:1: a heading takes more air above than below, so it
+binds to the block it introduces instead of floating between two.
+
+**One owner per gap.** A page-level block contributes *nothing* at its bottom edge — the gap
+belongs to the block below it. This is the one rule where a correct-looking value still
+breaks the page: when two neighbours each add a little, the visible gap is their sum, and it
+changes with whoever happens to sit above. That is how the same section gap rendered 30px
+after a card rail and 32px after the ad banner. The linter discovers page blocks from the
+templates, so it covers blocks that do not exist yet.
+
+**3. Otherwise use a step on the ladder.** `--space-N` is always **N × 4px**, from
+`--space-1` (4px) to `--space-12` (48px). The number is the multiplier, so there is nothing
+to look up and no room to invent a step. Pick the smallest one that reads right.
+
+See **Tokens › Spacing** for the rendered ladder and role bars.
+
+---
+
+## The two ends that leave the ladder
+
+Both are legal. Both must **state a reason in the code** — on the declaration, or in the
+comment block just above its rule. Without a reason the linter treats it as a defect,
+because "someone probably meant it" is exactly how the last spacing system rotted.
+
+**Below 4px — optical corrections.** Hairline offsets, geometric derivations, cap-height
+compensation under League Spartan. The canonical example:
+
+```scss
+// Uneven margins EQUALIZE the visual ink gaps (name baseline → score cap-top
+// vs score baseline → name cap-top): measured 16px both sides at fs 26/54
+// with the League Spartan metric overrides. Equal margins measured 14.6/17.3.
+.escore { margin: 8.4px 0 8.7px; }
+```
+
+**Above 48px — layout dimensions.** A hero offset, clearance under a fixed dock, the drop
+that centres an empty state. These are not rhythm, and naming them would pollute the ladder
+with one-offs. The most valuable case is a *coupled* one, where the comment is what stops a
+pair silently drifting apart:
+
+```scss
+// 52px, above the rhythm ladder: this is a layout dimension, and it is
+// COUPLED — .ob-scroll below subtracts the same 52px from 100dvh so the
+// scroll area ends exactly at the viewport. Change one, change both.
+padding-top: 52px;
+```
+
+---
+
+## Do / Don't
+
+```scss
+/* ✗ Don't — four components doing this is how the insets drifted apart */
+.myrow { padding: 14px 22px; gap: 10px; }
+
+/* ✓ Do — the role names the intent, and the value is decided once */
+.myrow { padding: var(--pad-card-sm) var(--pad-x); gap: var(--gap-tight); }
+```
+
+```scss
+/* ✗ Don't — an off-grid value because it "looked right" */
+.badge { padding: 5px 9px; }
+
+/* ✓ Do — round to the nearest step, then use its token */
+.badge { padding: var(--space-1) var(--space-2); }
+```
+
+```scss
+/* ✗ Don't — a sub-grid nudge with no stated reason */
+.tag { margin-top: 3px; }
+
+/* ✓ Do — either move it onto the grid… */
+.tag { margin-top: var(--space-1); }
+
+/* …or keep it and say why it is off the grid */
+// 3px, not 4: the tag's cap-height sits 1px low against the label beside it.
+.tag { margin-top: 3px; }
+```
+
+---
+
+## What is not on the rhythm grid
+
+Two scales are deliberately exempt, and putting them on the grid would be the mistake:
+
+- **Type.** The `--fs-*` scale is a ratio scale — 9/10/11/12/13/14/15/16/18/20px are all real
+  steps. The rhythm grid governs the space *around* type, never the type itself.
+- **Radii.** `--r-*` is a closed set of five named steps. `--r-field` (15px) and `--r-card-sm`
+  (18px) are shape language, not rhythm, and they do not drift because no component writes a
+  raw radius. Inventing a sixth radius is the defect; an off-grid value inside the five is not.
+
+---
+
+## Existing debt
+
+`tools/spacing-baseline.json` is **recorded debt, not an exemption**, and the list may only
+shrink. It holds two kinds:
+
+- **86 sub-grid values** whose original rationale is lost. Give one a stated reason, or move
+  it onto the grid.
+- **16 bottom edges** on page blocks across You, Games, Team, Events lane, Notification
+  centre, Placeholder and Upgrade. Those pages have not had the one-owner normalization Home
+  got; clearing an entry means giving the block *below* it a top gap, not just deleting the
+  bottom one.
+
+Re-run with `--update-baseline` after clearing entries.
+
+If you touch a file that appears in there, fixing its entry is a welcome side-effect.

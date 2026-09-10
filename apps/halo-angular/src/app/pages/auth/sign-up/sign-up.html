@@ -1,0 +1,68 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <h1 class="sr-only">{{ 'auth.createAccount' | t }}</h1>
+  <halo-segmented-toggle [options]="modes" [value]="mode()"
+    (valueChange)="mode.set($event); onMode($event)" />
+
+  <div class="step">
+    <span class="step-chip">{{ 'auth.stepOf' | t: { n: 1, total: 3 } }} <span class="dot">·</span> {{ 'auth.accountDetails' | t }}</span>
+    <span class="step-sub">{{ 'auth.personalisationNext' | t }}</span>
+  </div>
+
+  <div class="fields">
+    <halo-form-field [label]="'auth.displayName' | t" placeholder="Tal Weiss" autocomplete="name"
+      [value]="name()" (valueChange)="name.set($event)" />
+
+    <halo-form-field [label]="'auth.email' | t" type="email" placeholder="you@example.com"
+      inputmode="email" autocomplete="email"
+      [value]="email()" (valueChange)="email.set($event)" />
+
+    <halo-form-field [label]="'auth.password' | t" autocomplete="new-password" [type]="pwType()" [placeholder]="'auth.atLeast6' | t"
+      [hint]="'auth.min6' | t" [error]="pwError()"
+      [value]="password()" (valueChange)="password.set($event)">
+      <button slot-right class="pw-toggle" type="button" (click)="showPw.set(!showPw())">
+        {{ showPw() ? ('auth.hide' | t) : ('auth.show' | t) }}
+      </button>
+    </halo-form-field>
+
+    <halo-form-field [label]="'auth.confirmPassword' | t" autocomplete="new-password" [type]="pwType()" [placeholder]="'auth.typeAgain' | t"
+      [error]="confirmError()"
+      [value]="confirm()" (valueChange)="confirm.set($event)" />
+
+    @if (isUnder13()) {
+      <halo-form-field [label]="'auth.birthDate' | t" autocomplete="bday" type="date"
+        [value]="birth()" (valueChange)="birth.set($event)" />
+    } @else {
+      <div class="grid2">
+        <halo-form-field [label]="'auth.birthDate' | t" autocomplete="bday" type="date"
+          [value]="birth()" (valueChange)="birth.set($event)" />
+        <halo-form-select [label]="'auth.gender' | t" autocomplete="sex" [placeholder]="'auth.select' | t" [options]="genders"
+          [value]="gender()" (valueChange)="gender.set($event)" />
+      </div>
+
+      <halo-form-select [label]="'auth.country' | t" autocomplete="country-name" [placeholder]="'auth.selectCountry' | t" [options]="countries"
+        [value]="country()" (valueChange)="country.set($event)" />
+    }
+  </div>
+
+  @if (isUnder13()) {
+    <div class="agegate" role="status" aria-live="polite">
+      <span class="ag-ic"><halo-icon name="calendar" [size]="20" /></span>
+      <div class="ag-txt">
+        <div class="ag-t">{{ 'auth.ages13' | t }}</div>
+        <div class="ag-s">{{ 'auth.comeBack13' | t }}</div>
+      </div>
+    </div>
+  } @else {
+    <halo-button class="cta" variant="primary" [block]="true" [disabled]="!valid()"
+      (press)="submit()">{{ 'auth.continue' | t }}</halo-button>
+
+    <div class="or"><span>{{ 'auth.or' | t }}</span></div>
+
+    <div class="socials">
+      <halo-social-button provider="apple" [label]="'auth.signUpApple' | t" (press)="social('apple')" />
+      <halo-social-button provider="google" [label]="'auth.signUpGoogle' | t" (press)="social('google')" />
+    </div>
+
+    <p class="terms" [innerHTML]="'auth.termsCreate' | t"></p>
+  }
+</halo-auth-shell>

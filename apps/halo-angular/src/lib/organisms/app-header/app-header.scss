@@ -1,0 +1,175 @@
+:host { display: block; }
+
+.gtop {
+  position: relative;   // anchor for the account popover
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--space-3) var(--pad-x) 2px;
+}
+
+// ---------------------------------------------------------------------------
+// Account popover — hangs off the avatar from the tablet band up. Never renders
+// below it: there the trigger routes to the full screen instead, because a
+// popover on a 375px viewport is a full-screen sheet wearing a card's clothes.
+// ---------------------------------------------------------------------------
+// Each trigger is its own positioning context, so its panel hangs off THAT
+// control rather than off the bar's right edge. Two panels anchored to the same
+// edge would open in the same place from two different buttons.
+.hact { position: relative; display: inline-flex; }
+
+.pop-catch {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-pop);
+}
+.pop {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  z-index: calc(var(--z-pop) + 1);
+  width: 340px;
+  // Measured against the HEADER, not this 38px trigger: `100%` of the anchor
+  // would cap the panel at the width of the button it hangs from.
+  max-width: calc(100vw - 2 * var(--pad-x));
+  // Caps against the viewport rather than a fixed number: a laptop at 1280x720
+  // has less room under this bar than a monitor, and the list has to scroll
+  // there rather than run off the bottom. The reserve covers the bar above it
+  // plus a 16px breath below — it used to hold back 36px at the bottom, which
+  // bought nothing and was part of why a short window scrolled by ~100px.
+  max-height: calc(100dvh - var(--devbar-h) - 76px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-3);
+}
+
+// The feed needs more room than a menu of labels: its rows carry a headline and
+// a line of body text, and at 340px every one of them wrapped to three lines.
+.pop-notif { width: 380px; }
+
+.sp { flex: 1; }
+
+// OFFICIAL Hoops TV lockup (brandmark + wordmark), verbatim — Green
+// colorway on dark themes, Purple on light (both supplied files; never
+// recoloured in CSS). The brandmark is decorative (alt=""); the wordmark
+// carries the accessible name.
+.wmbtn {
+  display: flex; align-items: center; gap: var(--gap-tight); border: 0; background: none; padding: 0; margin: 0; cursor: pointer;
+  min-height: 24px;   // 2.5.8 target floor (a11y audit 2026-09-02 G29)
+}
+.bm { height: 20px; width: auto; display: block; }
+.wm { height: 13px; width: auto; display: block; }
+.bm-light, .wm-light { display: none; }
+:host-context(.halo[data-theme='light']) {
+  .bm-dark, .wm-dark { display: none; }
+  .bm-light, .wm-light { display: block; }
+}
+
+
+// Menu trigger — the user's avatar (2026-08-26, replacing a gear glyph that
+// misread as a sun at this size). `halo-avatar` (see app-header.ts import)
+// owns the circle's own background/box-shadow/photo-vs-monogram switch, so
+// this button is just a plain, unstyled tap target around it.
+.avbtn { flex: none; display: grid; place-items: center; cursor: pointer; padding: 0; background: none; border: 0; }
+
+// Inline tab nav (Games / You — no Home, see the template) — DESKTOP ONLY.
+// Text-only labels, no tab icons: at this size the glyph only repeats the
+// word beside it. The floating dock is the mobile answer and hides at this
+// breakpoint, which used to leave the desktop with no way out of Home at all
+// (Maryna 2026-08-28). Hidden by default so mobile never shows the row twice.
+.hnav { display: none; }
+
+.hni {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-tight);   // only ever between a label and the lock badge
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  // Vertical padding keeps the 24px hit area; horizontal stays tight because
+  // the underline below measures the LABEL, and a padded label makes a rule
+  // that overshoots the word it belongs to.
+  padding: var(--pad-control-y) 2px;
+  color: var(--ink2);
+  font-family: var(--body);
+  font-weight: 700;
+  // --fs-body, not --fs-body-lg: 14px sits against a 13px wordmark. At 16 the
+  // nav outweighed the brand mark it stands beside.
+  font-size: var(--fs-body);
+  white-space: nowrap;
+  transition: color var(--dur-med);
+}
+
+/* The underline is the whole state language here, replacing a filled pill that
+   read as a tap target rather than a nav item — a phone idiom on a pointer
+   surface. It also matches the section tab row 100px below (see
+   halo-segmented-toggle, tabs mode), so "which section am I in" is asked and
+   answered the same way twice on one screen instead of two ways
+   (Maryna 2026-08-28). */
+.hni::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform var(--dur-med) var(--ease-out-soft), opacity var(--dur-med);
+}
+
+// Hover is a pointer-only affordance: on touch it sticks after the tap and
+// leaves a nav item looking permanently half-selected.
+@media (hover: hover) {
+  .hni:hover { color: var(--ink); }
+  .hni:hover::after { transform: scaleX(1); opacity: .4; }
+}
+
+.hni.on { color: var(--accent); }
+.hni.on::after { transform: scaleX(1); opacity: 1; }
+
+// The press lands on the label, not the whole row: a nav item is a word, and
+// scaling the padded box around it reads as a button being pushed.
+.hni:active {
+  transform: none;
+  color: var(--accent-deep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hni::after { transition: none; }
+}
+
+// locked tab (You on Free) — dimmed, matching the dock's treatment
+.hni.locked { opacity: .55; }
+
+// Desktop web (Home only, >=1280px): the bar shares the page's wider content
+// inset so the lockup lines up with the rails and section heads below it
+// instead of hanging 22px from the edge (Maryna 2026-08-28).
+// The bar takes the wide inset from the tablet breakpoint, so it lines up with
+// the rails beneath it on every screen that has room for them.
+@media (min-width: 768px) {
+  .gtop { padding-inline-start: var(--pad-x-wide); padding-inline-end: var(--pad-x-wide); gap: var(--space-5); }
+}
+
+// The nav row appears at 1024, not 768: a portrait tablet is held like a large
+// phone and keeps the floating dock, while a landscape one has the width for an
+// inline row and the dock would float lost in the middle of it.
+//
+// Not scoped to the Home route any more (2026-08-29). It was
+// `:host-context(.dhome)`, so Games, You and the settings screens got a bar with
+// a wordmark and nothing else — a header that changes shape depending on which
+// page you are on, which is not how a desktop app behaves. The dock hides at the
+// same breakpoint app-wide (styles.scss), so the two navigation models still
+// never appear together.
+@media (min-width: 1024px) {
+  // Wider than the pills needed: the pill carried its own padding, a bare label
+  // does not, so the words have to be separated by the row itself.
+  .hnav { display: inline-flex; align-items: center; gap: var(--space-6); }
+}

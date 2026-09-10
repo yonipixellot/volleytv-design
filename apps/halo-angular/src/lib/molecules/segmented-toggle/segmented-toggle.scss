@@ -1,0 +1,171 @@
+:host { display: block; }
+
+.seg {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-pill);
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+// Scrolling ONLY when the labels genuinely overflow. A permanent scroll box
+// clips the global focus ring's outer halo (styles.scss :focus-visible), so the
+// common case stays overflow-visible (2026-08-27).
+.seg.scrolls { overflow-x: auto; }
+
+.seg.inline {
+  display: inline-flex;
+  padding: 3px;
+  background: transparent;
+  border-color: transparent;
+  gap: var(--gap-tight);
+}
+.seg.inline .segbtn {
+  flex: none;
+  font-size: var(--fs-body);
+  min-height: 44px;
+  padding: var(--space-3) var(--pad-control-x);
+  border: 1px solid var(--hair);
+}
+// sub-tabs read quieter than the bold main tabs — accent tint, not a full fill
+.seg.inline .segbtn.on {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.segbtn {
+  // `1 1 0`, not `1 0 auto`: free space is split equally from a zero basis, so
+  // segments come out EQUAL whenever the labels fit (at 375px a third is 106px
+  // and the longest label needs 100px). Growing from each label's own width
+  // instead made them 93/137/88 — proportional to the copy, not to the row.
+  // `min-width: max-content` keeps the fallback graceful: the long label takes
+  // what it needs, the others stay equal to each other.
+  flex: 1 1 0;
+  min-width: max-content;
+  position: relative;   // above the sliding thumb
+  z-index: 1;
+  border: 0;
+  cursor: pointer;
+  background: transparent;
+  // --ink2, not --ink3: unselected SECTIONS have to read as available options,
+  // and --ink3 was the app's quietest ink inside its loudest control.
+  color: var(--ink2);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  letter-spacing: .01em;
+  // 44px minimum (WCAG 2.5.8 / PRODUCT.md). This is the app's LEVEL 1 section
+  // switch since 2026-08-27, and it measured 34px before.
+  min-height: 44px;
+  // 6px, not 10: segments are equal-width, so side padding only eats the label's
+  // own room. "Highlights 6" was 11px short of fitting a third of 320px.
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  transition: color var(--dur-med);
+}
+// count in a tab label (e.g. "Highlights 6") sits as a quiet inline badge
+.segbtn .n {
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  opacity: .7;
+  margin-left: var(--space-1);
+  vertical-align: 1px;
+}
+.segbtn.on { color: var(--on-accent); }
+// Smallest supported width with three level-1 sections: one step down so the
+// longest label still fits without truncation.
+@media (max-width: 360px) {
+  .seg:not(.tabs):not(.inline) .segbtn { font-size: var(--fs-body); }
+}
+
+/* ---- sliding marker ----
+   One layer that travels to the picked segment. Width comes from a variable
+   (set instantly), position from a transform (animated), so the pill's 22px
+   round ends never distort — scaling a fully-rounded 44px block would. */
+.thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  // left: 0, not the container's 3px padding — `--tx` comes from offsetLeft,
+  // which already includes that padding. Adding both put the thumb 3px right of
+  // its segment, hard against the border (2026-08-27).
+  left: 0;
+  width: var(--sw, 0);
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transform: translateX(var(--tx, 0));
+  pointer-events: none;
+}
+.seg.ready .thumb { transition: transform var(--dur-med) var(--ease-out-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .seg.ready .thumb { transition: none; }
+}
+
+// ---- tabs mode: underline row (page sections, and open-ended filters) ----
+.seg.tabs {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--hair);
+  padding: 0;
+  gap: var(--space-5);
+}
+/* A row that scrolls has to SAY it scrolls: the end that still hides content
+   fades, instead of a label ending mid-word. Home hides 154px of team tabs.
+   Only the hiding end fades — a row scrolled to its last tab must not dim the
+   label it just brought into view (2026-08-27). */
+.seg.tabs.fade-r:not(.fade-l) {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 32px), transparent 100%);
+          mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+.seg.tabs.fade-l:not(.fade-r) {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 100%);
+}
+.seg.tabs.fade-l.fade-r {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+}
+.seg.tabs .segbtn {
+  flex: none;
+  min-width: 0;
+  border-radius: 0;
+  // 12px above / 11px below the 21px line box = 44px tap height; the row used
+  // to be 26px, the smallest target in the app on its main switch.
+  padding: var(--space-3) 0 var(--space-3);
+  min-height: 44px;
+  background: transparent;
+  font-weight: 700;
+  font-size: var(--fs-body);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  transition: color var(--dur-med) ease;
+}
+@media (hover: hover) {
+  .seg.tabs .segbtn:hover { color: var(--ink2); }
+  // The pill variant had none at all — only the underline-tab variant above did,
+  // so the app's LEVEL 1 switch was the one control that never answered a
+  // pointer (Maryna 2026-08-30). A text control hovers on its label; the
+  // selected segment is excluded, since a hover there promises nothing.
+  .seg:not(.tabs) .segbtn:not(.on):hover { color: var(--ink); }
+}
+.seg.tabs .segbtn.on { color: var(--accent); background: transparent; }
+
+/* The underline is the same travelling layer. Here it DOES scale: a 2px bar
+   carries no radius worth distorting, so one transform moves and resizes it. */
+.seg.tabs .thumb {
+  top: auto;
+  bottom: -1px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  transform: translateX(var(--tx, 0)) scaleX(var(--sx, 0));
+  transform-origin: left center;
+}

@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-28T00:00:00Z",
+  "title": "Design System: Halo",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#eef1f6",
+        "tonalRamp": [
+          "#1e1e1f",
+          "#595a5c",
+          "#95979a",
+          "#d0d3d7",
+          "#f0f3f7",
+          "#f4f6f9",
+          "#f9fafc",
+          "#fdfdfe"
+        ]
+      },
+      "screen": {
+        "role": "neutral",
+        "displayName": "Screen Black",
+        "canonical": "#0b0c0f",
+        "tonalRamp": [
+          "#010202",
+          "#040406",
+          "#070809",
+          "#0a0a0d",
+          "#2a2a2d",
+          "#666769",
+          "#a4a4a5",
+          "#e0e1e1"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card Surface",
+        "canonical": "#16181d",
+        "tonalRamp": [
+          "#030304",
+          "#08090b",
+          "#0e0f12",
+          "#131519",
+          "#333539",
+          "#6d6f72",
+          "#a8a8aa",
+          "#e2e2e3"
+        ]
+      },
+      "card-raised": {
+        "role": "neutral",
+        "displayName": "Raised Surface",
+        "canonical": "#1e2126",
+        "tonalRamp": [
+          "#040405",
+          "#0b0c0e",
+          "#131518",
+          "#1a1d21",
+          "#3a3d41",
+          "#727477",
+          "#abacae",
+          "#e3e3e4"
+        ]
+      },
+      "live": {
+        "role": "status",
+        "displayName": "Live Red",
+        "canonical": "#ff5a5f",
+        "tonalRamp": [
+          "#200b0c",
+          "#602224",
+          "#9f383b",
+          "#df4f53",
+          "#ff6f73",
+          "#ff989b",
+          "#ffc1c3",
+          "#ffeaeb"
+        ]
+      },
+      "live-filled": {
+        "role": "status",
+        "displayName": "Live Red Strong",
+        "canonical": "#d12b2f",
+        "tonalRamp": [
+          "#1a0506",
+          "#4e1012",
+          "#831b1d",
+          "#b72629",
+          "#d74649",
+          "#e27a7d",
+          "#eeb0b1",
+          "#f9e4e5"
+        ]
+      },
+      "positive": {
+        "role": "status",
+        "displayName": "Positive Green",
+        "canonical": "#37d886",
+        "tonalRamp": [
+          "#071b11",
+          "#155132",
+          "#228754",
+          "#30bd75",
+          "#50dd95",
+          "#82e7b3",
+          "#b4f0d2",
+          "#e6faf0"
+        ]
+      },
+      "premium-gold": {
+        "role": "fixed",
+        "displayName": "Premium Gold",
+        "canonical": "#ffce3a",
+        "tonalRamp": [
+          "#201a07",
+          "#604d16",
+          "#9f8124",
+          "#dfb433",
+          "#ffd453",
+          "#ffe084",
+          "#ffedb5",
+          "#fff9e6"
+        ]
+      },
+      "skin-base-primary": {
+        "role": "primary",
+        "displayName": "Signal Blue (base skin fallback)",
+        "canonical": "#5c86ff",
+        "tonalRamp": [
+          "#0c1120",
+          "#223260",
+          "#3a549f",
+          "#5075df",
+          "#7095ff",
+          "#99b3ff",
+          "#c2d2ff",
+          "#ebf0ff"
+        ]
+      },
+      "skin-base-secondary": {
+        "role": "secondary",
+        "displayName": "Violet Accent (base skin fallback)",
+        "canonical": "#8b5cff",
+        "tonalRamp": [
+          "#110c20",
+          "#342260",
+          "#573a9f",
+          "#7a50df",
+          "#9a70ff",
+          "#b699ff",
+          "#d4c2ff",
+          "#f0ebff"
+        ]
+      },
+      "skin-ba-primary": {
+        "role": "primary",
+        "displayName": "BA Forest (Basketball Australia)",
+        "canonical": "#00693e",
+        "tonalRamp": [
+          "#000d08",
+          "#002717",
+          "#004227",
+          "#005c36",
+          "#207c56",
+          "#60a186",
+          "#9fc7b7",
+          "#dfece7"
+        ]
+      },
+      "skin-ba-secondary": {
+        "role": "secondary",
+        "displayName": "BA Gold (Basketball Australia)",
+        "canonical": "#ffce3a",
+        "tonalRamp": [
+          "#201a07",
+          "#604d16",
+          "#9f8124",
+          "#dfb433",
+          "#ffd453",
+          "#ffe084",
+          "#ffedb5",
+          "#fff9e6"
+        ]
+      },
+      "skin-hoopstv-primary": {
+        "role": "primary",
+        "displayName": "Hoops TV Purple",
+        "canonical": "#6a00ff",
+        "tonalRamp": [
+          "#0d0020",
+          "#280060",
+          "#42009f",
+          "#5d00df",
+          "#7d20ff",
+          "#a260ff",
+          "#c79fff",
+          "#ecdfff"
+        ]
+      },
+      "skin-hoopstv-secondary": {
+        "role": "secondary",
+        "displayName": "Hoops TV Lime",
+        "canonical": "#c2ff01",
+        "tonalRamp": [
+          "#182000",
+          "#496000",
+          "#799f01",
+          "#aadf01",
+          "#caff21",
+          "#d9ff60",
+          "#e8ffa0",
+          "#f7ffdf"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero score numerals only — the loudest text on any screen."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles. Carries the tenant accent, not neutral ink."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and row titles — team names, video titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Standard UI copy and list text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Meta captions, tags, tab labels. Always uppercase and tracked wide."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-1",
+        "value": "0 4px 12px -4px rgba(0, 0, 0, .5)",
+        "purpose": "Chip level — the smallest lift, for pills and small controls."
+      },
+      {
+        "name": "shadow-2",
+        "value": "0 8px 20px -10px rgba(0, 0, 0, .5)",
+        "purpose": "Card level — default resting elevation for any card or tile."
+      },
+      {
+        "name": "shadow-3",
+        "value": "0 20px 44px -18px rgba(0, 0, 0, .6)",
+        "purpose": "Floating level — nav docks, popovers, hero cards."
+      },
+      {
+        "name": "shadow-up",
+        "value": "0 -18px 50px -16px rgba(0, 0, 0, .55)",
+        "purpose": "Sheet level — cast upward, because sheets enter from the bottom edge."
+      },
+      {
+        "name": "edge",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, .07)",
+        "purpose": "1px inner top highlight on floating surfaces; the only implied light direction."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-fast",
+        "value": ".12s",
+        "purpose": "Interactive feedback — press, toggle."
+      },
+      {
+        "name": "dur-med",
+        "value": ".15s",
+        "purpose": "Standard hover and state transitions."
+      },
+      {
+        "name": "dur-slow",
+        "value": ".3s",
+        "purpose": "Entrances — sheets, drawers."
+      },
+      {
+        "name": "ease-spring",
+        "value": "cubic-bezier(.2, .8, .2, 1)",
+        "purpose": "Playful, slightly overshooting snap."
+      },
+      {
+        "name": "ease-out-soft",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Long decelerating settle."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "desktop",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one thing to press. Accent-filled, so its hue belongs to whichever tenant skin is live.",
+      "html": "<button class=\"ds-btn-primary\">WATCH LIVE</button>",
+      "css": ".ds-btn-primary{font-family: var(--body); box-sizing: border-box;display:inline-flex;align-items:center;gap:var(--gap-tight);border:0;cursor:pointer;padding:16px 20px;border-radius:var(--r-field);background:var(--accent);color:var(--on-accent);font-weight:800;font-size:var(--fs-lg2);letter-spacing:.02em;box-shadow:0 8px 20px -10px color-mix(in srgb, var(--accent) 55%, transparent);transition:filter var(--dur-med)}.ds-btn-primary:hover{filter:brightness(1.05)}.ds-btn-primary:focus-visible{outline:0;box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent)}"
+    },
+    {
+      "name": "Premium Button",
+      "kind": "button",
+      "refersTo": "button-premium",
+      "description": "Fixed gold in every skin — Premium is platform language, not brand language.",
+      "html": "<button class=\"ds-btn-premium\">GO PREMIUM</button>",
+      "css": ".ds-btn-premium{font-family: var(--body); box-sizing: border-box;display:inline-flex;align-items:center;border:0;cursor:pointer;padding:16px 20px;border-radius:var(--r-field);background:linear-gradient(150deg,var(--premium),var(--premium-deep));color:var(--premium-ink);font-weight:800;font-size:var(--fs-lg2);letter-spacing:.02em;transition:filter var(--dur-med)}.ds-btn-premium:hover{filter:brightness(1.04)}"
+    },
+    {
+      "name": "Disabled Button",
+      "kind": "button",
+      "refersTo": "button-disabled",
+      "description": "Always the neutral recipe — never a dimmed colored variant, which read as a third muddy button.",
+      "html": "<button class=\"ds-btn-disabled\" disabled>WATCH LIVE</button>",
+      "css": ".ds-btn-disabled{font-family: var(--body); box-sizing: border-box;padding:16px 20px;border:0;border-radius:var(--r-field);background:var(--card2);color:var(--ink3);font-weight:800;font-size:var(--fs-lg2);cursor:not-allowed}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Active state tints rather than inverting to a solid fill.",
+      "html": "<div style=\"display:flex;gap:var(--gap-tight)\"><button class=\"ds-chip\">CLUB</button><button class=\"ds-chip ds-chip-on\">LEAGUE</button></div>",
+      "css": ".ds-chip{font-family: var(--body); box-sizing: border-box;cursor:pointer;padding:var(--pad-control-y) var(--pad-control-x);border-radius:var(--r-pill);background:var(--card2);border:1px solid var(--hair);color:var(--ink2);font-weight:700;font-size:var(--fs-sm);letter-spacing:.06em;text-transform:uppercase;transition:color var(--dur-med),background var(--dur-med)}.ds-chip:hover{color:var(--ink)}.ds-chip-on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 14%,transparent)}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "One flat fill, one hairline, Shadow 2 at rest. No lift on hover — hover tints instead.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-t\">Hoopstars · Vikings</div><div class=\"ds-card-s\">Monday Men 14 · Full game</div></div>",
+      "css": ".ds-card{font-family: var(--body); box-sizing: border-box;max-width:260px;padding:var(--pad-card);border-radius:var(--r-card-sm);background:var(--card);border:1px solid var(--hair);box-shadow:var(--shadow-2)}.ds-card-t{font-weight:700;font-size:var(--fs-lg2);color:var(--ink);line-height:1.2}.ds-card-s{margin-top:var(--space-1);font-weight:500;font-size:var(--fs-md);color:var(--ink3);line-height:1.5}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Focus shifts the border to the accent and adds a soft tinted ring — never a bare outline.",
+      "html": "<input class=\"ds-input\" placeholder=\"you@example.com\" />",
+      "css": ".ds-input{font-family: var(--body); box-sizing: border-box;width:260px;padding:var(--pad-field-y) var(--pad-field-x);border-radius:var(--r-field);background:var(--card);border:1px solid var(--hair);color:var(--ink);font-size:var(--fs-md)}.ds-input::placeholder{color:var(--ink3)}.ds-input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "Icon-only controls are perfect circles at the sanctioned 38px — never rounded rectangles.",
+      "html": "<button class=\"ds-iconbtn\" aria-label=\"Notifications\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9\"/><path d=\"M13.7 21a2 2 0 0 1-3.4 0\"/></svg></button>",
+      "css": ".ds-iconbtn{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--hair);color:var(--ink);cursor:pointer;transition:background var(--dur-med)}.ds-iconbtn:hover{background:var(--card)}"
+    },
+    {
+      "name": "Section Header",
+      "kind": "custom",
+      "description": "Introduces every rail, and the worked example of Ornament-Yields-First: the rule collapses before the title concedes, the title truncates before the count is lost.",
+      "html": "<div class=\"ds-sec\"><span class=\"ds-sec-tk\"></span><h2 class=\"ds-sec-h\">GAME HIGHLIGHTS</h2><span class=\"ds-sec-rl\"></span><span class=\"ds-sec-c\">10 clips</span></div>",
+      "css": ".ds-sec{font-family: var(--body); box-sizing: border-box;display:flex;align-items:center;gap:var(--gap-tight);max-width:330px;padding:var(--section-top) 0 var(--section-bottom)}.ds-sec-tk{flex:none;width:3px;height:16px;border-radius:3px;background:var(--accent)}.ds-sec-h{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;font-family:var(--disp);font-weight:700;font-size:var(--fs-d-xs);letter-spacing:.02em;text-transform:uppercase;color:var(--accent)}.ds-sec-rl{flex:0 100 40px;min-width:0;height:2px;border-radius:2px;opacity:.45;background:var(--accent)}.ds-sec-c{flex:none;font-weight:600;font-size:var(--fs-sm);color:var(--ink3);white-space:nowrap}"
+    },
+    {
+      "name": "Desktop Header Nav",
+      "kind": "nav",
+      "description": "The >=1280px navigation: text-only labels, active marked by an accent tint rather than a solid fill. Home is absent by design — the wordmark is already the way back.",
+      "html": "<nav class=\"ds-hnav\"><button class=\"ds-hni ds-hni-on\">Games</button><button class=\"ds-hni\">You</button></nav>",
+      "css": ".ds-hnav{font-family: var(--body); box-sizing: border-box;display:inline-flex;align-items:center;gap:var(--space-1)}.ds-hni{border:0;background:transparent;cursor:pointer;padding:9px 16px;border-radius:var(--r-pill);color:var(--ink2);font-weight:700;font-size:var(--fs-lg);transition:color var(--dur-med),background var(--dur-med)}.ds-hni:hover{color:var(--ink);background:var(--card2)}.ds-hni-on{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}"
+    },
+    {
+      "name": "Bottom Nav Dock",
+      "kind": "nav",
+      "description": "The <1280px navigation. Active tab fills solid in the accent — internally 'a basketball'. Never present at the same time as the header nav.",
+      "html": "<nav class=\"ds-dock\"><button class=\"ds-ni ds-ni-on\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z\"/></svg>HOME</button><button class=\"ds-ni\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"14\" rx=\"2.5\"/><path d=\"M3.5 9.5h17M9 5v14\"/></svg>GAMES</button></nav>",
+      "css": ".ds-dock{font-family: var(--body); box-sizing: border-box;display:inline-flex;align-items:center;gap:var(--gap-loose);height:60px;padding:0 var(--space-3);border-radius:30px;background:var(--card2);border:1px solid var(--hair);box-shadow:var(--shadow-3),var(--shadow-1),var(--edge)}.ds-ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:50px;height:50px;padding:0 var(--space-2);border:0;border-radius:25px;background:transparent;cursor:pointer;color:var(--ink3);font-weight:800;font-size:var(--fs-3xs);letter-spacing:.04em;text-transform:uppercase;transition:color var(--dur-med),background var(--dur-med)}.ds-ni-on{color:var(--on-accent);background:var(--accent);box-shadow:0 7px 16px -6px color-mix(in srgb,var(--accent) 55%,transparent)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Quiet chassis, loud sport",
+    "overview": "Halo is not one brand's app skin — it's a base layer that tenants wear, and the roster grows. Every screen is built from the same flat, tonal, dark-first chassis: near-black surfaces, hairline borders instead of heavy card outlines, restrained neutral chrome everywhere the product itself isn't the point. The chassis stays deliberately quiet so two things can be loud instead — the tenant's own two brand colors, and the actual sport.\n\nThe system owns no palette. It owns a contract: two knobs (--primary, --secondary), a rule for which one leads the accent role per theme, and a set of semantic tokens every component reads instead. Green and purple belong to Hoops TV; forest and gold belong to Basketball Australia; signal blue is only the neutral fallback when nobody has set a knob. If a design decision cannot survive its accent changing overnight, it is not a Halo decision.\n\nSpace is the other half of the contract, and it is the half that used to leak. Every gap in the product now resolves to one 4px rhythm grid, reached through a token that names the role rather than the number, because the alternative was measurable: four separate components each hardcoded their own screen inset, drifted to 22 / 22 / 26 / 26px, and no rule could tell you which was right.",
+    "keyCharacteristics": [
+      "No palette of its own — two CSS custom properties change per tenant, and everything interactive derives from them.",
+      "Dark-first: every token, shadow, and scrim is authored for the dark theme first, with an explicit AA-checked light variant.",
+      "Flat and tonal elevation — depth from layered near-black surfaces and colorless shadows, never surface texture.",
+      "All-soft-corner shape language — pills for controls, 15-24px radii for everything else. No sharp rectangles.",
+      "One 4px rhythm grid, addressed by semantic spacing tokens; a raw px spacing value in a component is a defect.",
+      "Two fixed exceptions to tenant theming: Premium gold and OS-style system controls."
+    ],
+    "rules": [
+      {
+        "name": "The Two-Knob Rule",
+        "section": "colors",
+        "body": "A tenant is defined entirely by its two knobs plus which one leads per theme. If a skin needs a third color to feel on-brand, the component needs a new semantic token — not the tenant a third knob."
+      },
+      {
+        "name": "The No-House-Palette Rule",
+        "section": "colors",
+        "body": "Halo has no brand color, and no document, mockup, or component may imply one. Components read `--accent` and the role tokens; a tenant hex never appears in component CSS. When you need to *show* color, show it labeled as a skin."
+      },
+      {
+        "name": "The Gold Exception Rule",
+        "section": "colors",
+        "body": "Premium gold never derives from the knobs. \"Premium\" is platform language, not brand language, so it reads identically under every league's colors. OS-style system controls (the toggle green) are exempt for the same reason: a switch should read as a switch, not as brand."
+      },
+      {
+        "name": "The Metric-Match Rule",
+        "section": "typography",
+        "body": "League Spartan ships oversized ascent/descent metrics; every display use overrides `ascent-override`/`descent-override` so caps sit optically centered instead of floating in an oversized box. Never drop the display face into a layout without checking this — it is also why the type scale carries a 20px headline step that visually matches Antonio at 24px."
+      },
+      {
+        "name": "The One Voice Rule",
+        "section": "typography",
+        "body": "A component is either display (League Spartan, shouting) or body (Inter, reading). Never both in one text node."
+      },
+      {
+        "name": "The Ratio-Not-Grid Rule",
+        "section": "typography",
+        "body": "The type scale is a ratio scale and is deliberately *not* on the 4px rhythm grid. Font sizes reference `--fs-*`; the rhythm grid governs the space *around* type, never the type itself. Do not round a step to a multiple of four."
+      },
+      {
+        "name": "The 4px Rhythm Rule",
+        "section": "layout",
+        "body": "Every padding, margin, and gap is a step on the 4px grid. Reach for the semantic token that names the role first (`pad-card`, `gap-tight`, `pad-control-x`, `stack`); use a primitive `space-*` step only for one-off rhythm no role names. The ladder is arithmetic, not a lookup table — `space-N` is always N × 4px, from `space-1` (4px) to `space-12` (48px) — so there is nothing to memorise and no room to invent a step. Pick the smallest one that reads right; `10px`, `14px`, `22px` are never the answer."
+      },
+      {
+        "name": "The Raw-Value Rule",
+        "section": "layout",
+        "body": "A raw px spacing value in a component is a defect, not a style choice. The grid alone does not hold: before this rule the codebase had 930 hardcoded spacing literals against 101 token references, 62% of them off any grid, and four separate components each inventing the screen inset. A role token means the decision is made once and every page inherits it — which is the whole mechanism by which a new page adapts for free."
+      },
+      {
+        "name": "The Optical Correction Rule",
+        "section": "layout",
+        "body": "Values below 4px, and sub-pixel values, are off the grid *by design* — they are a separate, sanctioned class: hairline offsets, geometric derivations from another dimension, and cap-height compensation under the display face. They stay legal, and each one must carry a one-line reason in the code — on the declaration or in the comment block just above its rule. Without a stated reason it is a defect, not an optical correction. The canonical example is the hero score's asymmetric `8.4px / 8.7px` margins, which equalize the measured ink gaps above and below the numerals; equal margins measure 14.6 / 17.3."
+      },
+      {
+        "name": "The Ornament-Yields-First Rule",
+        "section": "layout",
+        "body": "When a row runs out of room, decoration gives way before content, and content truncates before it pushes anything off-screen. Ordering this in flexbox takes an explicit shrink factor, not hope: at equal factors the decorative rule in a section header kept 34 of its 40px while the heading clipped 28px, because shrink is distributed by basis × factor."
+      },
+      {
+        "name": "The Colorless Shadow Rule",
+        "section": "elevation",
+        "body": "Every structural shadow is black-based regardless of tenant color. Only the accent-glow exception is tinted, and it is never load-bearing for hierarchy — remove every glow and the page must still read correctly."
+      },
+      {
+        "name": "The Closed-Radius Rule",
+        "section": "shapes",
+        "body": "The radius scale is closed: five named steps, no sixth. It is also exempt from the 4px rhythm grid — `field` at 15px and `card-sm` at 18px are shape language, not rhythm, and they do not drift because no component writes a raw radius. Inventing a radius outside the scale is the defect; an off-grid value inside it is not."
+      },
+      {
+        "name": "The One-Owner-Per-Gap Rule",
+        "section": "layout",
+        "body": "A page-level block contributes **nothing** at its bottom edge. The space between two blocks belongs to the block *below* it, which owns it once via `block-gap`; the only sanctioned bottom edge is a heading's `section-bottom`. Gaps composed from two neighbours are not a style problem, they are an arithmetic one: the same section gap rendered 30px after a card rail and 32px after the ad banner, because the rail contributed 2px and the banner 4px and the heading added 28px to whichever it landed next to. No value was wrong; the sum was unownable. This rule is machine-checked, and the checker **discovers** the blocks from the page templates rather than from a list, so a block added tomorrow is covered without anyone remembering to register it."
+      },
+      {
+        "name": "The Reachable-Size Rule",
+        "section": "typography",
+        "body": "A hardcoded `font-size` is a defect, and not for tidiness: the accessibility text control re-derives the whole `--fs-*` scale, so a literal is the one value it cannot reach. Everything around it grows and that label does not, for exactly the user who asked for larger text. Machine-checked by `bun run lint:spacing`, with the same escape hatch as the spacing rules — a size genuinely off the ladder may stay a literal if it states why."
+      }
+    ],
+    "dos": [
+      "Do derive every interactive color from `--accent`, and treat the two knobs as the only tenant inputs.",
+      "Do reach for the semantic spacing token that names the role (`pad-card`, `gap-tight`, `stack`, `pad-x`) before any primitive step, and for a primitive step before any literal.",
+      "Do state a one-line reason beside every value that leaves the ladder at either end — sub-4px optical corrections and above-48px layout dimensions. That comment is what makes it a decision instead of a defect.",
+      "Do run `bun run lint:spacing` before opening a PR that touches styles, and treat a shrinking `spacing-baseline.json` as real progress.",
+      "Do give a new page-level block a top gap and no bottom edge, so the block below it is never guessing what the block above already contributed.",
+      "Do keep Premium gold and the OS-style system green fixed across every tenant and theme; they are platform language.",
+      "Do use perfect circles for every icon-only control at the sanctioned 38px (34px small, 44px large).",
+      "Do author shadows colorless, reserving color for the deliberate accent-glow exception on primary buttons and live indicators.",
+      "Do treat `ink-subtle`'s opacity as an accessibility test result, not a stylistic choice.",
+      "Do hardcode 768px and 1280px in `min-width` queries — custom properties are unreadable inside a media-query condition.",
+      "Do give a flex row an explicit shrink order when it can run out of room, and verify it at 375px with the longest real tenant string."
+    ],
+    "donts": [
+      "Don't name, ship, or imply a house palette for Halo. There is no Halo green, blue, or purple — only a tenant's.",
+      "Don't put a tenant hex in component CSS, ever, even \"temporarily\" for one skin.",
+      "Don't introduce a third brand knob. If a component needs another hue, it needs a semantic token, like the status colors have.",
+      "Don't write a raw px padding, margin, or gap in a component when a role token exists — that is how four components each invented the screen inset.",
+      "Don't land on an off-grid spacing value because it looked right. Round to the nearest 4px step and adjust the surrounding layout instead.",
+      "Don't put the type scale or the radius scale on the rhythm grid. They are a ratio scale and a closed set; the grid governs space, not shape or size of type.",
+      "Don't apply a dimmed version of a colored button for the disabled state — disabled is always the neutral recipe.",
+      "Don't give any surface a sharp corner, or invent a radius outside the five named steps.",
+      "Don't add a glossy gradient, bevel, or skeuomorphic highlight to a card or button at rest.",
+      "Don't run two navigation models on one screen. The mobile dock and the inline desktop header are exclusive alternates gated by the same breakpoint.",
+      "Don't let a heading clip so that decoration can keep its full width.",
+      "Don't put a bottom margin or padding on a page-level block. If two blocks need more air, raise the gap on the lower one; splitting it across both is how the rhythm drifted in the first place."
+    ]
+  }
+}

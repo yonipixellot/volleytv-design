@@ -1,0 +1,170 @@
+:host { display: block; }
+
+// click-away for the anchored menu — transparent, one tap closes
+.efb-away { position: fixed; inset: 0; z-index: var(--z-sheet); }
+
+// Wrapping row (not a scroll strip): an anchored menu inside a scroll
+// container would be clipped by the forced overflow-y, and the proto wraps
+// its pills wherever the row is the task surface.
+.efb {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-tight);
+  padding: var(--section-bottom) var(--pad-block-x) 0;
+}
+.wrap { position: relative; flex: none; }
+
+// 40px at --fs-body, not 34 at --fs-caption. Two reasons, and they agree: 12px
+// reads as too small for a pill's label (the same call as .halo-follow-pill,
+// Maryna 2026-08-30), and 34px is under every touch-target floor. This is the
+// scale You's hand-rolled copy already used, so the page that came onto this
+// component kept its size rather than shrinking to meet it.
+.pill {
+  display: inline-flex; align-items: center; gap: var(--gap-tight);
+  flex: none; white-space: nowrap; cursor: pointer;
+  // 500, the body weight. These are labels on a filter, not headings: at 700 a
+  // row of five pills read as a row of five titles (Maryna 2026-08-31).
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink2);
+  background: var(--card2); border: 1px solid var(--hair); border-radius: var(--r-pill);
+  padding: var(--pad-control-y) var(--space-4); min-height: 40px;
+}
+.pill.on {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.pill.open { border-color: var(--accent); }
+// The clear control is a LINK — the shared .halo-clear-link recipe carries it.
+// Only the row alignment is local: the pills are 40px tall and the link is text,
+// so it centres against them rather than sitting on their baseline.
+.clr { align-self: center; }
+
+// anchored option menu — opens under its pill, above page content
+.menu {
+  position: absolute; top: calc(100% + 6px); inset-inline-start: 0;
+  z-index: calc(var(--z-sheet) + 1);
+  // Measured cap; see `maxH` in the component. Without it the menu opened its
+  // full height downwards whatever was below the pill, which on the onboarding
+  // teams step put 103px of it past the bottom of the screen and 199px across
+  // the fixed CTA dock (Maryna 2026-08-31).
+  max-height: var(--menu-max-h, none);
+  // 230px, up from 180: the find field has to hold a magnifier, a caret and a
+  // clear button beside the word being typed, at --fs-body. A layout dimension,
+  // not rhythm. Capped against the phone, where 230 is most of the screen.
+  min-width: min(230px, 78vw);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--shadow-up);
+}
+// --menu-shift keeps the menu on screen; see `shift` in the component. A
+// transform rather than a left offset, so the nudge cannot re-enter the layout
+// the measurement was taken from.
+.menu { transform: translateX(var(--menu-shift, 0px)); }
+// Opens UPWARDS when there is more room above the pill than below it — the
+// vertical counterpart of the shift, and the case that matters on a pill sitting
+// low on a page with fixed bottom chrome.
+.menu.up { top: auto; bottom: calc(100% + 6px); }
+
+// The find field. It borrows the form field's language — --r-field, --card2,
+// the accent focus ring — at the menu's own scale rather than reusing
+// halo-form-field: that control is a 48px row at --fs-body-lg with its own label
+// slot, a page-level field. This one takes the pill's height instead.
+.find {
+  display: flex; align-items: center; gap: var(--gap-tight);
+  flex: none;
+  padding: 0 var(--space-3);
+  min-height: 40px;
+  background: var(--card2); border: 1px solid var(--hair);
+  border-radius: var(--r-field);
+  transition: border-color var(--dur-med), box-shadow var(--dur-med);
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+}
+.find-ic { flex: none; color: var(--ink3); }
+.find-in {
+  flex: 1; min-width: 0;
+  border: 0; background: transparent; outline: none;
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink);
+  // A ratio, not a pixel height: the accessibility text control re-derives
+  // --fs-body and a fixed height would hold this row still while its text grew.
+  line-height: 1.4;
+  padding: 0;
+
+  &::placeholder { color: var(--ink3); opacity: .8; }
+  // Chrome paints its own clear affordance on a search input; this menu has one.
+  &::-webkit-search-cancel-button { display: none; }
+
+  // ONE focus state, and it belongs to the box. The zero-specificity baseline in
+  // styles.scss lands an outline AND a 4px halo on every input; the base
+  // `outline: none` above suppressed the outline but not the halo, so a focused
+  // field drew two rings — the wrapper's around the box and the baseline's
+  // around the text (Maryna 2026-08-31). The wrapper's :focus-within IS the
+  // indicator, so nothing is lost: this only stops it being drawn twice.
+  &:focus-visible { outline: none; box-shadow: none; }
+}
+.find-x {
+  flex: none; display: grid; place-items: center;
+  // 24, the smallest target WCAG 2.2 AA accepts. The glyph inside stays 12; it
+  // is the hit area that had to grow, and it grew to a ladder step.
+  width: var(--space-6); height: var(--space-6); padding: 0; cursor: pointer;
+  color: var(--ink3); background: none; border: 0; border-radius: var(--r-pill);
+}
+@media (hover: hover) {
+  .find-x:hover { color: var(--ink); background: var(--band); }
+}
+
+// The list scrolls, the find field does not: the field is what the scrolling is
+// for, so it stays put above it.
+.opts {
+  display: flex; flex-direction: column; gap: 2px;
+  // 240 is the preferred height; `flex: 1 1 auto` + `min-height: 0` is what lets
+  // it give way when the menu's measured cap is tighter than that. Without the
+  // min-height a flex item refuses to shrink below its content and the cap on
+  // .menu would simply be overflowed.
+  flex: 1 1 auto; min-height: 0;
+  max-height: 240px; overflow-y: auto;
+  // The list is its own scroller, so reaching its end must not hand the gesture
+  // to the page: page scroll closes the menu (see the component), and chaining
+  // would close it from inside the very list being scrolled.
+  overscroll-behavior: contain;
+}
+.none {
+  margin: 0; padding: var(--space-3) var(--space-3) var(--space-2);
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3);
+}
+.opt {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  width: 100%; text-align: start; white-space: nowrap; cursor: pointer;
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink2);
+  background: none; border: 0; border-radius: 11px;
+  padding: var(--space-2) var(--space-3); min-height: var(--space-11);
+}
+@media (hover: hover) {
+  .opt:hover { background: var(--band); }
+}
+// Selected brightens its ink and nothing else. The tick already carries the
+// state, and changing weight on select re-measures the row's text under the
+// pointer.
+.opt.on { color: var(--ink); }
+.opt .tick {
+  flex: none; display: grid; place-items: center;
+  width: 19px; height: 19px; border-radius: 6px; color: var(--on-accent);
+  border: 1.5px solid var(--hair2, var(--hair));
+}
+.opt.on .tick { background: var(--accent); border-color: var(--accent); }
+// One-of rather than many-of: a circle, filled from the inside so the ring
+// stays visible. Ported from You's clip filters, which drew this by hand.
+.opt .tick.rd { border-radius: 50%; }
+.opt.on .tick.rd { background: none; border-color: var(--accent); box-shadow: inset 0 0 0 4px var(--accent); }
+
+/* Desktop interaction. The option rows inside the menu had a hover state, the
+   pills that open them did not — the trigger was quieter than its own menu. */
+@media (hover: hover) {
+  .pill:hover:not(.on) { color: var(--ink); border-color: var(--hair2, var(--hair)); background: var(--card); }
+  .pill.on:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+}
+.pill { transition: color var(--dur-med), background var(--dur-med), border-color var(--dur-med); }
+@media (prefers-reduced-motion: reduce) { .pill { transition: none; } }

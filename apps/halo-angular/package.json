@@ -1,0 +1,72 @@
+{
+  "name": "halo-web",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "lint:spacing": "node tools/lint-spacing.mjs",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build",
+    "prebuild": "node tools/gen-preview-env.mjs"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^21.2.20",
+    "@angular/compiler": "^21.2.20",
+    "@angular/core": "^21.2.20",
+    "@angular/forms": "^21.2.20",
+    "@angular/platform-browser": "^21.2.20",
+    "@angular/router": "^21.2.20",
+    "@supabase/supabase-js": "^2.58.0",
+    "html2canvas-pro": "^2.4.1",
+    "lottie-web": "^5.13.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "^0.16.0"
+  },
+  "overrides": {
+    "webpack-dev-server": "^5.2.6"
+  },
+  "devDependencies": {
+    "@angular-devkit/architect": "^0.2102.21",
+    "@angular-devkit/build-angular": "^21.2.21",
+    "@angular-devkit/core": "^21.2.21",
+    "@angular/animations": "^21.2.20",
+    "@angular/build": "^21.2.21",
+    "@angular/cli": "^21.2.21",
+    "@angular/compiler-cli": "^21.2.20",
+    "@angular/platform-browser-dynamic": "^21.2.20",
+    "@compodoc/compodoc": "latest",
+    "@storybook/addon-a11y": "^10.5.9",
+    "@storybook/addon-docs": "^10.5.9",
+    "@storybook/angular": "^10.5.9",
+    "@storybook/angular-vite": "^10.5.9",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^20",
+    "jasmine-core": "~5.9.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "sharp": "^0.35.3",
+    "storybook": "^10.5.9",
+    "storybook-addon-pseudo-states": "^10.5.10",
+    "typescript": "~5.9.2"
+  }
+}

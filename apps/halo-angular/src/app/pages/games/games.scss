@@ -1,0 +1,551 @@
+:host { display: block; }
+
+// Page title. Unchanged metrics from before the two-pane work: the phone
+// composition was right and only lost its title when the date took over.
+.ptitle {
+  margin: 0;
+  // Inline inset only. The vertical rhythm belongs to the ROW, not to the title:
+  // with 16px above and 4px below inside its own box, the grid centred the BOX
+  // while the glyphs sat 6px lower than the pills beside them. And the pills,
+  // which used to live inside this same padded container, ended up 7px from the
+  // header once they became siblings (Maryna 2026-08-29).
+  // Left inset only. A right inset here is not an edge — the Today pill is,
+  // and it has its own gap. Those 16px were what pushed the row past 375.
+  padding-block: 0 0; padding-inline: var(--pad-x) 0;
+  // Floor for the 360 band: the title clips rather than colliding with Today.
+  min-width: 0;
+  // `clip` + a margin, not `hidden`: the 0.94 line-height is tighter than League
+  // Spartan's 112% glyph box, so `hidden` shaved 3px off the descender zone
+  // (UI review U7, 2026-09-08). The ellipsis still applies.
+  overflow: clip;
+  overflow-clip-margin: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--disp);
+  font-weight: 700;   // matches the lighter main-title weight (Yoni 2026-08-23)
+  font-size: var(--fs-d-md);   // same optical size as Home's EVENTS (Yoni 2026-08-23)
+  line-height: .94;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.monthpill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-pill);
+  padding: var(--space-2) var(--space-4);
+  white-space: nowrap;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--ink);
+
+  halo-icon { color: var(--ink2); }
+}
+.monthpill.open { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.monthpill .ml-short { display: none; }
+
+/* "Today" — the way back from anywhere in the calendar. Sits beside the month
+   pill because that is where date navigation already lives, and only renders
+   when the selection has moved off today, so the row stays quiet at rest. */
+.todaybtn {
+  position: relative;
+  flex: none;
+  margin-inline-start: auto;
+  margin-inline-end: var(--space-2);
+  // Same box as .monthpill beside it: 9px/14px padding on the same 13px label,
+  // so the two controls sit on one optical line (2026-08-27).
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--accent);
+  transition: background var(--dur-fast) ease;
+}
+/* The visual box is 36px to match the month pill, so the tap target is grown
+   past it invisibly rather than by making the button taller. 5px a side, not 4:
+   the box measures 36.x px, and at 4px the probe found the hit area ending at
+   42px (PRODUCT.md asks 44). No effect on the row's layout. */
+.todaybtn::after {
+  content: "";
+  position: absolute;
+  inset: -5px 0;
+}
+// Always in the DOM, so it has to have a resting state. On today there is
+// nowhere to go: the accent comes off and it reads as the label it now is.
+.todaybtn:disabled {
+  cursor: default;
+  border-color: var(--hair);
+  color: var(--ink3);
+}
+@media (hover: hover) {
+  .todaybtn:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+}
+/* Two tiers of concession for a narrow title row, in the order they cost the
+   least. The trigger is the TEXT, not the viewport, which is why the a11y steps
+   pull the same levers as a small screen (2026-08-27).
+
+   Tier 1 drops the calendar glyph, which is decorative — the pill's own chevron
+   already says it opens something.
+   Tier 2 drops the year as well, leaving "Sep".
+
+   Tier 2 used to fire together with tier 1 at every narrow width. It no longer
+   has to: with the abbreviated label the whole row measures 355.8px against
+   375, so the phone keeps its year and only the a11y steps, where the type is
+   genuinely bigger, fall through to "Sep" (Maryna 2026-08-29). */
+@mixin title-row-tight {
+  // No margins here any more: the title row is a grid and its column-gap owns
+  // the spacing between the three items (2026-08-29).
+  .todaybtn { padding: var(--space-2) var(--space-3); }
+  .monthpill halo-icon:first-child { display: none; }
+}
+@mixin title-row-month-only {
+  .monthpill .ml-full { display: none; }
+  .monthpill .ml-short { display: inline; }
+}
+
+// 390, not 360. The row used to be a flex box in which the title itself could
+// shrink; as a grid it cannot, and a full "April 2026" pill plus GAMES plus
+// Today measured 382px against 375px of room, so the title clipped to "GA…".
+@media (max-width: 390px) { @include title-row-tight; }
+:host-context(.halo[data-a11y-text='large']) { @include title-row-tight; @include title-row-month-only; }
+:host-context(.halo[data-a11y-text='xlarge']) { @include title-row-tight; @include title-row-month-only; }
+
+.monthwrap { position: relative; }
+.monthwrap .scrim {
+  position: fixed; inset: 0; z-index: var(--z-pop);
+  background: transparent; border: 0; cursor: default;
+}
+.monthmenu {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: calc(var(--z-pop) + 1);
+  min-width: 180px; padding: var(--space-2);
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--shadow-3);
+}
+.monthmenu .mopt {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-snug);
+  width: 100%; padding: var(--space-3) var(--space-3); border: 0; border-radius: var(--r-field);
+  background: transparent; cursor: pointer;
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-body); color: var(--ink2);
+  text-align: start;
+}
+@media (hover: hover) {
+  .monthmenu .mopt:hover { background: var(--card2); }
+}
+.monthmenu .mopt.on { color: var(--accent); font-weight: 700; }
+.monthmenu .mopt.on halo-icon { color: var(--accent); }
+
+.noday {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--space-10) var(--pad-block-x) var(--space-2);
+}
+.noday .nd-ic {
+  width: 60px; height: 60px; display: grid; place-items: center; margin-bottom: var(--space-3);
+  border-radius: 20px; color: var(--ink3);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.noday .nd-t { margin: 0 0 var(--space-1); font-family: var(--disp); font-weight: 800; font-size: var(--fs-title); color: var(--ink); }
+.noday .nd-s { margin: 0; font-size: var(--fs-body); color: var(--ink3); }
+
+// Jump-to-the-nearest-game buttons. Pills, like every other "go here" control
+// in the app, and 44px tall so they are real targets in an empty state.
+.nd-jump { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap-tight); margin-top: var(--space-4); }
+.nd-day {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: 44px; padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-pill); cursor: pointer;
+  background: var(--card2); border: 1px solid var(--hair);
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink);
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+@media (hover: hover) {
+  .nd-day:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent); }
+}
+.nd-day halo-icon { color: var(--ink3); }
+@media (hover: hover) {
+  .nd-day:hover halo-icon { color: var(--accent); }
+}
+
+.sponeye {
+  padding: 0 var(--pad-block-x) var(--space-2);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* ---- Federation (state) context chip ---- */
+.fedchip {
+  display: inline-flex; align-items: center; gap: var(--gap-tight);
+  margin: var(--space-2) var(--pad-block-x) 0;
+  padding: var(--space-2) var(--space-2); border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.fedchip .fc-t { font-size: var(--fs-caption); font-weight: 700; color: var(--accent); }
+.fedchip .fc-x {
+  width: 20px; height: 20px; flex: none; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent); cursor: pointer;
+}
+
+// A day with a single group renders no section header (games.ts showHeads), so
+// the stack opens the space the header used to provide — otherwise the first
+// card sits 4px under the sponsor block (2026-08-27).
+.halo-stack.nohead { padding-top: var(--space-6); }
+
+// ---------------------------------------------------------------------------
+// One grid, two arrangements. The month control is a single element in the DOM
+// and only its grid AREA moves, so there is never a second copy to keep in step.
+// ---------------------------------------------------------------------------
+.gmain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "title today month"
+    "strip strip strip"
+    "body  body  body";
+  align-items: center;
+  // One rhythm for the whole header row, so the title and the two controls sit
+  // on one optical line and clear the app header by the same amount.
+  padding-top: var(--space-5);
+  // Below 375 the title track shrinks and the word ran into the Today pill.
+  // The gap keeps them apart; the title truncates rather than pushing.
+  column-gap: var(--gap-tight);
+}
+
+.ptitle, .dayhead { grid-area: title; }
+// The phone shows the page name; the date is already in the selector beside it.
+.dayhead { display: none; }
+.todaybtn { grid-area: today; }
+.monthwrap { grid-area: month; padding-inline-end: var(--pad-x); }
+// The gap under the title row belongs to the block below it, once — a row-gap
+// on the grid would have handed the same 16px to the body as well.
+.dstrip { grid-area: strip; margin-top: var(--space-4); }
+.gbody { grid-area: body; min-width: 0; }
+// `display: contents` keeps the month control and Today as grid items of .gmain
+// on a phone, so the panel wrapper costs nothing here and the header row is
+// exactly what it was.
+.gpanel { display: contents; }
+// Transparent on the phone: the month and Today are separate grid areas of the
+// title row there. On the desktop it becomes the row that pairs them.
+.gdate { display: contents; }
+.mgrid, .gdays, .gd-none { display: none; }
+
+
+
+// ---------------------------------------------------------------------------
+// Two panes, from the band where the nav moves into the header — the same one
+// the settings screens use, so the app changes shape once rather than twice.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  .gmain {
+    // --rail-w is the platform's control-rail width (_tokens.scss). It was a
+    // local 280 here, which left the month pill 220px for 234px of controls and
+    // pushed the chevron out of its own pill (Maryna 2026-08-29).
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-areas:
+      "panel title"
+      "panel body";
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    // No column gap: it only exists on the LEFT of the games column, so with
+    // equal padding inside it the cards sat 73px from the rail and 33px from the
+    // right edge. The column's own padding provides the air, symmetrically.
+    column-gap: 0;
+    // Full bleed on purpose: the rail sits on the LEFT EDGE of the screen and
+    // the games centre in what is left, so the schedule reads as a fixed piece
+    // of furniture rather than a column that happens to be first. The phone's
+    // header-row rhythm goes with it: here the panel and the column carry it.
+    padding: 0;
+    position: relative;
+  }
+
+  // The divider runs the whole column, not just the list. On the rail itself it
+  // stopped where the dates stopped, which left the month control above it
+  // floating with no edge to belong to.
+  .gmain::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: var(--rail-w);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--hair);
+  }
+
+  // ONE fixed block, the full height of what the shell leaves. Nothing inside it
+  // scrolls with the page; only the game-day list can scroll, and only in a
+  // month busy enough to need it.
+  .gpanel {
+    grid-area: panel;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    // Fixed, not sticky. Sticky is bounded by its containing block, and inside a
+    // grid that block is the row: measured, the panel had 333px of travel
+    // against 441px of page scroll, so it came unstuck near the bottom and rode
+    // up with the content. Fixed has no such ceiling, and with both chrome
+    // heights published it needs no guessed offsets.
+    position: fixed;
+    top: calc(var(--devbar-h) + var(--topbar-h));
+    bottom: 0;
+    // The shell centres once it hits --content-max, so the panel follows its
+    // left edge rather than the viewport's.
+    inset-inline-start: max(0px, calc((100vw - var(--content-max)) / 2));
+    width: var(--rail-w);
+    padding-block: var(--space-6) var(--space-6); padding-inline: var(--pad-x-wide) var(--space-5);
+    overflow: hidden;
+  }
+
+  // The inset comes from `.halo-wide` on the page (styles.scss). Nothing here
+  // insets a block; the blocks read --pad-block-x, exactly as Home's do.
+  //
+  // It shipped the other way: the column padded itself AND every block kept the
+  // phone inset it carries for a full-bleed page, so the painted left edges came
+  // out at 421, 437 and 445 in one column against Home's single 41.
+
+  // A SCHEDULE column, not a content page — and the one place --measure-page is
+  // deliberately not used.
+  //
+  // Games shows one day at a time, which is a handful of cards, so they stay one
+  // per row and read as a list you go down rather than a grid you scan. At
+  // --measure-page that put a ladder card at 1080px: two team rows and one score,
+  // stretched. A grid was the other way out, but with one game on most days the
+  // second column is always empty (Maryna 2026-08-30).
+  //
+  // 840 is the ladder card's comfortable width here and it does not grow with
+  // the screen — past it the room becomes margin. A layout dimension with a
+  // stated reason, which is what DESIGN.md asks for.
+  .gbody {
+    width: 100%;
+    max-width: 840px;
+    margin-inline: auto;
+    padding: 0 0 var(--space-10);
+  }
+
+  // Month and Today on one line. Pairing them costs a row and buys a panel
+  // whose calendar never moves, whichever day is selected.
+  .gdate {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-tight);
+    flex: none;
+  }
+  // padding-right is the phone's right page inset; here the panel's own inset
+  // is the edge, and leaving it on put 16px of dead air inside the row.
+  .monthwrap { flex: 1 1 auto; min-width: 0; padding-inline-end: 0; }
+  .monthpill { width: 100%; justify-content: space-between; }
+  .todaybtn { flex: none; margin: 0; text-align: center; }
+
+  // The header pins too, so the panel below it never shifts and a long schedule
+  // keeps its nav. It used to restate the whole sticky recipe here, including
+  // the dev-bar offset — which was the ONLY place that offset existed, so every
+  // other page's header slid under the dev bar. The recipe is global now
+  // (styles.scss) and this page states nothing about it (Maryna 2026-08-30).
+
+  .dstrip { display: none; }
+  .mgrid, .gdays { display: flex; }
+  .gd-none { display: block; }
+
+  // The two swap: the date becomes the title, sharing the games column's measure
+  // so it sits over the cards rather than over the page.
+  .ptitle { display: none; }
+  .dayhead {
+    display: block;
+    width: 100%;
+    max-width: 840px;   // the date sits over the cards, so it takes their measure
+    margin: 0 auto;
+    padding: var(--space-6) var(--pad-block-x) var(--space-5);
+    font-family: var(--disp);
+    font-weight: 700;
+    font-size: var(--fs-d-md);
+    line-height: .94;
+    letter-spacing: .015em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  // The banner's shape is the ad-slot component's own now (--ad-h), so this page
+  // states nothing about it. It used to carry a 21/4 ratio capped at 160, which
+  // is the same height the shared rule gives it — the rule moved, the result did
+  // not (Maryna 2026-08-30).
+
+  // No separate cap on the ad: the games column is capped at 840 now, which is
+  // what stops it becoming a billboard. Its own 720 just left it ending short of
+  // the cards beside it.
+}
+
+// ---------------------------------------------------------------------------
+// Month grid. Six rows instead of thirty-one, so the panel can be fixed.
+// ---------------------------------------------------------------------------
+.mgrid {
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mg-head,
+.mg-cells {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+.mg-head span {
+  text-align: center;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  color: var(--ink3);   /* weekday initials are labels, not hairlines: --ink4 read 1.81:1 (a11y audit 2026-09-02 G33) */
+}
+
+.mg-d {
+  position: relative;
+  // A row height rather than a square: the panel gives each of seven tracks
+  // about 37px, and squaring that made the cell as short as it was narrow.
+  // 34 keeps the numeral comfortable and the grid still fits six rows.
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-field);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  transition: background var(--dur-med), color var(--dur-med);
+}
+@media (hover: hover) {
+  .mg-d:hover { background: var(--card2); color: var(--ink); }
+}
+// A day that carries games reads as ink, not as a disabled cell.
+.mg-d.has { color: var(--ink); }
+
+// The one mark that says the day holds something. Colour never carries it
+// alone: every cell has an aria-label spelling out the count and the state.
+.mg-dot {
+  position: absolute;
+  bottom: 3px;   // optical: rides just under the numeral's baseline
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.mg-d.live .mg-dot { background: var(--live); }
+
+.mg-d.today {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.mg-d.on {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.mg-d.on .mg-dot { background: var(--on-accent); }
+.mg-d.on.today { box-shadow: none; }
+
+// ---------------------------------------------------------------------------
+// The days that actually carry games. The only part allowed to scroll, and only
+// when a month is busy enough to need it.
+// ---------------------------------------------------------------------------
+.gdays {
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--hair);
+  padding-top: var(--space-3);
+}
+
+.gd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-snug);
+  // 44px from the WCAG 2.5.8 floor — a tap target on a touch laptop.
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--r-field);
+  background: transparent;
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--body);
+  color: var(--ink2);
+  transition: background var(--dur-med), color var(--dur-med);
+}
+@media (hover: hover) {
+  .gd:hover { background: var(--card2); color: var(--ink); }
+}
+.gd-d {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: inherit;
+}
+// The weekday is the sanctioned use of tracked caps: a 12px label, not a title.
+.gd-d em {
+  font-style: normal;
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.gd-s {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  white-space: nowrap;
+}
+.gd-n { color: inherit; }
+.gd.on {
+  background: var(--card2);
+  color: var(--ink);
+}
+.gd.on .gd-d { color: var(--ink); }
+
+.gd-none {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hair);
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+}
+
+// A wide screen earns more cards, not bigger ones. The games column widens to
+// carry two, each landing near 530px — comfortably above the ~350px a ladder
+// card needs for two team rows and a score.
+//
+// The GRID is never capped, only the column inside it: capping the grid pinned
+// it to the left edge (the rail is full-bleed, so there is no auto margin to
+// centre it) and left 620px of empty screen on the right at 1920.
+
+
+// A click-away scrim must not cover the button that opened it — see DESIGN.md,
+// Interaction. Measured on four menus before this fix.
+.monthpill {
+  position: relative;
+  z-index: calc(var(--z-pop) + 1);
+}

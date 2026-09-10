@@ -1,0 +1,113 @@
+:host { display: inline-flex; }
+:host(.fill) { display: flex; }
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  border: 0;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  letter-spacing: .01em;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--r-field);
+  transition: filter var(--dur-med), background var(--dur-med), border-color var(--dur-med), opacity var(--dur-med);
+
+  &.block { width: 100%; }
+
+  // Disabled = NEUTRAL recipe (ds-button-system): card2 surface + muted ink,
+  // never a dimmed accent/gold (the old opacity dim read as a muddy 3rd
+  // variant). Loading keeps the variant look — only the cursor changes.
+  &:disabled { cursor: default; }
+  &:disabled:not(.loading) {
+    background: var(--card2);
+    color: var(--ink3);
+    box-shadow: none;
+    border-color: transparent;
+  }
+  &.loading { opacity: .85; }
+
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  // dense/inline CTA — SECONDARY/redundant actions only (32px < WCAG target)
+  &.sm { padding: var(--pad-control-y) var(--pad-control-x); font-size: var(--fs-body); gap: var(--gap-tight); }
+  // hero CTA
+  &.lg { padding: var(--space-4) var(--space-6); }
+}
+
+// Accent-filled primary CTA.
+.btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+@media (hover: hover) {
+  .btn.primary:not(:disabled):hover { filter: brightness(1.05); }
+}
+
+// Fixed-gold premium CTA — skin-independent (premium = platform language).
+.btn.premium {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--premium) 55%, #fff), var(--premium) 42%, color-mix(in srgb, var(--premium) 88%, #000));
+  color: var(--premium-ink);
+  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--premium) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+@media (hover: hover) {
+  .btn.premium:not(:disabled):hover { filter: brightness(1.04); }
+}
+
+// Solid brand-green fill — a strong action distinct from the gold hero CTA.
+.btn.secondary {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--primary) 55%, transparent);
+}
+@media (hover: hover) {
+  .btn.secondary:not(:disabled):hover { filter: brightness(1.08); }
+}
+
+// Quiet card surface — social / secondary.
+.btn.glass {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--hair);
+}
+@media (hover: hover) {
+  .btn.glass:not(:disabled):hover { border-color: var(--hair2, var(--hair)); background: var(--card2); }
+}
+
+// Text-only.
+.btn.ghost {
+  background: transparent;
+  color: var(--ink2);
+  padding: var(--pad-control-y) var(--space-3);
+}
+@media (hover: hover) {
+  .btn.ghost:not(:disabled):hover { color: var(--ink); }
+}
+
+// Inline text link-button — accent + underline on hover/focus (matches the
+// team-name link affordance). Transparent even when disabled.
+.btn.link {
+  background: transparent;
+  color: var(--ink2);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  padding: var(--pad-control-y) var(--space-3);
+  text-underline-offset: 3px;
+}
+/* Split: focus-visible is not pointer-only — a keyboard user has no pointer
+   but does need the affordance. Only the hover half is scoped. */
+.btn.link:focus-visible { color: var(--accent); text-decoration: underline; }
+@media (hover: hover) {
+  .btn.link:not(:disabled):hover { color: var(--accent); text-decoration: underline; }
+}
+
+// ghost/link disabled: stay transparent (the neutral surface is for fills)
+.btn.ghost:disabled:not(.loading),
+.btn.link:disabled:not(.loading) { background: transparent; color: var(--ink3); }
+
+// loading ring = the halo-spinner atom (inherits currentColor)

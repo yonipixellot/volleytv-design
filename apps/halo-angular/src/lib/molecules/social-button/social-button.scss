@@ -1,0 +1,27 @@
+:host { display: block; }
+
+.sbtn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-snug);
+  cursor: pointer;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-field);
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-body);
+  padding: var(--space-3) var(--pad-control-x);
+  transition: background var(--dur-med), border-color var(--dur-med);
+
+  @media (hover: hover) {
+    &:hover { background: var(--card2); }
+  }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.ic { display: inline-flex; width: 17px; height: 17px; }
+.ic ::ng-deep svg { display: block; }

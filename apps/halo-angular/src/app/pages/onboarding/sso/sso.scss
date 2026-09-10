@@ -1,0 +1,241 @@
+// SSO-flow-only styles — the shared onboarding vocabulary comes from
+// ../onboarding.scss (ob shell, titles, lists, myteam, confirm ring).
+
+// mock IdP handoff — BA parity: full-screen brand confirmation, tappable.
+// .ob's 52px top padding is for the stepped screens, and its 100dvh min-height
+// overshoots the page area whenever anything sits above it (the dev bar in the
+// prototype). The handoff is a full-bleed field, so it opts out of both and lets
+// the shell's flex column decide its height.
+// The host has to flex too, or .ob inside it stays content-height and the field
+// collapses to the height of its own text.
+:host:has(.handoff) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.ob:has(.handoff) {
+  padding-top: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+// The shared brand FIELD (--brand-field, derived from the knobs) with the
+// OFFICIAL lime lockup rendered verbatim — the brand's own lime-on-purple
+// pairing. Sign-in stands on the same field, so this screen continues it.
+.handoff {
+  width: 100%; flex: 1 1 auto; min-height: 0; border: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0;
+  // Same anchor as sign-in (--brand-mark-top), not a measured offset: these two
+  // screens follow each other 1.7s apart on the same field, so the mark has to
+  // hold its position at EVERY viewport height, not just the one it was tuned on.
+  padding: var(--brand-mark-top) var(--space-10) 0; text-align: center;
+  background: radial-gradient(ellipse 90% 60% at 50% 18%, var(--brand-field-glow) 0%, transparent 60%), var(--brand-field);
+}
+// 37 : 24 with a 13px gap — identical to sign-in's lockup (itself the app
+// header's 20 : 13 / 7px, scaled ×1.85). Green colorway in both themes: the
+// field is a keep-dark surface.
+.ho-mark { display: flex; align-items: center; gap: var(--gap-snug); }
+.ho-bm { height: 37px; width: auto; display: block; }
+.ho-wm { height: 24px; width: auto; display: block; }
+.ho-check {
+  margin-top: var(--space-6); display: grid; place-items: center; width: 54px; height: 54px;
+  border-radius: 50%; color: #fff; background: rgba(255, 255, 255, .16);
+}
+.ho-title {
+  margin-top: var(--space-5); font-family: var(--disp); font-weight: 700;
+  font-size: var(--fs-d-sm); color: #fff;
+}
+.ho-sub { margin-top: var(--space-2); font-family: var(--body); font-size: var(--fs-body); color: rgba(255, 255, 255, .7); }
+
+// Confirmation block: auto margins centre it in the space under the anchored
+// lockup instead of stacking straight beneath it.
+.ho-body { display: flex; flex-direction: column; align-items: center; margin: auto 0; }
+
+// identify — BA parity: centred loader + amber DEV simulate-result panel
+.ident {
+  min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 var(--space-6); text-align: center;
+}
+.id-spin {
+  width: 40px; height: 40px; border-radius: 50%; margin-bottom: var(--space-5);
+  border: 3px solid var(--hair); border-top-color: var(--accent);
+  animation: id-spin 1s linear infinite;
+}
+@keyframes id-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .id-spin { animation: none; } }
+.id-title { margin: 0; font-family: var(--disp); font-weight: 700; font-size: var(--fs-d-sm); color: var(--ink); }
+.id-sub { margin: var(--space-2) 0 0; max-width: 320px; font-family: var(--body); font-size: var(--fs-caption); line-height: 1.5; color: var(--ink3); }
+
+// DEV panel — stands in for the backend identification result. Skin-branded
+// (Yoni: hoopstv accent, not BA's amber) — the Dev chip still labels it clearly.
+.devpanel {
+  width: 100%; max-width: 360px; margin-top: var(--space-8);
+  display: flex; flex-direction: column; gap: var(--gap-tight);
+  padding: var(--space-3); border-radius: var(--r-card);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.dev-chip {
+  align-self: flex-start; padding: 3px var(--space-2); border-radius: 4px;
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  letter-spacing: .16em; text-transform: uppercase;
+  background: var(--accent); color: var(--on-accent);
+}
+.devopt {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--gap-snug);
+  width: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-3) var(--space-4); min-height: 44px;
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+}
+.devopt:disabled { opacity: .5; cursor: default; }
+.dev-lbl { font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); }
+.dev-note { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+// confirm-athletes rows (family) — pre-linked kids, read-only
+.kidrow {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+}
+.kid-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.kid-eb {
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+}
+.kid-nm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.kid-meta { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+
+// The .notice block moved to ../onboarding.scss: both onboarding flows carry
+// the registration disclaimer now, and this page already pulls that stylesheet.
+
+// locked own-team row
+.myteam.locked { position: relative; }
+.lockchip {
+  display: grid; place-items: center; width: 30px; height: 30px;
+  border-radius: 50%; color: var(--ink2);
+  background: var(--band); border: 1px solid var(--hair);
+}
+
+// "Follow more teams" browse — State/Org/League filter bar + league accordion.
+// halo-event-filter-bar carries its own padding for pages where it sits
+// directly on the page background (Home, lane pages) — both the --pad-x
+// gutter (already applied by .ob-scroll here, so it doubled the indent) and
+// a lopsided 10px/2px top/bottom that left 3x more air above the bar than
+// below it. Zero the component's own padding and take over spacing here so
+// both gaps read as one rhythm (Yuval 2026-08-26).
+halo-event-filter-bar { display: block; margin: var(--space-3) 0 var(--space-4); }
+halo-event-filter-bar ::ng-deep .efb { padding: 0; }
+.leagues { display: flex; flex-direction: column; gap: var(--gap-snug); margin-top: var(--space-1); }
+.lg { background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm); overflow: hidden; }
+// The toggle IS the header row now — the wrapper existed to seat a "Follow all"
+// beside it, and the right padding it carried moves onto the toggle so the
+// chevron keeps the same 16px from the edge (Maryna 2026-08-30).
+.lg-tgl {
+  width: 100%; min-width: 0; display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-4); text-align: start; cursor: pointer;
+  background: none; border: 0;
+}
+.lg-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lg-nm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.lg-meta { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+// Flip and transition come from .halo-chev in styles.scss, keyed on the
+// button's own aria-expanded rather than on .lg.open.
+.lg-chev { color: var(--ink3); }
+.lg-body { padding: 0 var(--space-3) var(--space-3); border-top: 1px solid var(--hair); padding-top: var(--space-3); }
+
+// The browse and roster empty states are halo-empty-state now — the design
+// system's own block, icon disc included. The hand-rolled .lg-empty it replaced
+// is exactly what that component's docstring says to fold in (Maryna 2026-08-30).
+
+// required Terms & Conditions checkbox (gates Continue)
+// Centred, like the consent rows below it (.nrow): the label is one short line
+// and the 22px box is TALLER than its 18px line box, so flex-start left the
+// text sitting ~3px above the box's middle (2026-08-27).
+.tc {
+  display: flex; align-items: center; gap: var(--gap-snug); width: 100%; text-align: start; cursor: pointer;
+  margin: var(--space-1) 0 var(--space-6); padding: var(--space-3) var(--space-4); min-height: 44px;
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+}
+.tc-box {
+  flex: none; width: 24px; height: 24px; padding: 0; cursor: pointer;   // 24px = 2.5.8 target floor
+  display: grid; place-items: center; border-radius: 6px;
+  border: 1.5px solid var(--ink3); background: var(--card2); color: var(--on-accent);
+  &.on { background: var(--accent); border-color: var(--accent); }
+  // check glyph reads too thin at 13px with the icon set's default 1.9 stroke;
+  // stroke-width lives on the <path> itself (presentation attr), not the <svg>
+  ::ng-deep svg path { stroke-width: 3; }
+}
+// The optional consent below the required one: same row, minus the T&C row's
+// closing margin, because .fine follows and brings its own.
+.tc.opt { margin: 0; }
+// …and the same TYPE as the row above it. The name arrives from .nr-nm, which is
+// sized for the Alerts step's switch rows (--fs-body-lg / 700); two checkboxes
+// stacked with 16 in one label and 14 in the other read as two different kinds
+// of question (Maryna 2026-08-31). Scoped here rather than changed on .nr-nm,
+// because the switch rows are still right at their own scale.
+.tc.opt .nr-nm { font-size: var(--fs-body); font-weight: 600; }
+.tc-lbl { font-family: var(--body); font-weight: 600; font-size: var(--fs-body); line-height: 1.4; color: var(--ink); }
+.tc-lbl a { color: var(--accent); text-decoration: underline; font-weight: 700; }
+
+// fine print under the marketing opt-in
+.fine { margin-top: var(--space-2); font-family: var(--body); font-size: var(--fs-caption); color: var(--ink3); line-height: 1.5; }
+
+// ATSI question — ABS options as radio rows (BA ConsentStep parity)
+.atsi { margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--gap-tight); }
+.atsi-q { font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); line-height: 1.35; }
+.atsi-sub { margin: 0 0 var(--space-1); font-family: var(--body); font-size: var(--fs-caption); color: var(--ink3); }
+.atsi-opt {
+  display: flex; align-items: center; gap: var(--gap-snug); width: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-3) var(--space-4); min-height: 44px;
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+  &.on { border-color: var(--accent); }
+}
+.atsi-dot {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--ink3); background: var(--card2); display: grid; place-items: center;
+  .atsi-opt.on & { border-color: var(--accent); }
+  .atsi-opt.on &::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+}
+.atsi-lbl { font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink); }
+
+// notification / consent rows
+.nrow {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+}
+.nrow.tall { align-items: flex-start; }
+.nr-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nr-nm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.nr-sub { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+
+.later {
+  display: block; width: 100%; margin-top: var(--space-3); padding: var(--space-2) 0;
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink3);
+  background: none; border: 0; cursor: pointer; text-align: center;
+}
+
+// notifications — simple consent pre-prompt (BA NotifUpsell shape)
+.nf-center { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: var(--space-9); }
+.nf-bell {
+  position: relative; width: 96px; height: 96px; margin-bottom: var(--space-6);
+  display: grid; place-items: center; border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 44px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.nf-dot {
+  position: absolute; top: 4px; inset-inline-end: 6px; width: 15px; height: 15px;
+  border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 0 3px var(--screen);
+}
+.nf-perks { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--gap-snug); max-width: 300px; width: 100%; }
+.nf-perks li {
+  display: flex; align-items: center; gap: var(--gap-snug); text-align: start;
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-body); color: var(--ink);
+}
+.nf-check {
+  flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+}

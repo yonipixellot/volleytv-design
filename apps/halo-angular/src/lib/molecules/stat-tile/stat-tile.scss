@@ -1,0 +1,102 @@
+:host { display: block; min-width: 0; }
+
+.mblock {
+  background: var(--card2);
+  border: 1px solid var(--hair2);
+  border-radius: 13px;
+  padding: var(--space-2) var(--space-3);
+  min-width: 0;
+  overflow: hidden;          // hard net — nothing pokes out of the tile
+}
+
+.mb-top { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-tight); }
+
+.mb-lab {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mb-tag {
+  flex: none;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  background: var(--band);
+  border-radius: var(--r-pill);
+  padding: 3px var(--space-2);
+  white-space: nowrap;
+}
+
+// number + delta on ONE line: number left, delta pinned right (no wrap)
+.mb-val { display: flex; align-items: baseline; gap: var(--gap-tight); margin-top: var(--space-1); min-width: 0; }
+
+.mb-num {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-title);
+  line-height: .9;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.mb-delta {
+  margin-inline-start: auto;
+  flex: none;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--pos);
+  white-space: nowrap;
+}
+.mb-delta.flat { color: var(--ink3); }
+
+
+// From the desktop band the tile keeps its horizontal shape but re-splits it:
+// the label takes a line of its own, and the value shares the next one with the
+// context that qualifies it. Before, the label shared its line with the AVG
+// chip and the value shared its own with the delta — which paired each number
+// with the wrong neighbour (Maryna 2026-08-30).
+//
+// `display: contents` on the two wrappers is what allows the regrouping: they
+// hard-bind label-to-chip and value-to-delta, and stepping them out makes all
+// four pieces grid items of the tile itself.
+@media (min-width: 1024px) {
+  .mblock {
+    display: grid;
+    grid-template-areas:
+      "lab lab lab"
+      "val tag del";
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: var(--space-2) var(--gap-snug);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--r-card-sm);
+  }
+  .mb-top,
+  .mb-val { display: contents; }
+
+  .mb-lab { grid-area: lab; }
+  // A step under the gauge's 54, not level with it: these answer the headline
+  // rather than repeat it.
+  .mb-num { grid-area: val; font-size: var(--fs-d-sm); }
+  .mb-tag { grid-area: tag; }
+  .mb-delta { grid-area: del; margin-inline-start: 0; }
+}
+
+// One label per width — see the note in the template.
+.mb-lab-short { display: none; }
+@media (max-width: 767px) {
+  .mb-top:has(.mb-lab-short) .mb-lab-full { display: none; }
+  .mb-lab-short { display: inline; }
+}

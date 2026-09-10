@@ -1,0 +1,537 @@
+// ===================== Halo — global styles =====================
+@use 'styles/fonts';
+@use 'styles/tokens';
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  background: #0a0a0b;
+  min-height: 100vh;
+}
+// The app is a phone-width canvas. On mobile it's edge-to-edge; from tablet up
+// it becomes a centred device frame on a theme-aware ambient backdrop (the
+// surround must not stay black behind the light theme).
+body:has(.halo[data-theme='light']) { background: #e6eaf0; }
+
+@media (min-width: 520px) {
+  body {
+    background:
+      radial-gradient(90% 60% at 50% -5%, rgba(0, 105, 62, .16), transparent 60%),
+      #08090b;
+  }
+  body:has(.halo[data-theme='light']) {
+    background:
+      radial-gradient(90% 60% at 50% -5%, rgba(0, 105, 62, .10), transparent 62%),
+      #e6eaf0;
+  }
+  .shell {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .07), 0 40px 120px -50px rgba(0, 0, 0, .8);
+  }
+  body:has(.halo[data-theme='light']) .shell {
+    box-shadow: 0 0 0 1px rgba(18, 22, 30, .10), 0 40px 120px -50px rgba(18, 22, 30, .30);
+  }
+}
+
+// The themed wrapper: everything below it reads the token vars.
+.halo {
+  font-family: var(--body);
+  color: var(--ink);
+}
+
+// Storybook / app canvas frame — paints the screen background behind stories.
+.sb-frame {
+  min-height: 100vh;
+  background: var(--bg);
+  background-color: var(--screen);
+  color: var(--ink);
+  font-family: var(--body);
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+// ===================== RTL (i18n) =====================
+// `<html dir>` is set by i18n.ts before bootstrap. Flex/grid and logical
+// properties mirror on their own; the one thing that does not is a glyph that
+// encodes direction. Chevrons point along the reading direction, so a "back"
+// chevron must point right in Hebrew. Static `name="chevron-*"` attributes are
+// reflected on the host, so this catches every back bar, row affordance and
+// pager without touching them. Anything else directional opts in with .rtl-flip.
+[dir='rtl'] halo-icon[name='chevron-left'],
+[dir='rtl'] halo-icon[name='chevron-right'],
+[dir='rtl'] halo-icon[name='arrow-left'],
+[dir='rtl'] halo-icon[name='arrow-right'],
+[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+// Scores, clocks and stat lines are Latin digits with Latin punctuation; keep
+// them reading left-to-right inside an RTL line ("64–58", "1:42:10", "Q3 04:12").
+[dir='rtl'] .num { direction: ltr; unicode-bidi: isolate; }
+// Proper nouns stay Latin in every language (team, club and player names). In an
+// RTL line a Latin run is otherwise laid out by the paragraph direction: it
+// truncates from its own START ("…opstars") and punctuation jumps sides.
+// `plaintext` lets each name pick its direction from its first strong character.
+[dir='rtl'] :is(halo-team-name .tn, halo-stories-rail .lb, .nm, .nm-t, .fh-title, .pr-nm, .mt-nm, .ir-nm, .kid-nm, .lg-nm) {
+  unicode-bidi: plaintext;
+}
+
+// ===================== focus visibility (WCAG 2.4.7) =====================
+// One zero-specificity baseline covering every interactive element. `:where()`
+// adds no specificity, so any component can override with a plain class — this
+// is a floor, not a mandate. Keyboard-only (`:focus-visible`) so pointer taps
+// don't show a ring. The accent ring sits on a dark/light contrast halo so it
+// stays visible on any surface, in either theme.
+:where(a, button, input, select, textarea, summary, [tabindex], [role='button'], [role='tab'], [role='link'], [role='switch'], [role='checkbox']):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+// Pressed. The same zero-specificity approach as the focus ring above, and for
+// the same reason: state belongs to the system, not to whoever remembers it. The
+// app had NO :active anywhere, so nothing acknowledged a click or a tap.
+// `:where()` adds no specificity, so a component overrides with a plain class.
+//
+// ONLY THE INNERMOST CONTROL ANIMATES. :active matches an element AND all of its
+// ancestors, so a button inside a row that is itself a control pressed both: the
+// clips folder header is a 980px role="button", and pressing the 50px overflow
+// disc inside it scaled the whole row — the disc slid 13px left while the title
+// slid 13px right, which reads as the page lurching rather than as a press
+// (Maryna 2026-08-30).
+//
+// The exclusion names interactive descendants specifically. A blanket
+// `:not(:has(:active))` would also cancel the press on every button that merely
+// contains a span or an icon, because those are :active too.
+:where(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):not(:disabled):active:not(:has(:is(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):active)) {
+  transform: scale(var(--press-scale));
+}
+
+// Motion is the cue, so when motion is off the cue has to become tonal instead
+// of disappearing — a press that acknowledges nothing is worse than no press.
+// Same innermost-only rule: a whole row dimming because a button inside it was
+// pressed is the tonal version of the same lurch.
+@media (prefers-reduced-motion: reduce) {
+  :where(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):not(:disabled):active:not(:has(:is(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):active)) {
+    transform: none;
+    filter: brightness(.92);
+  }
+}
+
+// A chevron that DISCLOSES points down when the thing is shut and flips up when
+// it opens, everywhere in the app. It is the only feedback some of these
+// controls give: the menu opens below the fold, or the panel it reveals is off
+// the bottom of the screen, and without the flip a tap looks like nothing
+// happened (Maryna 2026-08-30).
+//
+// Driven by aria-expanded, not by a page's own `.open` class. That attribute is
+// the state the control already publishes to assistive tech, so the picture and
+// the announcement cannot drift apart — and a control that gains the flip has
+// gained the aria at the same time. It replaces three hand-rolled versions
+// (.lg-chev, .add-ic, .fh-chev.rot) that each invented their own hook.
+.halo-chev { transition: transform var(--dur-med) ease; }
+
+// ---------------------------------------------------------------------------
+// THE FOLLOW PILL — one control, two colours, one width.
+//
+// It existed three times: the onboarding follow row, the Manage-following list
+// and the team page's hero. The first two already agreed; the team page did
+// not, and in two ways that matter (Maryna 2026-08-30):
+//
+// · it was labelled by STATE, "Following", where the others name the ACTION,
+//   "Unfollow". A control says what pressing it does — that is this app's own
+//   copy rule, and "Following" makes the one button that unfollows read as a
+//   status badge;
+// · its colours were inverted. Everywhere else, following is the QUIET state:
+//   the loud accent pill is the invitation, and once you have accepted it the
+//   pill steps back. The hero painted the followed state accent and the
+//   unfollowed one a solid brand button, so the same two states read opposite
+//   ways on two screens.
+//
+// `min-width` is the third part, and it is why the pill never resizes: sized
+// for the longer of the two words, a toggle cannot reflow the row it sits in.
+// ---------------------------------------------------------------------------
+.halo-follow-pill {
+  flex: none;
+  cursor: pointer;
+  padding: var(--pad-control-y) var(--pad-control-x);
+  border-radius: var(--r-pill);
+  // 100, not 92: the label went up a step and "Unfollow" needs the room. The
+  // number exists so BOTH states share one width — see the note above.
+  min-width: 100px;
+  text-align: center;
+  font-family: var(--body);
+  font-weight: 700;
+  // Body, not caption. At 12 the pill read as a tag rather than the control it
+  // is, and on the team card it is the only action in the card (Maryna
+  // 2026-08-30).
+  font-size: var(--fs-body);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+  transition: background var(--dur-med), color var(--dur-med), border-color var(--dur-med);
+}
+@media (hover: hover) {
+  .halo-follow-pill:hover:not(.on) {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .halo-follow-pill.on:hover { color: var(--ink); }
+}
+// Followed: the same pill, muted. Colour only — never a different size.
+.halo-follow-pill.on {
+  background: var(--card2);
+  border-color: var(--hair);
+  color: var(--ink2);
+}
+
+// ---------------------------------------------------------------------------
+// CLEARING A FILTER IS A LINK, NOT A BUTTON.
+//
+// It sat in the filter row as a fourth PILL — same shape as Game and Date, in
+// quiet ink — which made "Clear" read as a filter you could apply, and put a
+// destructive control in the same visual class as the three that only narrow
+// (Maryna 2026-08-30). Accent text, no box: it is the row's only action, and
+// it should be the only thing in the row that is not a pill.
+//
+// The You clips row already worked this way; this is that recipe, once, so the
+// two rows cannot drift.
+// ---------------------------------------------------------------------------
+.halo-clear-link {
+  flex: none;
+  background: none;
+  border: 0;
+  padding: 0 var(--space-1);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--accent);
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 3px;   // focus ring only — the control itself has no box
+  transition: opacity var(--dur-fast) ease;
+}
+@media (hover: hover) {
+  .halo-clear-link:hover { opacity: .72; }
+}
+[aria-expanded='true'] .halo-chev { transform: rotate(180deg); }
+
+// Visually hidden but exposed to assistive tech (screen-reader-only headings/labels).
+// Text-link buttons (auth screens): 24px floor so they never rely on the 2.5.8 spacing exception.
+button.link { min-height: 24px; }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ===================== layout utilities =====================
+// Compose pages from these so spacing stays consistent across screens.
+
+// Screen container — full height with clearance for the docked nav.
+.halo-page {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: var(--nav-clear);
+}
+
+// Fixed bottom chrome an anchored filter menu must not open into. Conditioned on
+// the dock actually being in the page, not on the page being a page: /follows
+// carries the filter bar and no dock, and a flat rule made every menu there flip
+// upwards to clear something that was not there. It also goes away exactly where
+// the dock does, for the same reason. Onboarding has its own CTA dock instead and
+// overrides this.
+// A menu that ignored the reservation opened its full height downwards whatever
+// was below it: on the onboarding teams step 199px of it landed across the CTA
+// and 103px fell off the screen (Maryna 2026-08-31).
+.halo-page:has(> .halo-nav-dock) halo-event-filter-bar {
+  --filter-safe-bottom: var(--nav-clear);
+}
+@media (min-width: 1024px) {
+  .halo-page:has(> .halo-nav-dock) halo-event-filter-bar { --filter-safe-bottom: 0px; }
+}
+
+// A page that has NOT been adapted stops at a readable column once the shell
+// uncaps at 768. Letting it run full bleed is worse than the phone frame it
+// replaced: a settings row stretched to 1024px puts its label at one end of the
+// screen and its chevron at the other.
+//
+// `.halo-wide` is the opt-out, and it is ONE class. It was two — `.dhome` on
+// Home and `.gwide` on Games — which is how five organisms ended up widening
+// themselves for Home only and Games inherited none of it. A third and a fourth
+// route were about to make that permanent (Maryna 2026-08-29).
+@media (min-width: 768px) {
+  .halo-page:not(.halo-wide) {
+    // width:100% is load-bearing. The page is an item in a column flex
+    // container, where `margin-inline: auto` cancels the default stretch and
+    // shrink-wraps it to its content — the settings list came out 300px wide
+    // instead of 720.
+    width: 100%;
+    max-width: var(--measure-task);
+    margin-inline: auto;
+  }
+}
+
+// Sticky top chrome (status bar + app header) on the tab pages.
+// It pins BELOW the dev bar, which is sticky too and sits at z-index 9999: at
+// top 0 the header slid underneath it on the first scroll and was gone for the
+// rest of the page (Maryna 2026-08-30). --devbar-h is published by the dev bar
+// itself and removed when it unmounts, so the fallback is what production uses.
+.topbar {
+  position: sticky;
+  top: var(--devbar-h, 0px);
+  z-index: var(--z-header);
+  background: var(--screen);
+}
+
+// TWO PANES. A fixed identity rail and a column that scrolls past it — You and
+// Game both use it, and it was written twice before this, which is how Game's
+// tabs ended up 20px higher and 100px wider than You's (Maryna 2026-08-30).
+// The frame lives here; what goes INSIDE each rail stays with its page.
+//
+// `split-` prefixed, because .halo-rail is already the horizontal card rail and
+// .halo-main is already the shell's <main>. Reusing either silently lost to
+// their rules (Maryna 2026-08-30).
+//
+// Below 1024 the three wrappers dissolve, so the phone keeps a single stack and
+// the markup needs no second version.
+.halo-split, .halo-split-rail, .halo-split-main { display: contents; }
+
+@media (min-width: 1024px) {
+  .halo-split {
+    display: grid;
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    column-gap: var(--pad-block-x);
+    align-items: start;
+  }
+  // Children OF a split, so a page that drops the .halo-split class (Game before
+  // tip-off) keeps its single stack instead of pinning a rail with no grid
+  // around it (Maryna 2026-08-30).
+  .halo-split > .halo-split-rail {
+    display: block;
+    grid-column: 1;
+    position: fixed;
+    top: calc(var(--devbar-h, 0px) + var(--topbar-h, 0px));
+    bottom: 0;
+    width: var(--rail-w);
+    padding-block: var(--space-6);
+    // auto, not hidden: on a short window the panel would otherwise be clipped
+    // with no way to reach it.
+    overflow-y: auto;
+  }
+  // Fixed takes the rail out of flow, so the column beside it would auto-place
+  // into track 1 and sit underneath. Naming the column is what stops that.
+  .halo-split > .halo-split-main { display: block; min-width: 0; grid-column: 2; }
+}
+
+// A grid of VERTICAL (9:16) video tiles — clips on You, highlights on Game.
+// The ratio multiplies the width, so the tile's width is the thing to cap: at
+// 230px wide a tile came out 446px tall, half the viewport, and only four fit
+// across. auto-fill against a max width instead of a column COUNT per band, so
+// the count follows the room rather than four hardcoded numbers per page
+// (Maryna 2026-08-30).
+// ---------------------------------------------------------------------------
+// THE MEDIA CARD'S HOVER, ONCE.
+//
+// Four components draw the same object — a poster, a play disc on it, a title
+// under it — and each had written its own answer to the pointer. The horizontal
+// rail card scaled its media; the game page's video cards did nothing at all;
+// the two VERTICAL tiles (game highlights, You clips) moved their border and
+// stopped there. Same card, three behaviours (Maryna 2026-08-30).
+//
+// One recipe: accent into the hairline, surface up one step, and the CONTENT
+// scales rather than the card — a card that grew would jostle its neighbours in
+// a rail or a grid. `@media (hover: hover)` because a :hover rule on a touch
+// screen sticks after the tap and leaves the card looking selected.
+//
+// The hook is the poster `img` itself rather than a per-component class, which
+// is why four different inner names (.pl / .play / .hplay / .ct-play) needed
+// only one shared marker for the disc.
+// ---------------------------------------------------------------------------
+.halo-media-card {
+  // The RESTING surface lives here too, not just the hover. Left in the four
+  // components, `.htile[_ngcontent]` and `.halo-media-card:hover` both score
+  // (0,2,0) and the component's stylesheet is injected later, so the resting
+  // border won the hover on source order: the media scaled and the card did not
+  // (Maryna 2026-08-30). One rule owning both states cannot tie with itself.
+  border: 1px solid var(--hair);
+  background: var(--card);
+  transition: border-color var(--dur-med), background var(--dur-med);
+  // A large surface presses shallower than a control: 3% on a 300px card
+  // travels 9px, which reads as a lurch.
+  --press-scale: .99;
+}
+.halo-media-card img,
+.halo-media-play { transition: transform var(--dur-slow) var(--ease-out-soft); }
+
+@media (hover: hover) {
+  .halo-media-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--hair));
+    background: var(--card2);
+  }
+  // Not on a locked tile: there the poster is already blurred and scaled to
+  // tease, and a second transform on hover fights the one that is selling it.
+  .halo-media-card:not(.locked):hover img { transform: scale(1.04); }
+  .halo-media-card:hover .halo-media-play { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo-media-card, .halo-media-card img, .halo-media-play { transition: none; }
+  .halo-media-card:hover img,
+  .halo-media-card:hover .halo-media-play { transform: none; }
+}
+
+.halo-reel-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-snug); }
+@media (min-width: 1024px) {
+  .halo-reel-grid { grid-template-columns: repeat(auto-fill, minmax(144px, 1fr)); }
+}
+
+// The level-1 tab strip that heads the right-hand column. The inline inset is
+// the page's below 1024 and zero above it, where the column already carries one.
+.halo-split-tabs { padding: var(--space-3) var(--pad-block-x) 0; margin-top: var(--space-2); }
+@media (min-width: 1024px) {
+  .halo-split-tabs { padding-inline: 0; }
+  // Sized by the LABELS, not by a number picked per page. Segments are equal by
+  // design (segmented-toggle.scss), so the longest label sets the segment and a
+  // fixed cap serves whichever page it was chosen on: 320 suits You's two short
+  // words and leaves "Highlights 6" 8px of air a side on Game, next to a "Stats"
+  // with 28 (Maryna 2026-08-30).
+  //
+  // fit-content lets the strip take what its labels need; the floor keeps a
+  // two-word switch from collapsing to a stub; and the side padding is what
+  // actually buys the air, so it is stated here rather than left at the dense
+  // 8px the phone uses.
+  .halo-split-tabs halo-segmented-toggle { display: block; width: fit-content; max-width: 100%; min-width: 320px; }
+  // The air comes from the SEGMENT's padding, not from a wider strip. `flex: 1 1
+  // 0` splits the FREE space equally, so a 94px label and a 42px one came out
+  // with 8px and 28px a side — the long one cramped while the short ones floated
+  // (Maryna 2026-08-30). At 20px each segment starts from a comfortable base and
+  // only the leftover is shared.
+  //
+  // The element in the middle of the selector is load-bearing: a plain
+  // `.halo-split-tabs .segbtn` ties with the component's own
+  // `.segbtn[_ngcontent]` on specificity and then loses on source order.
+  //
+  // Deliberately NOT overriding .seg's flex from out here. A grid of equal
+  // columns does give equal segments, but the sliding thumb is positioned from
+  // offsetLeft and came out 3px adrift: the component owns its own layout.
+  .halo-split-tabs halo-segmented-toggle .segbtn { padding-inline: var(--space-5); }
+}
+
+// Vertical stack of cards / rows — reliable flex gap (avoids the `:host +` pitfall).
+.halo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack);
+}
+
+// The same class raises the block inset for everything under it. One marker,
+// two consequences: the page keeps the full width, and every block inside it
+// insets to the wide gutter instead of the phone one.
+@media (min-width: 768px) {
+  .halo-wide { --pad-block-x: var(--pad-x-wide); }
+}
+
+// One step, in one token. Past 1600 a content page earns more room; every page
+// that reads --measure-page moves together instead of each picking a number.
+@media (min-width: 1600px) {
+  :root { --measure-page: 1360px; }
+}
+
+// Horizontal scrolling rail of cards.
+.halo-rail {
+  display: flex;
+  gap: var(--rail-gap);
+  overflow-x: auto;
+  // 0 at the bottom edge: the block BELOW owns the gap (--block-gap).
+  // This used to be 2px, which is why a rail-then-heading gap measured 30
+  // while an ad-then-heading gap measured 32.
+  padding: 0 var(--pad-block-x);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+// The overflow control at the END of a vertical list — "See all 9 games",
+// "Show all 24 moments".
+//
+// WHERE it sits is decided by the container, not by taste, and the two cases
+// are opposites (Maryna 2026-09-02):
+//
+// · A horizontal RAIL has no end to arrive at. Its overflow link belongs in the
+//   section header, where it is on screen from the start — that is the See all
+//   on Home's rails.
+// · A vertical LIST does have an end, and the reader arrives at it. The control
+//   belongs there, in reading order, where the next action is needed.
+//
+// Owns the gap ABOVE itself: the list contributes nothing at its bottom edge.
+// A LINK, the same recipe the section header's See all uses — accent, 700,
+// --fs-caption, chevron, no surface of its own. A filled button was the first
+// attempt and it was wrong: the affordance is already established in this app
+// and it reads as a link, so the control that moved position should not also
+// change what it is (Maryna 2026-09-02). Centred, because at the end of a list
+// there is no row for it to sit at the end of.
+.halo-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // 4px, not the header link's 2: the gap is optical and it has to grow with
+  // the type it separates.
+  gap: var(--space-1);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 700;
+  // --fs-body, where the header's link is --fs-caption. In the header the link
+  // shares a row with a title and a count and is the quietest thing on it; here
+  // it stands alone at the end of a list, and at 12px it got lost on the page.
+  // One step up, not two: at --fs-body-lg it started pulling rank on the cards
+  // above it, and what makes it findable here is the air around it rather than
+  // the size (Maryna 2026-09-02).
+  font-size: var(--fs-body);
+  color: var(--accent);
+  white-space: nowrap;
+  // The air is what separates this link from the cards, more than the type size
+  // does (Maryna 2026-09-02). --space-4 here is what THIS control adds; measured
+  // on the team page the label ends up 48px clear of the last card, because the
+  // stack it follows already carries --space-6 of its own bottom padding. So the
+  // number to change is this one, and the total will always be that plus
+  // whatever the list above contributes.
+  //
+  // The padding doubles as the hit area, which a11y 2.5.8 wants at 24px on a
+  // text control: a 14px line plus 16px of padding measures 33px.
+  margin-top: var(--space-4);
+  padding-block: var(--space-2);
+}
+
+
+// In-feed advertising placement — consistent vertical rhythm on every page.
+// The ad owns the gap above itself and nothing below it — the section header
+// that follows owns that one.
+.halo-ad-wrap { margin: var(--block-gap) 0 0; }
+
+// Floating bottom nav dock, centred over the screen.
+// 2.4.11 Focus Not Obscured: the bottom nav (60px, 24px off the bottom) and the onboarding
+// dock are fixed over the document scroller, so a keyboard user's focused target could land
+// under them. Reserve the clearance once here instead of per component (a11y audit 2026-09-02 G13).
+html { scroll-padding-bottom: 132px; }
+
+.halo-nav-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+// The dock goes when the header nav arrives — never both at once. App-wide, not
+// per page: it used to live in home.scss alone, which paired a Home-only header
+// nav with a Home-only dock rule and left every other page on the dock.
+@media (min-width: 1024px) {
+  .halo-nav-dock { display: none; }
+}

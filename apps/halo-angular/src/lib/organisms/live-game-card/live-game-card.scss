@@ -1,0 +1,87 @@
+:host { display: inline-block; }
+
+:host-context(.dhome) {
+  @media (min-width: 768px) { display: block; }
+}
+
+.livecard {
+  width: 302px;
+  text-align: start;
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 20px;
+  padding: var(--pad-card);
+
+  :host-context(.dhome) & {
+    @media (min-width: 768px) { width: 100%; }
+  }
+}
+
+.lc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.lc-live {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--live);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.lc-live .pz { width: 5px; height: 5px; border-radius: 50%; background: var(--live); }
+
+.lc-vsrow { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-snug); }
+.lc-side { display: flex; align-items: center; gap: var(--gap-snug); min-width: 0; flex: 1; }
+.lc-side.r { flex-direction: row-reverse; text-align: end; }
+.lc-side .nm {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lc-vs {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  letter-spacing: 0.025em;
+  color: var(--ink3);
+  flex: none;
+}
+/* Live running score in place of VS — the scoreboard reads at a glance. */
+// Size, weight and colour only — halo-score owns the face and the dash.
+.lc-score {
+  flex: none;
+  font-weight: 800;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+
+.lc-meta {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hair2);
+}
+
+/* Desktop interaction — see rail-card for why this is (hover: hover) and why the
+   card itself does not move. No thumbnail here, so the tint does the work. */
+@media (hover: hover) {
+  .livecard:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--hair));
+    background: var(--card2);
+  }
+}
+.livecard {
+  transition: border-color var(--dur-med), background var(--dur-med);
+  --press-scale: .99;
+}
+@media (prefers-reduced-motion: reduce) { .livecard { transition: none; } }

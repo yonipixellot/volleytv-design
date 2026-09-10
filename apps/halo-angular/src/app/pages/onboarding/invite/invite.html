@@ -1,0 +1,127 @@
+<div class="ob">
+  <!-- ============ INVITE ENTRY ============ -->
+  @if (step() === 'entry') {
+    <halo-onboard-stepper [step]="1" [total]="4" />
+    <div class="ob-scroll">
+      <div class="invite-hero">
+        <halo-crest [src]="team.crest" [size]="56" />
+        <div class="ih-eye">{{ 'inv.youreInvited' | t }}</div>
+        <h1 class="ob-title c">{{ 'inv.invitedYou' | t: { coach: coachName, team: team.name } }}</h1>
+        <p class="ob-sub c">{{ 'inv.joinSub' | t }}</p>
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="openAuth('signup')">{{ 'inv.createYourAccount' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="openAuth('signin')">{{ 'inv.alreadyHave' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ AUTH (embedded) ============ -->
+  @if (step() === 'auth') {
+    <halo-onboard-stepper [step]="1" [total]="4" [showBack]="true" (back)="step.set('entry')" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ authMode() === 'signup' ? ('inv.createYourAccount' | t) : ('inv.welcomeBack' | t) }}</h1>
+      <p class="ob-sub">{{ authMode() === 'signup' ? ('inv.signupSub' | t: { coach: coachName, team: team.name }) : ('inv.signinSub' | t: { team: team.name }) }}</p>
+      <halo-form-field [label]="'auth.email' | t" type="email" inputmode="email" placeholder="you@email.com"
+        [value]="email()" (valueChange)="email.set($event)" />
+      <halo-form-field [label]="'auth.password' | t" type="password" placeholder="••••••••"
+        [value]="password()" (valueChange)="password.set($event)" />
+      <button class="linkbtn" type="button" (click)="authMode.set(authMode() === 'signup' ? 'signin' : 'signup')">
+        {{ authMode() === 'signup' ? ('inv.haveAccountSignIn' | t) : ('inv.newCreate' | t) }}
+      </button>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!authValid()" (press)="step.set('teams')">
+        {{ authMode() === 'signup' ? ('inv.createAccount' | t) : ('auth.signIn' | t) }}
+      </halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ TEAMS (locked invited team) ============ -->
+  @if (step() === 'teams') {
+    <halo-onboard-stepper [step]="2" [total]="4" [showBack]="true" (back)="step.set('entry')" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.yourTeam' | t }}</h1>
+      <p class="ob-sub">{{ 'inv.addedYou' | t: { coach: coachName } }}</p>
+      <div class="eyebrow">{{ 'inv.fromInvite' | t }}</div>
+      <div class="myteam locked">
+        <halo-crest [src]="team.crest" [size]="40" />
+        <span class="mt-txt"><span class="mt-nm">{{ team.name }}</span><span class="mt-org">{{ team.org }}</span></span>
+        <span class="mt-lock"><halo-icon name="lock" [size]="14" /></span>
+      </div>
+
+      <div class="eyebrow">{{ 'inv.followMore' | t }} <span class="ey-sub">{{ 'ob.optional' | t }}</span></div>
+      <div class="ob-list">
+        @for (t of moreTeams(); track t.id) {
+          <halo-follow-row [name]="t.name" [meta]="t.org" [crest]="t.crest"
+            [followed]="t.followed" (followedChange)="setMoreFollowed(t.id, $event)" />
+        }
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('claim')">{{ 'ob.continue' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ CLAIM + FOLLOW ============ -->
+  @if (step() === 'claim') {
+    <halo-onboard-stepper [step]="3" [total]="4" [showBack]="true" (back)="step.set('teams')" />
+    <div class="ob-scroll">
+      @if (!claimed()) {
+        <h1 class="ob-title">{{ 'ob.findRoster' | t }}</h1>
+        <p class="ob-sub">{{ 'ob.findRosterSubTeam' | t: { team: team.name } }}</p>
+        <div class="jgrid">
+          @for (j of jerseys; track j.n) {
+            <button class="jtile" type="button" [class.taken]="j.taken" [disabled]="j.taken" (click)="claim(j)">
+              <span class="jn">{{ j.n }}</span>
+              <span class="jname">{{ j.name }}</span>
+              <span class="jpos">{{ j.pos }}</span>
+              @if (j.taken) { <span class="jtaken">{{ 'ob.taken' | t }}</span> }
+            </button>
+          }
+        </div>
+      } @else {
+        <h1 class="ob-title">{{ 'ob.youreOn' | t: { team: team.name } }}</h1>
+        <p class="ob-sub">{{ 'ob.youreOnSubInvite' | t }}</p>
+        <div class="eyebrow">{{ 'ob.thatsMe' | t }}</div>
+        <div class="myteam">
+          <span class="selfjz">{{ claimed()!.n }}</span>
+          <span class="mt-txt"><span class="mt-nm">{{ claimed()!.name }} Weiss</span><span class="mt-org">{{ claimed()!.pos }} · {{ team.name }}</span></span>
+          <button class="mt-change" type="button" [attr.aria-label]="'ob.changeJersey' | t" (click)="changeJersey()">
+            <halo-icon name="close" [size]="14" />
+          </button>
+        </div>
+        <div class="eyebrow">{{ 'ob.teammates' | t }}</div>
+        <div class="ob-list">
+          @for (p of teammates(); track p.id) {
+            <halo-follow-row kind="person" [name]="p.name" [meta]="p.meta" [mono]="p.mono"
+              [followed]="p.followed" (followedChange)="setTeammateFollowed(p.id, $event)" />
+          }
+        </div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!claimed()" (press)="step.set('notif')">{{ 'ob.continue' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="step.set('notif')">{{ 'ob.skip' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  @if (step() === 'notif') {
+    <halo-onboard-stepper [step]="4" [total]="4" [showBack]="true" (back)="step.set('claim')" />
+    <div class="ob-scroll notif">
+      <div class="bell-badge"><halo-icon name="bell" [size]="30" /></div>
+      <h1 class="ob-title c">{{ 'ob.stayMoment' | t }}</h1>
+      <p class="ob-sub c">{{ 'ob.notifSubPlayer' | t }}</p>
+      <div class="perks">
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ 'ob.perkLive' | t }}</div>
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ 'ob.perkNewDropsTeam' | t: { team: team.name } }}</div>
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ 'ob.perkHlYou' | t }}</div>
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="finish()">{{ 'ob.turnOnNotifs' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="finish()">{{ 'ob.maybeLater' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+</div>

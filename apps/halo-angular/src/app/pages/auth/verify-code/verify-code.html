@@ -1,0 +1,33 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <h1 class="vc-title">{{ 'auth.verifyEmail' | t }}</h1>
+  <p class="vc-lead" [innerHTML]="'auth.codeSentTo' | t: { email: masked() }"></p>
+
+  <div class="otp" [class.expired]="expired()" [class.wrong]="wrong()">
+    @for (d of digits(); track $index) {
+      <input type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+        [attr.aria-label]="'auth.digit' | t: { n: $index + 1 }"
+        [value]="d" [disabled]="expired() || verifying() || locked()"
+        (input)="onInput($index, $event)" (keydown)="onKeydown($index, $event)" />
+    }
+  </div>
+
+  @if (locked()) {
+    <p class="vc-ttl err" role="alert">{{ 'auth.tooMany' | t: { time: lockMmss() } }}</p>
+  } @else if (wrong()) {
+    <p class="vc-ttl err" role="alert">{{ 'auth.codeWrong' | t }} {{ plural(3 - attempts(), 'auth.attempt1', 'auth.attemptN') }}</p>
+  } @else if (!expired()) {
+    <p class="vc-ttl"><halo-icon name="clock" [size]="13" /> {{ 'auth.codeExpiresIn' | t: { time: mmss() } }}</p>
+  } @else {
+    <p class="vc-ttl err">{{ 'auth.codeExpired' | t }}</p>
+  }
+
+  <halo-button class="cta" variant="primary" [block]="true"
+    [disabled]="!complete() || expired() || verifying() || locked()" (press)="verify()">
+    {{ verifying() ? ('auth.verifying' | t) : ('auth.verify' | t) }}
+  </halo-button>
+
+  <div class="vc-row">
+    <button class="link" type="button" [disabled]="resendIn() > 0 || locked()" (click)="resend()">{{ resendLabel() }}</button>
+    <button class="link" type="button" (click)="editEmail()">{{ 'auth.editEmail' | t }}</button>
+  </div>
+</halo-auth-shell>

@@ -1,0 +1,233 @@
+:host { display: block; }
+
+// Sits AFTER the selectors now, so it needs the gap it used to get for free at
+// the top of the block (see the order note in trend-chart.ts).
+.ch-h { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--gap-snug); margin-top: var(--space-4); }
+.ct { font-family: var(--body); font-weight: 800; font-size: var(--fs-body); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+.ct .ct-s { color: var(--ink3); font-weight: 500; font-size: var(--fs-caption); text-transform: none; letter-spacing: 0; }
+// Colour agrees with the arrow. It was an unconditional --pos, so every decline
+// rendered green and a "▼ -5%" read as good news (2026-08-28). See trendDir().
+.trend { font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); margin-top: var(--space-1); }
+.trend.up { color: var(--pos); }
+.trend.down { color: var(--live); }
+.trend.flat { color: var(--ink3); }
+.cbig { font-family: var(--disp); font-weight: 700; font-size: var(--fs-d-lg); line-height: .85; color: var(--ink); text-align: right; }
+.cbig small { display: block; font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); margin-top: var(--space-2); }
+
+/* Says two things the grid could not say for itself: the figures are SEASON
+   totals (the range control below scopes the chart, not these), and the tiles
+   are tappable — nothing else signalled that. */
+.mlab {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink3);
+  margin-bottom: var(--space-2);
+}
+
+/* Metric selector. A GRID of value+code, replacing the pill row that used to sit
+   under the segmented range and merge with it. Auto-fill so 6 or 7 metrics lay
+   out without a hardcoded column count, and no horizontal scroll — the tail used
+   to hide off-screen mid-word. */
+.mtiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: var(--gap-tight);
+}
+.mtile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  cursor: pointer; text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hair2); border-radius: var(--r-card-sm); background: var(--card2);
+  // 44px WCAG 2.5.8 floor, met by the box here: unlike the players' inline link,
+  // a tile is meant to be a block, so height costs nothing.
+  min-height: 44px;
+  transition: border-color var(--dur-snap) ease, background var(--dur-snap) ease;
+}
+.mt-v { font-family: var(--disp); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); line-height: 1; }
+.mt-k {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink3);
+}
+/* Selection is an accent OUTLINE, not a fill: a filled tile would make the
+   selected metric's own number the loudest thing on screen, competing with the
+   chart it selects. */
+.mtile.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--card2));
+}
+.mtile.on .mt-k { color: var(--accent); }
+
+/* Hover, per DESIGN.md: a tint, never a lift, and the surface recipe is the
+   hairline taking accent while the ground steps up a stop. Not on the selected
+   tile: it is already the selection, and a hover there promises a click that
+   changes nothing (Maryna 2026-08-30). */
+@media (hover: hover) {
+  .mtile:not(.on):hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--hair2));
+    background: var(--card);
+  }
+  .mtile:not(.on):hover .mt-k { color: var(--ink2); }
+}
+
+/* The range is a TEXT control, so it hovers on its label, not on a ground it
+   does not have. Same exclusion for the selected segment. */
+@media (hover: hover) {
+  .rangeseg button:not(.on):hover { color: var(--ink); }
+}
+.mtile.locked .mt-v { color: var(--ink3); }
+
+.rangeseg {
+  display: flex; gap: var(--space-1); background: var(--band); border: 1px solid var(--hair2);
+  border-radius: var(--r-pill); padding: var(--space-1); width: fit-content;
+}
+/* The gap separates the range from the TILES above it, so it only belongs when
+   there are tiles. On the Defence card (no metric selector) the range is the
+   first thing in the block, and an unconditional margin-top stacked onto the
+   card's own 18px padding — measured 31px there against 19px on Offence
+   (2026-08-28). */
+.rangeseg:not(:first-child) { margin-top: var(--space-3); }
+.rangeseg button {
+  border: 0; background: transparent; cursor: pointer;
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink3); padding: var(--space-2) var(--space-4); border-radius: var(--r-pill);
+}
+/* --accent, not --pos (2026-08-28). --pos is the "good / up" STATUS token —
+   .trend.up, the gauge and stat-tile deltas, the verdict heading and the shot-map
+   legend all use it to mean improvement. A selected time window is not good news,
+   and painting it green put two different selection colours in one block (the
+   tiles select with --accent). Selection is selection: one colour. */
+.rangeseg button.on { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-1); }
+
+/* Scrub layer. `pan-y` is the whole trick on mobile: the browser keeps VERTICAL
+   panning (the page still scrolls when you swipe up through the chart) and hands
+   us horizontal gestures, so dragging sideways reads games instead of fighting
+   the scroller. `none` would have trapped the page. */
+.plot {
+  position: relative;
+  touch-action: pan-y;
+}
+/* The plot now runs the full width of the viewBox, so it lines up with the card's
+   text at EVERY viewport width — no bleed margin to keep in sync with a scaling
+   viewBox unit (2026-08-28).
+   `overflow: visible` is what keeps that honest: a high/low marker sitting on the
+   first or last game spills ~7px past the plot, and it lands in the CARD's own
+   16px padding, still ~38px clear of the screen edge. End tick labels do not rely
+   on this — they are anchored to their edge in xTicks(). */
+/* height from the viewBox ratio, never fixed — see the note in the template. */
+.chart-svg { display: block; width: 100%; height: auto; margin-top: var(--space-3); overflow: visible; }
+.chart-svg text { font-family: var(--body); }
+
+/* Readout: value leads, label follows. Centred on the crosshair and clamped by
+   `.flip` near the right edge so it never runs off the card. */
+.tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--r-card-sm);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  box-shadow: var(--shadow-2);
+  white-space: nowrap;
+}
+/* Clamped at both ends: centred on the crosshair in the middle, but anchored to
+   its own edge near either side so it cannot run out of the card. */
+.tip.flip { transform: translateX(-100%); }
+.tip.flipl { transform: translateX(0); }
+.tip-v { font-family: var(--disp); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); line-height: 1; }
+.tip-k {
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-caption);
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink3);
+}
+
+.legend { display: flex; gap: var(--gap-loose); margin-top: var(--space-3); flex-wrap: wrap; }
+.legend .lg { display: inline-flex; align-items: center; gap: var(--gap-tight); font-size: var(--fs-caption); font-weight: 600; color: var(--ink3); font-family: var(--body); }
+.legend .ln { width: 14px; height: 3px; border-radius: 2px; }
+.legend .bd { width: 10px; height: 10px; border-radius: 3px; background: var(--band); }
+.legend .hi { width: 9px; height: 9px; border-radius: 50%; }
+
+.verdict { margin-top: var(--space-4); padding: var(--space-4); border-radius: 14px; background: var(--card2); border: 1px solid var(--hair2); }
+// --accent, not --pos. The heading names what the stat is about ("Cleaning the
+// glass"), so it makes no claim to colour by: --pos would have said "good news"
+// under a declining chart, and colouring it by direction would be odd on copy
+// that states no direction. --pos here was the third place in this one component
+// using a status token as a decorative green (2026-08-28).
+.verdict b { display: block; font-family: var(--body); font-weight: 800; font-size: var(--fs-caption); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin-bottom: var(--space-1); }
+.verdict p { margin: 0; font-family: var(--body); font-size: var(--fs-body); line-height: 1.55; color: var(--ink2); }
+
+// ---- premium locking ----
+
+.ch-body { position: relative; }
+.ch-body.locked > :not(.ch-lock) { filter: blur(6px); pointer-events: none; user-select: none; opacity: .85; }
+.ch-lock {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap-tight);
+  width: 100%; border: 0; cursor: pointer; padding: var(--space-3);
+  background: color-mix(in srgb, var(--card) 34%, transparent);
+  backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);
+  color: var(--ink);
+}
+.ch-lock .lk { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent); }
+// Inter: this is a sentence inside a control ("Blocks is Premium"), sitting
+// directly above an Inter CTA. Display for one and body for the other put two
+// voices in one button.
+.ch-lock .t { font-family: var(--body); font-weight: 800; font-size: var(--fs-body); }
+.ch-lock .cta { font-family: var(--body); font-weight: 800; font-size: var(--fs-caption); letter-spacing: .06em; padding: var(--pad-control-y) var(--pad-control-x); border-radius: var(--r-pill); color: var(--on-accent); background: var(--accent); }
+
+/* From the desktop band the range stops taking a row of its own and joins the
+   TILE ROW, centred on it: both are selectors, so on one line they read as the
+   block's control bar rather than as a control and the thing beneath it. This
+   knowingly breaks the order rule stated in trend-chart.ts — the range renders
+   beside, and in source order after, tiles it does not scope — and the shared
+   centre line is what stops that misreading.
+
+   It shares the row only WHILE BOTH FIT, and the browser decides that, not a
+   breakpoint (Maryna 2026-08-30). A fixed band got it wrong in both directions:
+   at one width it wrapped the seven tiles onto a second line to save one, and at
+   another it kept the range on its own row while everything fitted comfortably.
+
+   The mechanism is flex line-breaking. The host wraps, and the tiles' flex BASIS
+   is the width of exactly one row of them — count x track + the gaps between —
+   so the range fits on the line when there is room for both and drops to the
+   next line when there is not, where it starts at the LEFT edge exactly as it
+   does on a phone: a control on a line of its own is the start of that line, and
+   only a control SHARING the tiles' line belongs at the far end of it. No auto
+   margin is needed for either — the tiles grow into the slack and push the range
+   to the right edge whenever the two are on one line. Grow
+   1 / shrink 1: the tiles take the slack when the range wraps away, and give it
+   back on a card too narrow even for them alone, where the grid re-wraps them
+   internally instead of overflowing the card.
+   84px is the tile track from .mtiles above; --mt-n is the count, bound in the
+   template because CSS cannot count children.
+
+   `:not(:first-child)` scopes all of this to blocks that HAVE a metric selector.
+   On the Defence card the range is the block's first element with nothing to
+   pair with, so it keeps its own row at the left edge. */
+@media (min-width: 1024px) {
+  /* column-gap, not a margin on the range: the tiles grow into the slack, so
+     there is no free space left for an auto margin to become a gap. It only
+     applies where two items share a line, which is exactly this pair. */
+  :host { display: flex; flex-wrap: wrap; column-gap: var(--space-6); }
+  :host > * { flex: 0 0 100%; min-width: 0; }
+
+  /* Left out of the blanket 100% basis above: on the Defence card the range is
+     the block's first element, and a full-width basis would stretch a pill that
+     is meant to be its content's width. */
+  .rangeseg:first-child { flex: 0 0 auto; }
+
+  .mlab:has(~ .rangeseg) { flex: 0 0 100%; }
+  .mtiles:has(~ .rangeseg) {
+    flex: 1 1 calc(var(--mt-n, 6) * 84px + (var(--mt-n, 6) - 1) * var(--gap-tight));
+    align-self: center;
+  }
+  /* The vertical margin is SYMMETRIC, and that is the whole point: align-self
+     centres the MARGIN box, so a margin on one side alone would push the range
+     off the tiles' centre line by half of it. Equal margins keep the centres
+     together when the two share a line, and become the gap between them when the
+     range wraps to its own. */
+  .rangeseg:not(:first-child) {
+    flex: 0 0 auto; align-self: center; margin-block: var(--space-3);
+  }
+}

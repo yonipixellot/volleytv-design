@@ -1,0 +1,138 @@
+:host { display: block; }
+
+.el-top {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--pad-block-x) var(--space-2);
+
+  // From 1024 the row is TYPE only — the back control is gone by then — so the
+  // pair aligns on a baseline instead of on box centres. Centring a 32px title
+  // against a 12px count left them 10.8px apart, which the eye reads before it
+  // reads either of them (Maryna 2026-08-30). Below that the row still holds a
+  // 36px button, and a button has no baseline worth aligning to.
+  @media (min-width: 1024px) { align-items: baseline; }
+
+  // The back control, and ONLY below 1024. From there up the app header is on
+  // screen with its own nav and the browser chrome is right above it, so a third
+  // way back is clutter (Maryna 2026-08-30). Below that the header is
+  // display:none and the dock offers Home / Games / You — none of which is "the
+  // list I came from" — so this button is the only way back and stays.
+  .back {
+    flex: none; width: 36px; height: 36px;
+    display: grid; place-items: center; cursor: pointer;
+    border-radius: 50%; color: var(--ink);
+    background: var(--card2); border: 1px solid var(--hair);
+
+    @media (min-width: 1024px) { display: none; }
+  }
+  h1 {
+    flex: 1; margin: 0; min-width: 0;
+    font-family: var(--disp); font-weight: 700; font-size: var(--fs-d-xs);
+    text-transform: uppercase; letter-spacing: .01em; color: var(--ink);
+    // WRAPS, rather than one line with an ellipsis. The external lane is titled
+    // after the body that supplies the videos, and at 20px that is 341px against
+    // the 288 a phone row leaves beside the back control and the count: the
+    // ellipsis landed on "MORE FROM BASKETBALL AU…", hiding the only part that
+    // says whose videos these are (Maryna 2026-09-03). Two lines cost the row
+    // 24px once; a truncated page title costs the reader the answer.
+    text-wrap: balance;
+
+    // This is the PAGE's title, not a section's. --fs-d-xs is documented in the
+    // scale as the section-header size, which is why it read as one more heading
+    // in the feed rather than the name of the screen (Maryna 2026-08-30).
+    // --fs-d-md is the page-title size Home's EVENTS and Games' GAMES both use.
+    //
+    // Only from 768: on a phone this row also carries a back control and a
+    // count, and "GAME HIGHLIGHTS" at 32 leaves the three of them fighting over
+    // 343px. Home and Games have no back button competing with their titles.
+    @media (min-width: 768px) { font-size: var(--fs-d-md); }
+    // The count rides ALONGSIDE the title from the desktop band, the way
+    // halo-section-header has always done it. `flex: 1` is a phone-row idiom —
+    // it spends the width it has, which at 375 is right and at 1440 parks
+    // "10 games" 1300px from the thing it counts.
+    @media (min-width: 1024px) { flex: none; }
+  }
+  .cnt { font-family: var(--body); font-weight: 700; font-size: var(--fs-caption); color: var(--ink3); }
+}
+
+// The filter bar sat flush on the first card. The gap belongs to the block
+// BELOW, once — the feed's, not the bar's (Maryna 2026-08-30). 16, not the 32
+// between page blocks: the bar is this feed's control, not a separate block.
+.el-feed { margin-top: var(--space-4); }
+
+/* The Load more control sits outside the feed, so it carries the page inset the
+   feed gives its own cards. */
+.halo-more { margin-inline: var(--pad-block-x); }
+
+
+// ---------------------------------------------------------------------------
+// The feed. One container for the whole lane, so the day dividers group the
+// cards without breaking the row they sit in.
+//
+// The feed owns the page inset, which means the cards inside it contribute
+// none. halo-upcoming-row and halo-live-game-card each carry a gutter for the
+// pages that drop them straight onto the screen; inside a grid that gutter
+// lands in every column instead of at the screen edge.
+// ---------------------------------------------------------------------------
+.el-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-snug);
+  padding-inline: var(--pad-block-x);
+}
+.el-feed halo-upcoming-row,
+.el-feed halo-live-game-card { padding-inline: 0; }
+
+.cardfit { display: block; }
+.cardfit ::ng-deep .vcard { width: 100%; }
+halo-live-game-card.wide ::ng-deep .livecard { width: 100%; }
+
+.el-empty {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--space-12) var(--pad-block-x) var(--space-2);
+
+  .ic {
+    width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: var(--space-3);
+    border-radius: 18px; color: var(--ink3);
+    background: var(--card); border: 1px solid var(--hair);
+  }
+  .t { margin: 0 0 var(--space-1); font-family: var(--disp); font-weight: 800; font-size: var(--fs-body-lg); color: var(--ink); }
+  .s { margin: 0; max-width: 300px; font-size: var(--fs-body); line-height: 1.5; color: var(--ink3); }
+}
+
+// ---------------------------------------------------------------------------
+// A lane is the "See all" of a Home rail, so it takes that rail's shape rather
+// than inventing one: the SAME column ladder (2 / 3 / 4 / 5 / 6), so a card is
+// the size the viewer just clicked and the page reads as the rail unrolled.
+//
+// It is the page that most needed it. At 1440 the lane was a 720px column with
+// one 16:9 card per row and 5478px of scroll, while 360px of screen sat empty
+// on each side (Maryna 2026-08-29).
+// ---------------------------------------------------------------------------
+@media (min-width: 768px) {
+  .el-feed {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--rail-gap);
+    align-items: start;
+  }
+  // Two team names, a score and a call to action need about twice a video
+  // card's width, so these take two of its columns.
+  .el-feed halo-live-game-card,
+  .el-feed halo-upcoming-row { grid-column: span 2; }
+}
+
+@media (min-width: 1024px) {
+  .el-feed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  .el-feed { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1600px) {
+  .el-feed { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+@media (min-width: 2000px) {
+  .el-feed { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}

@@ -1,0 +1,106 @@
+<halo-settings-page activeKey="follows" [title]="'settings.manageFollowing' | t">
+  @if (showPlayers()) {
+    <div class="tabs">
+      <halo-segmented-toggle [options]="tabOptions()" [value]="tab()" (valueChange)="setTab($event)" />
+    </div>
+  }
+
+  @if (activeTab() === 'teams') {
+    @if (teams().length === 0) {
+      <div class="empty">
+        <p class="eyebrow">{{ 'fol.noTeams' | t }}</p>
+        <p class="body">{{ 'fol.noTeamsSub' | t }}</p>
+      </div>
+    } @else {
+      <div class="list">
+        @for (t of teams(); track t.id) {
+          <div class="frow">
+            <halo-crest [src]="t.crest || ''" [monogram]="t.mono" [size]="40" />
+            <div class="tx">
+              <button class="nm nm-link" type="button" (click)="openTeam(t.id)">{{ t.name }}</button>
+              <span class="sub">{{ t.league }} · {{ t.division }}</span>
+            </div>
+            <button class="unf halo-follow-pill on" type="button" (click)="unfollowTeam(t.id)">{{ 'common.unfollow' | t }}</button>
+          </div>
+        }
+      </div>
+    }
+    @if (discoverOpen()) {
+      <p class="sug">{{ 'fol.followMoreTeams' | t }}</p>
+      @if (allDiscoverTeams().length > 0) {
+        <halo-event-filter-bar
+          [categories]="discoverCategories()" [selected]="discoverFilters()"
+          (toggleOption)="toggleDiscoverFilter($event.cat, $event.value)" (clear)="clearDiscoverFilters()" />
+      }
+      @if (allDiscoverTeams().length === 0) {
+        <p class="sug-empty">{{ 'fol.allTeamsDemo' | t }}</p>
+      } @else if (discoverTeams().length === 0) {
+        <p class="sug-empty">{{ 'fol.noTeamsMatch' | t }}</p>
+      } @else {
+        <div class="list">
+          @for (t of discoverTeams(); track t.id) {
+            <div class="frow">
+              <halo-crest [src]="t.crest || ''" [monogram]="t.mono" [size]="40" />
+              <div class="tx">
+                <button class="nm nm-link" type="button" (click)="openTeam(t.id)">{{ t.name }}</button>
+                <span class="sub">{{ t.league }} · {{ t.division }}</span>
+              </div>
+              <button class="fol halo-follow-pill" type="button" (click)="followTeam(t)">{{ 'common.follow' | t }}</button>
+            </div>
+          }
+        </div>
+      }
+    }
+    <button class="add" type="button" [class.open]="discoverOpen()"
+      [attr.aria-expanded]="discoverOpen()" (click)="discoverOpen.set(!discoverOpen())">
+      <halo-icon class="add-ic halo-chev" [name]="discoverOpen() ? 'chevron-down' : 'plus'" [size]="14" />
+      {{ discoverOpen() ? ('fol.showLess' | t) : ('fol.addMoreTeams' | t) }}
+    </button>
+  }
+
+  @if (activeTab() === 'players') {
+    @if (players().length === 0) {
+      <div class="empty">
+        <p class="eyebrow">{{ 'fol.noPlayers' | t }}</p>
+        <p class="body">{{ 'fol.noPlayersSub' | t }}</p>
+      </div>
+    } @else {
+      <div class="list">
+        @for (p of players(); track p.id) {
+          <div class="frow">
+            <halo-player-disc [number]="p.number" [size]="40" />
+            <div class="tx">
+              <span class="nm">{{ p.name }}</span>
+              <span class="sub">{{ p.position }} · {{ p.teamName }}</span>
+            </div>
+            <button class="unf halo-follow-pill on" type="button" (click)="unfollowPlayer(p.id)">{{ 'common.unfollow' | t }}</button>
+          </div>
+        }
+      </div>
+    }
+    @if (discoverOpen()) {
+      <p class="sug">{{ 'fol.teammatesNotYet' | t }}</p>
+      @if (discoverPlayers().length === 0) {
+        <p class="sug-empty">{{ 'fol.allTeammates' | t }}</p>
+      } @else {
+        <div class="list">
+          @for (p of discoverPlayers(); track p.id) {
+            <div class="frow">
+              <halo-player-disc [number]="p.number" [size]="40" />
+              <div class="tx">
+                <span class="nm">{{ p.name }}</span>
+                <span class="sub">{{ p.position }} · {{ p.teamName }}</span>
+              </div>
+              <button class="fol halo-follow-pill" type="button" (click)="followPlayer(p)">{{ 'common.follow' | t }}</button>
+            </div>
+          }
+        </div>
+      }
+    }
+    <button class="add" type="button" [class.open]="discoverOpen()"
+      [attr.aria-expanded]="discoverOpen()" (click)="discoverOpen.set(!discoverOpen())">
+      <halo-icon class="add-ic halo-chev" [name]="discoverOpen() ? 'chevron-down' : 'plus'" [size]="14" />
+      {{ discoverOpen() ? ('fol.showLess' | t) : ('fol.addMorePlayers' | t) }}
+    </button>
+  }
+</halo-settings-page>

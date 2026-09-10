@@ -1,0 +1,87 @@
+:host { display: block; }
+
+.ad {
+  position: relative;
+  margin: 0 var(--pad-block-x);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  background: var(--card);
+  overflow: hidden;
+  // large mobile banner ratio (~320×100) — reserves space to avoid layout shift
+  aspect-ratio: 320 / 100;
+}
+.ad.mrec { aspect-ratio: 300 / 250; }
+
+// ONE desktop banner shape, and it lives HERE rather than on the pages.
+// Home capped at 300, Games at 160 and You never got a desktop rule at all, so
+// the same component rendered three different placements and each page had to
+// restate the crop (Maryna 2026-08-30).
+// A fixed height, not a ratio: a ratio is a function of the column, and the
+// columns differ by design. The creative is object-fit: cover with a tuned crop
+// window, so a fixed height crops rather than distorts.
+// The inset comes from --pad-block-x on .ad above; only the SHAPE is this
+// block's business.
+@media (min-width: 768px) {
+  .ad:not(.mrec) { aspect-ratio: auto; height: var(--ad-h); }
+  // Centred cover crops through both the model's head (top) and the tagline
+  // (bottom) on these creatives — bias the window down slightly from full-top so
+  // both stay in frame at once. The box does not move, only what shows in it.
+  .ad:not(.mrec) .cr img { object-position: center 18%; }
+}
+
+// disclosure label — required for ad transparency
+.lbl {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  z-index: 2;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--screen) 70%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 2px var(--space-2);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair);
+}
+
+.cr {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cr img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// empty slot — neutral, still reserves the box
+.ph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  background:
+    repeating-linear-gradient(135deg, var(--card) 0 10px, var(--card2) 10px 20px);
+}
+
+/* Desktop interaction. The banner is a link, so the creative reacts rather than
+   the frame — same reasoning as rail-card: content moves, layout does not. */
+/* No hover here on purpose. The "content reacts" treatment is how editorial
+   cards invite a click, and lending it to a paid placement makes the ad behave
+   like the app's own content. The banner stays a flat, honest surface; it is
+   still a link, and the global focus ring and press state still apply
+   (Maryna 2026-08-28). */
+.cr { display: block; --press-scale: .995; }

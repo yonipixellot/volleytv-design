@@ -1,0 +1,155 @@
+<div class="ob">
+  <!-- ============ ACCOUNT-MODEL CHOICE (V1 vs V2 front door) ============ -->
+  @if (step() === 'choice') {
+    <div class="ob-scroll choice">
+      <img class="ch-logo" [src]="tenant.logoSrc()" [alt]="tenant.name()" />
+      <h1 class="ob-title">{{ 'gs.letsIn' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.letsInSub' | t }}</p>
+      <div class="ch-acts">
+        <halo-button variant="primary" [block]="true" (press)="goSso()">{{ 'auth.continueClubId' | t: { cred: tenant.idp()?.name ?? tenant.name() } }}</halo-button>
+        <halo-button variant="glass" [block]="true" (press)="step.set('persona')">{{ 'gs.signUpEmail' | t }}</halo-button>
+      </div>
+      <p class="ch-note">{{ 'gs.noAccountNote' | t }}</p>
+    </div>
+  }
+
+  <!-- ============ PERSONA ============ -->
+  @if (step() === 'persona') {
+    <halo-onboard-stepper [step]="1" [total]="3" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'gs.setUp' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.setUpSub' | t }}</p>
+      <div class="ob-list">
+        <halo-persona-card kind="player" [featured]="true" (pick)="pick($event)" />
+        <halo-persona-card kind="parent" (pick)="pick($event)" />
+        <halo-persona-card kind="fan" (pick)="pick($event)" />
+        <halo-persona-card kind="coach" (pick)="pick($event)" />
+      </div>
+    </div>
+  }
+
+  <!-- ============ ATHLETE · LINK ============ -->
+  @if (step() === 'athlete') {
+    <halo-onboard-stepper [step]="2" [total]="3" [showBack]="true" (back)="step.set('persona')" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'gs.claimProfile' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.claimSub' | t }}</p>
+      <label class="fld-label">{{ 'gs.codeOrName' | t }}</label>
+      <div class="entry">
+        <input class="inp" [value]="linkQuery()" (input)="linkQuery.set($any($event.target).value)"
+          placeholder="e.g. HOOP24 or Tal Weiss" [attr.aria-label]="'gs.codeOrNameA11y' | t" autocomplete="off" />
+      </div>
+      <p class="hint">{{ 'gs.codeHint' | t }}</p>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!linkQuery().trim()" (press)="submitAthlete()">{{ 'gs.findProfile' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ ATHLETE · CLAIMED ============ -->
+  @if (step() === 'claimed' && link(); as l) {
+    <halo-onboard-stepper [step]="3" [total]="3" />
+    <div class="ob-scroll">
+      <div class="confirm">
+        <span class="ring"><halo-icon name="check" [size]="32" /></span>
+        <div class="c-eye">{{ 'gs.youreLinked' | t }}</div>
+        <h1 class="ob-title c">{{ 'gs.welcomeName' | t: { name: l.name } }}</h1>
+        <p class="ob-sub c">{{ 'gs.claimedSub' | t: { number: l.number, position: l.position, team: l.teamName } }}</p>
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="finish()">{{ 'ob.continueHalo' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="copied.set(false); step.set('guardian')">{{ 'gs.inviteGuardian' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ GUARDIAN INVITE ============ -->
+  @if (step() === 'guardian' && link(); as l) {
+    <halo-onboard-stepper [step]="3" [total]="3" [showBack]="true" (back)="step.set('claimed')" />
+    <div class="ob-scroll">
+      <div class="c-eye left">{{ 'gs.inviteGuardianEye' | t }}</div>
+      <h1 class="ob-title">{{ 'gs.shareGuardian' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.shareGuardianSub' | t: { name: l.name } }}</p>
+      <div class="linkbox">{{ guardianLink() }}</div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="copyGuardian()">{{ copied() ? ('ob.copied' | t) : ('gs.copyInvite' | t) }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="finish()">{{ 'gs.done' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ ATHLETE · NO LINK ============ -->
+  @if (step() === 'noLink') {
+    <halo-onboard-stepper [step]="2" [total]="3" [showBack]="true" (back)="step.set('athlete')" />
+    <div class="ob-scroll">
+      <div class="c-eye left muted">{{ 'gs.noMatch' | t }}</div>
+      <h1 class="ob-title">{{ 'gs.couldntFind' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.couldntFindSub' | t }}</p>
+      @if (notified()) {
+        <div class="notified"><halo-icon name="check" [size]="14" /> {{ 'gs.notifyWhen' | t }}</div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('athlete')">{{ 'gs.tryAgain' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" [disabled]="notified()" (press)="notified.set(true)">{{ 'gs.notifyMe' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="finish()">{{ 'gs.continueWithout' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ PARENT · CODE ENTRY ============ -->
+  @if (step() === 'parent') {
+    <halo-onboard-stepper [step]="2" [total]="3" [showBack]="true" (back)="step.set('persona')" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'gs.linkAthlete' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.linkAthleteSub' | t }}</p>
+      <label class="fld-label">{{ 'gs.guardianCode' | t }}</label>
+      <div class="entry" [class.err]="linkError()">
+        <input class="inp" [value]="parentCode()" (input)="parentCode.set($any($event.target).value); linkError.set(false)"
+          placeholder="e.g. inv-tal-7f3a2" [attr.aria-label]="'gs.guardianCode' | t" autocomplete="off" />
+      </div>
+      @if (linkError()) { <p class="err-msg">{{ 'gs.codeError' | t }}</p> }
+      <p class="hint">{{ 'gs.noInviteHint' | t }}</p>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="submitParent()">{{ 'gs.linkMyAthlete' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ PARENT · LINKED ============ -->
+  @if (step() === 'parentLinked' && link(); as l) {
+    <halo-onboard-stepper [step]="3" [total]="3" />
+    <div class="ob-scroll">
+      <div class="confirm">
+        <span class="ring"><halo-icon name="check" [size]="32" /></span>
+        <div class="c-eye">{{ 'gs.linked' | t }}</div>
+        <h1 class="ob-title c">{{ 'gs.youreFollowing' | t: { name: l.name } }}</h1>
+        <p class="ob-sub c">{{ 'gs.followingSub' | t: { team: l.teamName } }}</p>
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="finish()">{{ 'ob.continueHalo' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ COACH · DETECTED TEAMS ============ -->
+  @if (step() === 'coach') {
+    <halo-onboard-stepper [step]="2" [total]="3" [showBack]="true" (back)="step.set('persona')" />
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.yourTeams' | t }}</h1>
+      <p class="ob-sub">{{ 'gs.detected' | t }}</p>
+      <span class="pending">{{ 'gs.pending' | t }}</span>
+      <div class="ob-list">
+        @for (t of coachTeams; track t.id) {
+          <div class="myteam locked">
+            <span class="cmono">{{ t.mono }}</span>
+            <span class="mt-txt"><span class="mt-nm">{{ t.name }}</span><span class="mt-org">{{ t.division }}</span></span>
+          </div>
+        }
+      </div>
+      <button class="linkbtn" type="button" (click)="step.set('persona')">{{ 'gs.notMyTeams' | t }}</button>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="finish()">{{ 'ob.continueHalo' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+</div>

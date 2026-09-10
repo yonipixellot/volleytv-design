@@ -1,0 +1,72 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens/Responsive · Rules" />
+
+# Responsive: the bands
+
+**A new surface is designed at every band before it ships.** Responsive is not a pass you do
+afterwards — it is the same work, done once, at the point where it is still cheap.
+
+`bun run lint:spacing` fails on a breakpoint that isn't one of the bands.
+
+---
+
+## The ladder
+
+| Band | Canvas | Rails | Navigation |
+| --- | --- | --- | --- |
+| **< 768** phone | centred 430px frame | horizontal scroll | floating dock |
+| **768–1023** portrait tablet | grows | 2 columns | floating dock |
+| **1024–1279** landscape tablet | grows | 3 columns | inline header |
+| **1280–1599** desktop | grows | 4 columns | inline header |
+| **1600–1999** wide | grows | 5 columns | inline header |
+| **≥ 2000** very wide | stops at 2240px | 6 columns | inline header |
+
+Breakpoints are hardcoded numbers, not tokens: a custom property cannot be read inside a
+media-query condition, so `--bp-*` is reference only.
+
+Two sets are sanctioned — the ladder above, and `360 / 390 / 480 / 520` for sub-phone tweaks.
+Anything else creates a band that exists in one file, which no page, token or document knows
+about. Use a band, or state why this one screen needs its own.
+
+---
+
+## The three ideas behind it
+
+**A tablet is neither a big phone nor a small desktop.** Treating it as either is the failure
+the middle bands exist to prevent. The nav switches at 1024 rather than 768 because a portrait
+tablet is held like a large phone and the dock still suits the grip, while a landscape one has
+room for an inline row and would leave the dock floating lost in the middle of it.
+
+**A wide screen earns more cards, not bigger ones.** Held at four columns a card went from
+290px at 1280 to 440 at 1920 and 599 at 2560 — the same layout stretched, still holding 12px
+text. Each column step is placed so the card lands back near 290–350px.
+
+**Everything that grows needs a ceiling.** The canvas stops at 2240px and the body's ambient
+backdrop surrounds it. The hero's height is a `clamp`, not a constant, because only its width
+was moving and it flattened to 6.8:1. The ad's ratio is capped by a `max-height`, because a
+fixed ratio on a growing canvas is a growing billboard — it reached 463px tall.
+
+---
+
+## What "not adapted yet" looks like
+
+A page that has not been given a wide layout stops at a readable **720px column** once the
+shell uncaps, centred, rather than running full bleed. That is an honest fallback, not a
+defect: stretching an unadapted list to the full viewport is worse than the phone frame it
+replaced, because it puts a row's label at one end of the screen and its chevron at the other.
+
+A route opts into the full width by declaring it owns one. If a band has no answer yet, leave
+it — the fallback is better than a layout that only works where it was built.
+
+---
+
+## Before you call a surface done
+
+1. Walk the ladder: **375, 768, 1024, 1280, 1920**. Not just the width you built at.
+2. Both themes at each — `data-theme="dark"` and `"light"`.
+3. No horizontal overflow, and no text truncating while empty space sits beside it.
+4. Touch targets stay touch-sized through 1279; hover is `@media (hover: hover)` everywhere.
+5. Anything with a fixed height or ratio: check what it does at 2560.
+6. Angular applies signal-driven classes on the next change-detection tick — measure after it
+   settles, not synchronously after a resize.

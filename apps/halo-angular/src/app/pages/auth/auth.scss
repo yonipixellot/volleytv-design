@@ -1,0 +1,277 @@
+// The provider stage is a full-bleed brand FIELD, so this page flexes to the
+// height the shell leaves instead of being a block in the auth column. Scoped
+// with :has() — every other stage on this route is still an auth-shell page.
+:host { display: block; }
+:host:has(.idpfield) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+// Same for the auth-shell screens. .halo-main already sizes itself to whatever
+// the dev bar leaves; what these pages must NOT do is set a height in viewport
+// units inside it, because that is a full screen PLUS the bar — which is exactly
+// the 45px of scroll this removes.
+:host:has(halo-auth-shell) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+.idpfield {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  // No top padding: --brand-mark-top owns the distance to the mark, shared with
+  // the handoff screen so the lockup doesn't move between them.
+  padding: 0 var(--pad-x) calc(var(--space-6) + env(safe-area-inset-bottom));
+  // …and on a short screen the padding, not a crush, is what gives: the group
+  // top-aligns and the page scrolls.
+  overflow: auto;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 18%, var(--brand-field-glow) 0%, transparent 60%),
+    var(--brand-field);
+}
+
+// The whole field is the control — the frame can't be clicked through to
+// (cross-origin) and wouldn't complete a sign-in in a prototype anyway.
+.if-tap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  // One declaration, not padding-top + a later `padding: 0` — the shorthand
+  // that followed it silently won.
+  padding: var(--brand-mark-top) 0 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+}
+
+// Everything below the mark centres in the leftover height; the mark itself
+// stays put at --brand-mark-top.
+.if-body { display: flex; flex-direction: column; align-items: center; width: 100%; margin: auto 0; }
+
+// 37 : 24 with a 13px gap — the header's 20 : 13 / 7px lockup, scaled ×1.85.
+.if-mark { display: flex; align-items: center; gap: var(--gap-snug); }
+// The stacked lockup is the wide-screen form; the phone keeps the pair above.
+.if-lockup { display: none; }
+.if-bm { height: 37px; width: auto; display: block; }
+.if-wm { height: 24px; width: auto; display: block; }
+// Title, not explanation: it names what the card is. White on the field is
+// 11:1, so this can carry weight without shouting.
+.if-title {
+  display: block;
+  margin: var(--space-4) 0 var(--space-6);
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-body-lg);
+  line-height: 1.3;
+  color: color-mix(in srgb, #fff 88%, transparent);
+}
+// Sized to leave the screen some air, and allowed to SHRINK: `min-height: 0` is
+// what lets a short viewport take it down a little instead of pushing the hint
+// off the bottom and handing the page a scrollbar.
+.if-card { display: block; width: 100%; max-width: 380px; margin-inline: auto; min-height: 0; pointer-events: none; }
+
+// Short viewports (iPhone SE and friends): the provider's card is a fixed 462px
+// and can't give, so the field's own air does. Buys ~30px, which is the
+// difference between fitting and a 4px scroll at 320x667.
+@media (max-height: 700px) {
+  .idpfield { padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom)); }
+  .if-title { margin: var(--space-3) 0 var(--space-4); }
+  .if-hint { margin-top: 0; }
+}
+.if-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-tight);
+  min-height: 44px;             // WCAG 2.5.8 floor, same as every row in the app
+  margin-top: var(--space-2);
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  color: color-mix(in srgb, #fff 70%, transparent);
+}
+
+.sso-lead {
+  margin: 2px 0 var(--space-4);
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body);
+  line-height: 1.45; color: var(--ink2);
+}
+.sso-note {
+  margin: var(--space-3) 0 0; text-align: center;
+  font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink3);
+}
+.classic-link { display: block; margin: var(--space-5) auto 0; }
+
+// ---------------------------------------------------------------------------
+// The form layer. None of these classes were styled ANYWHERE in the app — not
+// here, not in a page stylesheet, not globally — so sign-up, both of sign-in's
+// own stages, forgot and reset rendered with no rhythm at all: fields touching
+// their neighbour's label, the step chip and its subtitle running together as
+// one sentence, "or" with no rule, terms at body size.
+//
+// This is base styling rather than adaptation, but a form with no rhythm cannot
+// be made to look right at any width, so it comes first (Maryna 2026-08-28).
+// ---------------------------------------------------------------------------
+// The block below the mode toggle owns the gap to it. Measured at 0px: the
+// toggle carries no bottom edge (it cannot — it is used elsewhere) and nothing
+// here claimed the space, so "Step 1 of 3" sat welded to the tab it belongs to.
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: var(--space-6) 0 var(--space-5);
+}
+.step-chip {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.step-chip .dot { opacity: .55; margin: 0 2px; }   // 2px: an optical gap around a mid-dot, not rhythm
+.step-sub {
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink3);
+}
+
+.fields { display: flex; flex-direction: column; gap: var(--gap-loose); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-snug); }
+
+.cta { margin-top: var(--space-6); }
+
+// "or" as a rule with the word sitting in it, rather than floating text.
+.or {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  margin: var(--space-6) 0;
+  color: var(--ink3);
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  &::before, &::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+}
+
+.socials { display: flex; flex-direction: column; gap: var(--gap-snug); }
+
+.terms {
+  margin: var(--space-6) 0 0;
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--ink3);
+  text-align: center;
+  a { color: var(--ink2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  @media (hover: hover) { a:hover { color: var(--accent); } }
+}
+
+// Age gate — an inline status block, not an error: the icon carries the tone.
+.agegate {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-snug);
+  margin-top: var(--space-5);
+  padding: var(--pad-card);
+  border-radius: var(--r-card-sm);
+  background: var(--card);
+  border: 1px solid var(--hair);
+}
+.ag-ic { flex: none; display: grid; place-items: center; color: var(--accent); }
+.ag-txt { display: flex; flex-direction: column; gap: 2px; }   // 2px: title-to-subtitle, tighter than the grid's floor
+.ag-t { font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink); }
+.ag-s { font-family: var(--body); font-size: var(--fs-caption); line-height: 1.5; color: var(--ink3); }
+
+.pw-toggle {
+  min-height: 24px;   // 2.5.8 target floor (a11y audit 2026-09-02 G29)
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  @media (hover: hover) { &:hover { color: var(--ink); } }
+}
+
+// ---------------------------------------------------------------------------
+// The provider stage on wide screens. Same split as auth-shell, reached without
+// touching the template: .if-mark becomes the left brand panel and .if-body the
+// right one, because they are already siblings inside the tap target.
+//
+// The provider's card is placed, never restyled — we own the panel around it and
+// nothing inside it. The whole field stays one control, as it is on mobile.
+// ---------------------------------------------------------------------------
+@media (min-width: 768px) {
+  .if-tap { max-width: 520px; }
+}
+
+@media (min-width: 1024px) {
+  .idpfield {
+    // The page surface becomes neutral; the brand colour moves to the left
+    // panel, so the provider's card sits on our screen colour rather than on
+    // a field that competes with it.
+    background: var(--screen);
+    padding: 0;
+    // Sticky needs a scrollable ancestor; `overflow: hidden` would make this one
+    // a scroll container that never scrolls, pinning the panel to nothing.
+    overflow: visible;
+  }
+
+  .if-tap {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: stretch;
+    max-width: none;
+    width: 100%;
+    padding: 0;
+    // Fills the space the shell hands down rather than claiming a screen of its
+    // own. min-height: 0 so a tall card shrinks here instead of pushing the page.
+    min-height: 0;
+  }
+
+  // The panel is exactly the height the shell leaves — no sticky and no viewport
+  // unit, because nothing outside it scrolls any more. If the card ever outgrows
+  // the screen it is .if-body that scrolls, and this stays put by construction.
+  .if-mark {
+    grid-column: 1;
+    align-self: stretch;
+    justify-content: center;
+    padding: var(--space-12) var(--space-8);
+    // The horizontal pair steps aside for the stacked lockup here.
+    .if-bm, .if-wm { display: none; }
+    .if-lockup { display: block; width: var(--auth-lockup-w); height: auto; max-width: 100%; }
+    background:
+      radial-gradient(ellipse 90% 60% at 50% 22%, var(--brand-field-glow) 0%, transparent 62%),
+      var(--brand-field);
+  }
+
+  // The scroll container is the whole right column, so the scrollbar sits at the
+  // panel's edge rather than floating in the middle of it, and the reading column
+  // is capped by padding rather than a max-width — no extra wrapper needed. 460px
+  // clears the provider's own card, a layout dimension rather than rhythm.
+  // From here the right column is the app CANVAS, not the brand field, and the
+  // canvas flips with the theme. These two were written as hardcoded white for
+  // the phone layout, where they DO sit on the dark field — carried across, they
+  // left the title and the hint as white-on-cream in light mode, all but
+  // invisible. On this side they take app ink like any other text on the canvas.
+  .if-title { color: var(--ink); }
+  .if-hint { color: var(--ink3); }
+
+  .if-body {
+    grid-column: 2;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0;
+    padding-block: var(--space-12);
+    // 460px clears the provider's own card: a layout dimension, not rhythm.
+    padding-inline: max(var(--pad-x-wide), calc((100% - 460px) / 2));
+  }
+  // Auto spacers centre a short card and collapse once it outgrows the column.
+  // `justify-content: center` would cut the top off and put it out of reach.
+  .if-body::before,
+  .if-body::after { content: ''; flex: 1 1 auto; min-height: 0; }
+}

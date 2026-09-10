@@ -1,0 +1,45 @@
+// Fixed floating CTA dock — pinned to the bottom of the phone frame (same model
+// as the app's .halo-nav-dock), so it stays put over body scroll on every step.
+// Content scrolls up under the gradient fade for a polished action-bar feel.
+:host {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  z-index: 15;
+  display: block;
+  pointer-events: none;   // the transparent top of the fade never eats scroll/taps
+}
+
+.dock {
+  pointer-events: auto;
+  padding: var(--space-6) var(--pad-x) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--screen) 0%, transparent) 0%,
+    color-mix(in srgb, var(--screen) 86%, transparent) 42%,
+    var(--screen) 78%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.inner {
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-snug);
+}
+
+// Wide screens: the fade is an action BAR, so it spans the viewport. Capped at
+// the 430px phone frame it ended mid-screen — a blurred rounded slab floating
+// over content that stayed sharp on either side of it, which reads as a bug
+// rather than a surface (Maryna 2026-08-29).
+//
+// The button inside stays at a comfortable width and centres, so it still lines
+// up with the content column above it rather than stretching to the viewport.
+@media (min-width: 768px) {
+  :host { max-width: none; }
+  .dock { padding-inline: var(--pad-x-wide); }
+}

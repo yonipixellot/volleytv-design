@@ -1,0 +1,37 @@
+// Self-hosted variable fonts for the Halo design system.
+// League Spartan = display (--disp, HoopsTV guide), Inter = body (--body);
+// Antonio kept as the display fallback. All are variable woff2
+// covering their full weight range, so one file per family serves all weights.
+
+@font-face {
+  font-family: 'League Spartan';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  // Metric normalisation: LS ships ascent 70% / descent 22% with caps at 67%,
+  // so caps sit high in the box (2.8% above vs 22% below) and every stack gaps
+  // unevenly. Override to a tight 1em box with the caps optically centred.
+  // 90/22 ≈ Antonio's 1.15em box (was 84/16 = 1.0em — that shrank every
+  // display element sized by content, reading as "padding got tighter").
+  // Caps (67.2%) stay optically centred: 22.8 above vs 22 below.
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  src: url('../assets/fonts/LeagueSpartan-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Antonio';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('../assets/fonts/Antonio-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/Inter-Variable.woff2') format('woff2');
+}

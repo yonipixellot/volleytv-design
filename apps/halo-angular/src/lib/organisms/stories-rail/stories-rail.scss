@@ -1,0 +1,188 @@
+:host { display: block; }
+
+.stories {
+  display: flex;
+  gap: var(--gap-loose);
+  padding: var(--space-4) var(--pad-block-x) 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.story {
+  flex: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-tight);
+  width: 60px;
+}
+
+.rg {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ring);
+}
+
+.story.on .rg {
+  position: relative;
+  background: var(--accent);
+  box-shadow: var(--shadow-2);
+}
+// Unseen content → a solid accent ring (no orbit); clears to the neutral ring
+// once viewed (host flips `unseen`).
+.story.unseen .rg { background: var(--accent); }
+// Empty → NO RING AT ALL. Two levels of encoding, and they answer different
+// questions: whether there is a ring says whether this circle holds anything,
+// and the ring's COLOUR says whether what it holds is new. A quieter grey ring
+// was the first attempt and it landed as a third shade of the same thing, so
+// "nothing here" read as "seen it" (Maryna 2026-09-02).
+//
+// The geometry stays: .rg keeps its 60px box, so the crest sits at the same size
+// and on the same baseline as every other circle and the row does not shuffle.
+// Only the paint goes.
+//
+// Not confusable with the trailing Follow circle, which is marked by a DASHED
+// border and a plus, not by the absence of a ring. And the contents are not
+// dimmed on top of this: the missing ring is the whole signal, and a dimmed
+// crest as well would read as disabled rather than empty.
+.story.empty .rg { background: transparent; }
+// Micro-animation: a bright glow point orbits the gold ring, starting and
+// looping at 12 o'clock.
+.story.on .rg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  // bright point at 12 o'clock… (hue derives from the brand knob — no literals,
+  // so a white-label skin re-tints the orbit spark automatically)
+  background: radial-gradient(circle at 50% 2%,
+    color-mix(in srgb, var(--on-media) 60%, transparent) 0%,
+    color-mix(in srgb, var(--brand-core) 50%, transparent) 20%,
+    transparent 38%);
+  // …clipped to the gold ring band only (never over the green or outside)
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 0 26px, #000 27.5px 30px, transparent 31px);
+          mask: radial-gradient(circle at 50% 50%, transparent 0 26px, #000 27.5px 30px, transparent 31px);
+  animation: story-ring-orbit 4s linear infinite;
+}
+@keyframes story-ring-orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .story.on .rg::after { animation: none; opacity: 0; }
+}
+
+.im {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 2.5px var(--screen);
+  display: grid;
+  place-items: center;
+
+  img { width: 100%; height: 100%; object-fit: contain; padding: var(--space-2); }
+  .tx {
+    font-family: var(--body);
+    font-weight: 800;
+    font-size: var(--fs-heading);
+    line-height: 1;
+  }
+}
+
+/* Two kinds of circle, two fills — never an arbitrary per-item color
+   (2026-08-27, was a hardcoded hex per team/kid):
+   · person → jersey number on the brand fill, with the knob's paired ink;
+   · team   → the club logo on the shared white crest plate, or, with no logo
+     file, its initials on the NEUTRAL --mono-plate so the brand fill stays a
+     "this is a person" signal. */
+.im.person {
+  background: var(--primary);
+  .tx { color: var(--on-primary); }
+}
+// Same edge the crest atom carries, for the same reason: on a light surface a
+// white circle inside a quiet grey ring has nothing else holding its shape.
+.im.plate {
+  background: var(--crest-plate);
+  outline: 1px solid var(--crest-edge);
+  outline-offset: -1px;   // above the logo art — see crest.scss
+}
+.im.mono {
+  background: var(--mono-plate);
+  // hairline keeps the grey plate's edge on both themes, the way the crest
+  // atom's white chip does; the outer 2.5px gap ring is preserved.
+  box-shadow: 0 0 0 2.5px var(--screen), inset 0 0 0 1px var(--hair);
+  .tx {
+    color: var(--ink);
+    // two letters, not a 1–2 char number: one step down keeps them inside the
+    // 50px disc at the xlarge text step.
+    font-size: var(--fs-title);
+    letter-spacing: .01em;
+  }
+}
+
+/* "Follow more" — deliberately the quietest circle in the rail. It has no
+   unseen state, so it takes NO ring colour; a dashed hairline disc reads as a
+   slot to fill rather than something to watch, and keeps the 50-in-60 geometry
+   so it sits on the same baseline as every other circle. */
+.story.add {
+  // The dashed disc belongs on the RING, not the inner image. Drawn on .im it
+  // matched the layout box but not the drawing: every other story paints its
+  // outermost circle at 60px (the accent ring) while this one painted at 50,
+  // so it read as a smaller circle in the row. Same box, same visible diameter
+  // (Maryna 2026-08-28).
+  .rg {
+    background: transparent;
+    // Derived from the SAME ink as the glyph, not from --hair2: the hairline
+    // tokens are 6% in light theme, which made the dashed disc disappear on a
+    // light background while the "+" stayed visible (2026-08-28).
+    border: 1.5px dashed color-mix(in srgb, var(--ink3) 42%, transparent);
+  }
+  .im {
+    background: transparent;
+    box-shadow: none;
+    border: 0;
+    color: var(--ink3);
+  }
+  .lb { color: var(--ink3); }
+  // focus-visible stays unscoped — a keyboard user has no pointer, but does
+  // have a focus ring; only the hover half is pointer-only.
+  &:focus-visible .rg { border-color: var(--ink3); }
+  &:focus-visible .im { color: var(--ink2); }
+  @media (hover: hover) {
+    &:hover .rg { border-color: var(--ink3); }
+    &:hover .im { color: var(--ink2); }
+  }
+}
+
+.lb {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  color: var(--ink2);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+}
+.story.on .lb { color: var(--ink); }
+
+/* Desktop interaction. Only the "add" ring had a hover state; the team circles
+   — the ones people actually open — had none. The crest lifts inside its own
+   clip so the ring, the row and the labels all hold still. */
+@media (hover: hover) {
+  .story:not(.add):hover .im { transform: scale(1.06); }
+  .story:not(.add):hover .lb { color: var(--ink); }
+}
+.story .im { transition: transform var(--dur-med) var(--ease-out-soft); }
+.story .lb { transition: color var(--dur-med); }
+@media (prefers-reduced-motion: reduce) {
+  .story .im, .story .lb { transition: none; }
+  .story:not(.add):hover .im { transform: none; }
+}

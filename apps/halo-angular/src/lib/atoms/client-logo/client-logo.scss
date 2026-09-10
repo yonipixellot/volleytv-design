@@ -1,0 +1,25 @@
+:host { display: inline-flex; }
+
+.logo { display: inline-flex; align-items: center; }
+
+.logo.svg {
+  ::ng-deep svg { height: 100%; width: auto; display: block; }
+  // --fed-crest-ink is the accent by default, so the emblem still flips with the
+  // theme; a skin whose federation crest is fixed artwork pins the token
+  // instead (Hoops TV keeps BA's gold, which lime would mis-brand).
+  ::ng-deep .ic { fill: var(--fed-crest-ink); }
+  ::ng-deep .tx { fill: var(--ink); }       // wordmark → ink
+  ::ng-deep .tx-s { stroke: var(--ink); }   // monoline wordmark → ink
+}
+
+.logo.img { width: auto; object-fit: contain; }
+
+.logo.word {
+  font-family: var(--disp);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1;
+}
+

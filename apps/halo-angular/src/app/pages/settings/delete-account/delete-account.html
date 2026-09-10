@@ -1,0 +1,35 @@
+<halo-settings-page [title]="confirmed() ? ('del.scheduled' | t) : ('account.deleteAccount' | t)" [autoBack]="true">
+  @if (confirmed()) {
+    <div class="success">
+      <span class="coin warn"><halo-icon name="info" [size]="26" /></span>
+      <h2>{{ 'del.scheduledH' | t }}</h2>
+      <p>{{ 'del.scheduledLead' | t }}</p>
+      <halo-button variant="primary" (press)="signOut()">{{ 'settings.signOut' | t }}</halo-button>
+    </div>
+  } @else {
+    <div class="warn-card">
+      <p class="eyebrow">{{ 'del.cantUndo' | t }}</p>
+      <ul>
+        @for (b of bullets; track b) { <li>{{ b }}</li> }
+      </ul>
+    </div>
+
+    <label class="prompt">{{ 'del.typeEmail' | t }}</label>
+    <p class="expect" [innerHTML]="'del.expecting' | t: { email: expectedEmail }"></p>
+    <div class="entry">
+      <input
+        class="inp"
+        [value]="typed()"
+        (input)="typed.set($any($event.target).value)"
+        [placeholder]="expectedEmail"
+        [attr.aria-label]="'del.typeEmailA11y' | t"
+        autocomplete="off"
+      />
+    </div>
+
+    <button class="del" type="button" [disabled]="!canDelete()" (click)="confirm()">
+      {{ 'del.deleteMine' | t }}
+    </button>
+    <halo-button variant="glass" [block]="true" (press)="cancel()">{{ 'ob.cancel' | t }}</halo-button>
+  }
+</halo-settings-page>

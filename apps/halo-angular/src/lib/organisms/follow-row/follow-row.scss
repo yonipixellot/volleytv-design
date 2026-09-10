@@ -1,0 +1,61 @@
+:host { display: block; }
+
+.fr {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  padding: var(--pad-card-sm);
+  transition: border-color var(--dur-med), background var(--dur-med);
+
+  @media (hover: hover) {
+    &:hover { border-color: var(--hair2); background: var(--card2); }
+  }
+  &.on {
+    border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  }
+}
+
+.txt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.nm {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.meta {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+}
+
+/* The pill's look is .halo-follow-pill in styles.scss — one recipe for the
+   three places this control exists (this row, Manage following, the team hero).
+   Its history, including why both states share one width, lives with it there.
+   Nothing row-specific is left. */
+
+.bell {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid var(--hair);
+  background: transparent;
+  color: var(--ink3);
+  transition: background var(--dur-med), color var(--dur-med), border-color var(--dur-med);
+
+  &.on {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}

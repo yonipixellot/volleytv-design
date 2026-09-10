@@ -1,0 +1,274 @@
+<div class="ob">
+  <!-- One stepper for the whole flow, not one per step. Remounting it on every
+       screen meant it was born already in its finished state, so the line could
+       never animate from the dot you left to the dot you arrived at. -->
+  @if (step() !== 'done') {
+    <halo-onboard-stepper
+      [names]="stepNames()" [step]="stepNo()" [total]="total()"
+      [showBack]="stepNo() > 1" (back)="goBack()" />
+  }
+
+  <!-- ============ PERSONA ============ -->
+  @if (step() === 'persona') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.welcome' | t }}</h1>
+      <p class="ob-sub">{{ 'ob.welcomeSub' | t }}</p>
+      <div class="ob-list">
+        @for (p of personas; track p.kind) {
+          <halo-persona-card [kind]="p.kind" [featured]="!!p.featured" [disabled]="!!p.disabled" (pick)="pick($event)" />
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ============ TEAM ============ -->
+  @if (step() === 'team') {
+    <div class="ob-scroll">
+      @if (followFlow()) {
+        <h1 class="ob-title">{{ 'ob.followTeams' | t }}</h1>
+        <p class="ob-sub">{{ 'ob.followTeamsSub' | t }}</p>
+      } @else {
+        <h1 class="ob-title">{{ 'ob.pickTeam' | t }}</h1>
+        <p class="ob-sub">{{ 'ob.pickTeamSub' | t }}</p>
+      }
+
+      <!-- Registration disclaimer — everyone EXCEPT fans. A fan is following
+           along, not waiting on their own club's data to land, so the promise to
+           notify them about late registrations is not theirs (Maryna
+           2026-08-30). -->
+      @if (!isFan()) {
+        <div class="notice tint">
+          <span class="nt-ic"><halo-icon name="info" [size]="17" /></span>
+          <span class="nt-txt">
+            <span class="nt-t">{{ 'ob.noticeT' | t }}</span>
+            <span class="nt-b">{{ 'ob.noticeB' | t }}</span>
+          </span>
+        </div>
+      }
+
+      <div class="eyebrow">{{ followFlow() ? ('ob.yourTeam' | t) : ('ob.myTeam' | t) }}</div>
+      @if (myTeam(); as t) {
+        <div class="myteam">
+          <halo-crest [src]="t.crest || ''" [monogram]="t.mono || '?'" [size]="40" />
+          <span class="mt-txt"><span class="mt-nm">{{ t.name }}</span><span class="mt-org">{{ t.org }}</span></span>
+          <button class="mt-change" type="button" [attr.aria-label]="'ob.changeTeam' | t" (click)="changeTeam()">
+            <halo-icon name="close" [size]="14" />
+          </button>
+        </div>
+      } @else if (teamPicker()) {
+        <halo-form-field label="" [placeholder]="'ob.searchTeams' | t"
+          [value]="teamSearch()" (valueChange)="teamSearch.set($event)" />
+        <div class="ob-list picklist">
+          @for (t of filteredPickable(); track t.id) {
+            <button class="pickrow" type="button" (click)="pickTeam(t)">
+              <halo-crest [src]="t.crest || ''" [monogram]="t.mono || '?'" [size]="36" />
+              <span class="pr-txt"><span class="pr-nm">{{ t.name }}</span><span class="pr-org">{{ t.org }}</span></span>
+              <halo-icon name="plus" [size]="16" />
+            </button>
+          }
+        </div>
+        <button class="linkbtn" type="button" (click)="teamPicker.set(false)">{{ 'ob.cancel' | t }}</button>
+      } @else {
+        <button class="dashed" type="button" (click)="teamPicker.set(true)">
+          <halo-icon name="plus" [size]="16" /> {{ followFlow() ? ('ob.addTeamFollow' | t) : ('ob.selectTeamPlay' | t) }}
+        </button>
+      }
+
+      @if (myTeam()) {
+        <div class="eyebrow">{{ followFlow() ? ('ob.moreTeams' | t) : ('ob.divisionTeams' | t) }} <span class="ey-sub">{{ 'ob.optional' | t }}</span></div>
+        <div class="ob-list">
+          @for (t of divisionTeams(); track t.id) {
+            <halo-follow-row [name]="t.name" [meta]="t.org" [crest]="t.crest || ''" [mono]="t.mono || '?'"
+              [followed]="t.followed" (followedChange)="setDivisionFollowed(t.id, $event)" />
+          }
+        </div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!myTeam()" (press)="step.set(followFlow() ? 'notif' : 'players')">
+        {{ myTeam() ? ('ob.continue' | t) : (followFlow() ? ('ob.addTeamContinue' | t) : ('ob.pickTeamContinue' | t)) }}
+      </halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ PLAYERS / CLAIM ============ -->
+  @if (step() === 'players') {
+    <div class="ob-scroll">
+      @if (!claimed()) {
+        <h1 class="ob-title">{{ 'ob.findRoster' | t }}</h1>
+        <p class="ob-sub">{{ 'ob.findRosterSub' | t }}</p>
+        <div class="jgrid">
+          @for (j of jerseys; track j.n) {
+            <button class="jtile" type="button" [class.taken]="j.taken" [disabled]="j.taken" (click)="claim(j)">
+              <span class="jn">{{ j.n }}</span>
+              <span class="jname">{{ j.name }}</span>
+              <span class="jpos">{{ j.pos }}</span>
+              @if (j.taken) { <span class="jtaken">{{ 'ob.taken' | t }}</span> }
+            </button>
+          }
+        </div>
+      } @else {
+        <h1 class="ob-title">{{ 'ob.youreOn' | t: { team: 'Netsetters 1' } }}</h1>
+        <p class="ob-sub">{{ 'ob.youreOnSub' | t }}</p>
+
+        <div class="eyebrow">{{ 'ob.thatsMe' | t }}</div>
+        <div class="myteam">
+          <span class="selfjz">{{ claimed()!.n }}</span>
+          <span class="mt-txt"><span class="mt-nm">{{ claimed()!.name }} Weiss</span><span class="mt-org">{{ claimed()!.pos }} · Netsetters 1</span></span>
+          <button class="mt-change" type="button" [attr.aria-label]="'ob.changeJersey' | t" (click)="changeJersey()">
+            <halo-icon name="close" [size]="14" />
+          </button>
+        </div>
+
+        <div class="eyebrow">{{ 'ob.teammates' | t }} <span class="ey-sub">{{ 'ob.followingOf' | t: { n: teammateCount(), total: teammates().length } }}</span></div>
+        <div class="ob-list">
+          @for (p of teammates(); track p.id) {
+            <halo-follow-row kind="person" [name]="p.name" [meta]="p.meta" [mono]="p.mono" [showBell]="true"
+              [followed]="p.followed" (followedChange)="setPersonFollowed('teammates', p.id, $event)"
+              [notify]="p.notify" (notifyChange)="setPersonNotify('teammates', p.id, $event)" />
+          }
+        </div>
+
+        <div class="eyebrow">{{ 'ob.topRivals' | t }} <span class="ey-sub">{{ 'ob.optional' | t }}</span></div>
+        <div class="ob-list">
+          @for (p of rivals(); track p.id) {
+            <halo-follow-row kind="person" [name]="p.name" [meta]="p.meta" [mono]="p.mono" [showBell]="true"
+              [followed]="p.followed" (followedChange)="setPersonFollowed('rivals', p.id, $event)"
+              [notify]="p.notify" (notifyChange)="setPersonNotify('rivals', p.id, $event)" />
+          }
+        </div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!claimed()" (press)="step.set('notif')">
+        {{ followingCount() ? ('ob.continueFollowing' | t: { n: followingCount() }) : ('ob.continue' | t) }}
+      </halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="step.set('notif')">{{ 'ob.skip' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ COACH · FIND TEAMS (email lookup) ============ -->
+  @if (step() === 'coachEmail') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.findTeams' | t }}</h1>
+      <p class="ob-sub">{{ 'ob.findTeamsSub' | t }}</p>
+
+      <halo-form-field [label]="'ob.coachEmail' | t" type="email" inputmode="email"
+        placeholder="you@club.com.au"
+        [value]="coachEmail()" (valueChange)="coachEmail.set($event)" />
+
+      @if (coachNotFound()) {
+        <div class="coach-notfound">
+          <span class="cn-t">{{ 'ob.coachNotFound' | t }}</span>
+          <span class="cn-s">{{ 'ob.coachNotFoundSub' | t }}</span>
+        </div>
+      }
+      <p class="coach-hint">{{ 'ob.coachDemoTip' | t }}</p>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!coachEmailValid() || coachChecking()" [loading]="coachChecking()" (press)="checkCoachEmail()">
+        {{ coachChecking() ? ('ob.checking' | t) : ('ob.findMyTeams' | t) }}
+      </halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ COACH · TEAMS (locked) ============ -->
+  @if (step() === 'coachTeams') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.yourTeams' | t }}</h1>
+      <p class="ob-sub">{{ 'ob.yourTeamsSub' | t }}</p>
+      <div class="eyebrow">{{ 'ob.coachingN' | t: { n: coachTeams.length } }}</div>
+      <div class="ob-list">
+        @for (t of coachTeams; track t.id) {
+          <div class="myteam locked">
+            <halo-crest [src]="t.crest || ''" [monogram]="t.mono || '?'" [size]="40" />
+            <span class="mt-txt"><span class="mt-nm">{{ t.name }}</span><span class="mt-org">{{ t.org }}</span></span>
+            <span class="mt-lock"><halo-icon name="lock" [size]="14" /></span>
+          </div>
+        }
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('coachInvite')">{{ 'ob.continue' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ COACH · INVITE SUMMARY ============ -->
+  @if (step() === 'coachInvite') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'ob.invitePlayers' | t }}</h1>
+      <p class="ob-sub">{{ 'ob.invitePlayersSub' | t }}</p>
+      <div class="ob-list">
+        @for (t of coachTeams; track t.id) {
+          <div class="invite-row">
+            <halo-crest [src]="t.crest || ''" [monogram]="t.mono || '?'" [size]="40" />
+            <span class="ir-txt"><span class="ir-nm">{{ t.name }}</span><span class="ir-link">{{ coachInviteLink(t.id) }}</span></span>
+            <button class="ir-copy" type="button" [class.done]="copiedTeamId() === t.id" (click)="copyInvite(t.id)">
+              {{ copiedTeamId() === t.id ? ('ob.copied' | t) : ('ob.copyLink' | t) }}
+            </button>
+          </div>
+        }
+      </div>
+      <p class="coach-hint" [innerHTML]="'ob.findAnytime' | t"></p>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('notif')">{{ 'ob.continue' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  @if (step() === 'notif') {
+    <div class="ob-scroll notif">
+      <div class="bell-badge"><halo-icon name="bell" [size]="30" /></div>
+      <h1 class="ob-title c">{{ 'ob.stayMoment' | t }}</h1>
+      <p class="ob-sub c">{{ followFlow() ? ('ob.notifSubFollow' | t) : ('ob.notifSubPlayer' | t) }}</p>
+      <div class="perks">
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ 'ob.perkLive' | t }}</div>
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ followFlow() ? ('ob.perkNewHlFollow' | t) : ('ob.perkNewDrops' | t) }}</div>
+        <div class="perk"><span class="pk-ic"><halo-icon name="check" [size]="13" /></span> {{ followFlow() ? ('ob.perkScores' | t) : ('ob.perkHlYou' | t) }}</div>
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('done')">{{ 'ob.turnOnNotifs' | t }}</halo-button>
+      <halo-button variant="ghost" [block]="true" (press)="step.set('done')">{{ 'ob.maybeLater' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ DONE ============ -->
+  @if (step() === 'done') {
+    <div class="ob-scroll done">
+      <div class="done-badge"><halo-icon name="check" [size]="30" /></div>
+      @if (coachFlow()) {
+        <div class="done-eye">{{ 'ob.allSet' | t }}</div>
+        <h1 class="ob-title c">{{ 'ob.coachReady' | t }}</h1>
+        <p class="ob-sub c">{{ 'ob.coachReadySub' | t }}</p>
+        <div class="reassure">
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.teamsLinked' | t }}</div><div class="re-s">{{ 'ob.teamsLinkedSub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.inviteReady' | t }}</div><div class="re-s">{{ 'ob.inviteReadySub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.manageMenu' | t }}</div><div class="re-s">{{ 'ob.manageMenuSub' | t }}</div></div></div>
+        </div>
+      } @else if (followFlow()) {
+        <div class="done-eye">{{ 'ob.allSet' | t }}</div>
+        <h1 class="ob-title c">{{ 'ob.feedReady' | t }}</h1>
+        <p class="ob-sub c">{{ 'ob.feedReadySub' | t }}</p>
+        <div class="reassure">
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.teamsFollowed' | t }}</div><div class="re-s">{{ 'ob.teamsFollowedSub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.recapsScores' | t }}</div><div class="re-s">{{ 'ob.recapsScoresSub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.changeAnytime' | t }}</div><div class="re-s">{{ 'ob.changeAnytimeSub' | t }}</div></div></div>
+        </div>
+      } @else {
+        <div class="done-eye">{{ 'ob.profileClaimed' | t }}</div>
+        <h1 class="ob-title c">{{ 'ob.welcomeTeam' | t: { team: 'Netsetters 1', name: 'Tal' } }}</h1>
+        <p class="ob-sub c">{{ 'ob.welcomeTeamSub' | t }}</p>
+        <div class="reassure">
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.hlAutoTagged' | t }}</div><div class="re-s">{{ 'ob.hlAutoTaggedSub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.teammatesPre' | t }}</div><div class="re-s">{{ 'ob.teammatesPreSub' | t }}</div></div></div>
+          <div class="re-row"><span class="re-ic"><halo-icon name="check" [size]="14" /></span><div><div class="re-t">{{ 'ob.coachAdjust' | t }}</div><div class="re-s">{{ 'ob.coachAdjustSub' | t }}</div></div></div>
+        </div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="finish()">{{ 'ob.continueHalo' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+</div>

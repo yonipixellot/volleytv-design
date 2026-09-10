@@ -1,0 +1,152 @@
+:host { display: block; }
+
+// ---------------------------------------------------------------------------
+// Presets view. Deliberately the SAME row as the filter bar's own option list:
+// this panel opens inside that menu, so a different row would read as a
+// different control. Duplicated rather than shared because the bar's rules are
+// scoped to its own component, and one shared partial for two views of one
+// menu is more indirection than the six declarations are worth.
+// ---------------------------------------------------------------------------
+.opts { display: flex; flex-direction: column; gap: 2px; }
+
+.opt {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  width: 100%; text-align: start; white-space: nowrap; cursor: pointer;
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink2);
+  background: none; border: 0; border-radius: 11px;
+  padding: var(--space-2) var(--space-3); min-height: var(--space-11);
+}
+@media (hover: hover) { .opt:hover { background: var(--band); } }
+.opt.on { color: var(--ink); }
+.opt .tick {
+  flex: none; display: grid; place-items: center;
+  // 19px and a 6px radius: the filter bar's tick, matched exactly.
+  width: 19px; height: 19px; border-radius: 50%; color: var(--on-accent);
+  // 1.5px hairline — a 1px ring reads as a smudge against --card2 in light.
+  border: 1.5px solid var(--hair2, var(--hair));
+}
+.opt.on .tick { border-color: var(--accent); box-shadow: inset 0 0 0 4px var(--accent); }
+
+// The row that leads to the calendar rather than answering: the chevron says so,
+// and it pushes to the row's end.
+.opt.lead .lead-t { flex: 1 1 auto; }
+.opt.lead .lead-ic { flex: none; color: var(--ink3); }
+
+// ---------------------------------------------------------------------------
+// Calendar view
+// ---------------------------------------------------------------------------
+.cal {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  // 264px = seven 36px cells plus their six 2px gaps. A layout dimension, not
+  // rhythm: without it the panel collapses to the menu's own 230px floor and
+  // the cells go to 29px wide, which is a square day drawn as a slot.
+  min-width: 264px;
+}
+
+.cal-top { display: flex; align-items: center; gap: var(--gap-tight); }
+.cal-mo {
+  flex: 1 1 auto; text-align: center;
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink);
+}
+.nav {
+  flex: none; display: grid; place-items: center;
+  // 32px: a ladder step that clears the 24px WCAG 2.2 AA target floor while
+  // keeping the header shorter than an option row.
+  width: var(--space-8); height: var(--space-8); padding: 0; cursor: pointer;
+  color: var(--ink2); background: var(--card2);
+  border: 1px solid var(--hair); border-radius: var(--r-pill);
+}
+@media (hover: hover) { .nav:not(:disabled):hover { color: var(--ink); border-color: var(--hair2, var(--hair)); } }
+// Disabled means the archive ends here, so it reads as absent rather than broken.
+.nav:disabled { opacity: .35; cursor: default; }
+
+.cal-hint {
+  margin: 0; padding: 0 var(--space-1);
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3);
+}
+
+// NO gap between day cells. The range is one continuous bar, and a gap of any
+// size breaks it into a row of separate chips — which is exactly how it read
+// before (Maryna 2026-09-02). The cells are 36px squares, so they carry their
+// own breathing room; the separation between weeks comes from the row height,
+// not from a gutter.
+.wk, .days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.wd {
+  display: grid; place-items: center; min-height: var(--space-6);
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-caption);
+  letter-spacing: .06em; color: var(--ink3);
+}
+
+.dy {
+  position: relative;
+  display: grid; place-items: center;
+  // 36px square. Under the 40px a pill takes, and deliberately: seven of them
+  // plus the menu's padding has to fit a 375 screen, and 36 still clears the
+  // 24px WCAG 2.2 AA target floor with room to spare.
+  min-height: var(--space-9); padding: 0; cursor: pointer;
+  font-family: var(--body); font-weight: 500; font-size: var(--fs-body); color: var(--ink2);
+  background: none; border: 0; border-radius: 11px;
+}
+// :not(.on):not(.in) is load-bearing. `.dy:not(:disabled):hover` scores higher
+// than `.dy.on`, so without it the hover grey painted straight over the
+// selected day's accent and the range's own ends went pale under the pointer.
+@media (hover: hover) {
+  .dy:not(:disabled):not(.on):not(.in):hover { background: var(--band); }
+}
+// A day with no games is not a choice. Kept visible rather than blanked: the
+// month has to stay readable as a month.
+.dy:disabled { color: var(--ink3); opacity: .45; cursor: default; }
+.dy.pad { cursor: default; }
+
+// ---- the range as ONE bar ----
+// Middle days are square-edged so they butt against their neighbours; only the
+// two ends of the bar are rounded, and only on their outer side. A range that
+// wraps onto the next week therefore ends flat at the row edge and resumes flat
+// on the next row, which is what a continuous span looks like on a grid.
+// Mixed into --card, NOT alpha over it. The cells overlap by 1px (below) to
+// close the seam a fractional column width opens, and two translucent fills
+// overlapping doubled their alpha there — so the bar arrived with a hairline
+// drawn between every middle day, which is the thing the overlap was added to
+// prevent (Maryna 2026-09-02). An opaque mix overlaps invisibly.
+.dy.in { background: color-mix(in srgb, var(--accent) 16%, var(--card)); border-radius: 0; }
+.dy.on { color: var(--on-accent); background: var(--accent); font-weight: 700; border-radius: 0; }
+.dy.rs { border-top-left-radius: 11px; border-bottom-left-radius: 11px; }
+.dy.re { border-top-right-radius: 11px; border-bottom-right-radius: 11px; }
+// A half-drawn range is one rounded chip: there is no bar yet for it to end.
+.dy.rs.re { border-radius: 11px; }
+// The band has to reach the row's edges, or a gap opens where the bar wraps.
+// 1px of overlap on each side, an optical correction: a fractional column width
+// otherwise leaves a hairline of background between two touching cells.
+.dy.in, .dy.on { margin-inline: -1px; padding-inline: 1px; }
+
+// Games-behind-this-day dot, the same signal the Games page's day strip uses.
+.dot {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+}
+.dy.on .dot { background: var(--on-accent); }
+
+// The commit row. Divided off and inset properly: it used to sit on
+// `padding: 0 var(--space-1)` inside the menu's own 8px, which put Back 12px
+// from the panel's corner and reading as if it had fallen out of the panel
+// (Maryna 2026-09-02).
+.cal-foot {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-2) var(--space-1);
+  border-top: 1px solid var(--hair);
+}
+// Back names a direction, so it stays at the start of the row and pushes the
+// commit pair to the end.
+.cal-foot .back { margin-inline-end: auto; }
+
+// ONE month at every width. A second month beside it would save a click on a
+// range that crosses a boundary, but the panel lives inside a menu anchored to
+// a pill that can sit anywhere along a wrapping row — two months is 520px of
+// menu hanging off it, and the range already crosses months by stepping the
+// header. Worth revisiting if ranges turn out to span months often.
+@media (min-width: 768px) {
+  // Roomier cells where there is room, so the grid does not stay phone-tight on
+  // a desktop menu. A layout dimension, not rhythm.
+  .cal { min-width: 300px; }
+}

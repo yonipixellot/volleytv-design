@@ -1,0 +1,30 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <div class="verify">
+    <span class="eyebrow">{{ 'auth.verifyEmail' | t }}</span>
+    <h1>{{ expired() ? ('auth.linkHasExpired' | t) : ('auth.checkEmail' | t) }}</h1>
+    <p class="lead">
+      {{ expired() ? ('auth.verifyExpiredLead' | t) : ('auth.verifyLead' | t) }}
+    </p>
+
+    <div class="email-chip">{{ email }}</div>
+
+    @if (resent() && !expired()) {
+      <div class="resent" role="status">{{ 'auth.emailSentAgain' | t }}</div>
+    }
+
+    @if (!expired()) {
+      <halo-button variant="primary" [block]="true" (press)="verified()">
+        <span class="demo-badge">Demo</span> {{ 'auth.openVerifyLink' | t }}
+      </halo-button>
+    }
+
+    <halo-button variant="glass" [block]="true" [disabled]="cooldown() > 0" (press)="resend()">{{ resendLabel() }}</halo-button>
+    <halo-button variant="ghost" [block]="true" (press)="useDifferentEmail()">{{ 'auth.useDifferentEmail' | t }}</halo-button>
+
+    <div class="demo-row">
+      <button type="button" class="demo-toggle" (click)="expired.set(!expired())">
+        Demo: {{ expired() ? 'reset link' : 'simulate expired link' }}
+      </button>
+    </div>
+  </div>
+</halo-auth-shell>

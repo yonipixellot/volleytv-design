@@ -1,0 +1,114 @@
+<halo-settings-page [title]="cancelled() ? ('sub.cancelled' | t) : ('sub.title' | t)">
+  @if (cancelled()) {
+    <div class="success">
+      <span class="coin ok"><halo-icon name="check" [size]="26" /></span>
+      <h2>{{ 'sub.planCancelled' | t }}</h2>
+      <p>{{ 'sub.cancelledLead' | t: { date: renewal } }}</p>
+    </div>
+  } @else {
+    <!-- Current plan hero -->
+    <div class="hero">
+      <p class="eyebrow">{{ 'sub.currentPlan' | t }}</p>
+      <p class="name">{{ current().name }}</p>
+      <p class="price"><b>{{ current().price }}</b> <span>/ {{ current().cadence }}</span></p>
+      @if (current().id !== 'free') {
+        <p class="renew">{{ 'sub.renewsOn' | t: { date: renewal } }}</p>
+      } @else {
+        <p class="renew">{{ 'sub.onFree' | t }}</p>
+      }
+    </div>
+
+    <!-- Compare plans -->
+    <p class="sec">{{ 'sub.compare' | t }}</p>
+    <div class="plans">
+      @for (t of tiers; track t.id) {
+        <div class="plan" [class.cur]="t.id === currentId()" [class.feat]="t.featured && t.id !== currentId()">
+          <div class="ph">
+            <span class="pn">{{ t.name }}@if (t.id === currentId()) { <em>{{ 'sub.current' | t }}</em> }</span>
+            <span class="pp"><b>{{ t.price }}</b>/{{ t.cadence }}</span>
+          </div>
+          <ul>
+            @for (p of t.perks; track p) {
+              <li><halo-icon name="check" [size]="12" /> <span>{{ p }}</span></li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
+    <!-- Payment method -->
+    <p class="sec">{{ 'sub.paymentMethod' | t }}</p>
+    <div class="pay">
+      <span class="cardic"><halo-icon name="card" [size]="18" /></span>
+      <div class="tx">
+        <span class="l1">{{ 'sub.visaEnding' | t: { last4: card().last4 } }}</span>
+        <span class="l2">{{ 'sub.expires' | t: { exp: card().exp } }}</span>
+      </div>
+      <button class="edit" type="button" (click)="openPay()">{{ 'sub.edit' | t }}</button>
+    </div>
+
+    <!-- Billing history -->
+    <p class="sec">{{ 'sub.billing' | t }}</p>
+    <div class="bills">
+      @for (r of billing; track r.id) {
+        <button class="bill" type="button" (click)="invoice.set(r)">
+          <div class="tx">
+            <span class="d">{{ r.date }}</span>
+            <span class="ds">{{ r.desc }}</span>
+          </div>
+          <span class="amt">{{ r.amount }}</span>
+          <halo-icon class="ch" name="chevron-right" [size]="14" />
+        </button>
+      }
+    </div>
+
+    <button class="cancel" type="button" (click)="cancelOpen.set(true)">{{ 'sub.cancelSub' | t }}</button>
+  }
+</halo-settings-page>
+
+@if (payOpen()) {
+  <div class="scrim" (click)="payOpen.set(false)"></div>
+  <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'sub.editPayment' | t">
+    <p class="eyebrow acc">{{ 'sub.paymentMethod' | t }}</p>
+    <h2>{{ 'sub.updateCard' | t }}</h2>
+    <div class="payform">
+      <halo-form-field [label]="'sub.cardNumber' | t" [value]="cardNum()" (valueChange)="cardNum.set($event)"
+        placeholder="4242 4242 4242 4242" inputmode="numeric" autocomplete="cc-number" [error]="cardErr()" />
+      <halo-form-field [label]="'sub.expiry' | t" [value]="cardExp()" (valueChange)="cardExp.set($event)"
+        placeholder="MM / YY" inputmode="numeric" autocomplete="cc-exp" [error]="expErr()" />
+    </div>
+    <div class="row">
+      <button class="stay" type="button" (click)="payOpen.set(false)">{{ 'ob.cancel' | t }}</button>
+      <button class="save" type="button" (click)="savePay()">{{ 'sub.saveCard' | t }}</button>
+    </div>
+  </div>
+}
+
+@if (invoice(); as inv) {
+  <div class="scrim" (click)="invoice.set(null)"></div>
+  <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'sub.invoice' | t">
+    <p class="eyebrow acc">{{ 'sub.invoice' | t }} · {{ invoiceNo(inv) }}</p>
+    <h2>{{ inv.date }}</h2>
+    <div class="invrows">
+      <div class="ir"><span>{{ 'sub.plan' | t }}</span><b>{{ inv.desc }}</b></div>
+      <div class="ir"><span>{{ 'sub.amount' | t }}</span><b>{{ inv.amount }}</b></div>
+      <div class="ir"><span>{{ 'sub.status' | t }}</span><b class="paid">{{ 'sub.paidVisa' | t: { last4: card().last4 } }}</b></div>
+    </div>
+    <div class="row one">
+      <button class="stay" type="button" (click)="invoice.set(null)">{{ 'gs.done' | t }}</button>
+    </div>
+  </div>
+}
+
+@if (cancelOpen()) {
+  <div class="scrim" (click)="cancelOpen.set(false)"></div>
+  <div class="sheet danger" role="dialog" aria-modal="true" [attr.aria-label]="'sub.cancelSub' | t">
+    <p class="eyebrow">{{ 'sub.beforeGo' | t }}</p>
+    <h2>{{ 'sub.cancelQ' | t }}</h2>
+    <p class="lead">{{ 'sub.cancelLead' | t: { date: renewal } }}</p>
+    <div class="row">
+      <button class="stay" type="button" (click)="cancelOpen.set(false)">{{ 'sub.keepPlan' | t }}</button>
+      <button class="conf" type="button" (click)="confirmCancel()">{{ 'sub.cancelPlan' | t }}</button>
+    </div>
+  </div>
+}

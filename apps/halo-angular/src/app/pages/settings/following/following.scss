@@ -1,0 +1,94 @@
+.tabs { margin-bottom: var(--space-4); }
+
+.list { display: flex; flex-direction: column; gap: var(--gap-snug); }
+
+.frow {
+  display: flex; align-items: center; gap: var(--gap-snug);
+  padding: var(--space-3) var(--space-3); border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px solid var(--hair);
+}
+.frow .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+// Inter 700/16, identical to halo-follow-row, halo-live-game-card and the ladder
+// row. A team name in a LIST ROW is a row title first and a proper noun second;
+// the display face is for a name being presented — a hero, a scoreline, a card
+// headline — not for one being listed.
+//
+// It was League Spartan at 14, which also read a size smaller than it was: the
+// display face is condensed, so at the same px it carries less x-height than
+// Inter (Maryna 2026-08-29).
+.frow .nm {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.frow .sub {
+  font-size: var(--fs-caption); color: var(--ink3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+// Both buttons are .halo-follow-pill — the followed one carries `.on`, which is
+// the muted half of the same control. See styles.scss.
+
+.add {
+  width: 100%; margin-top: var(--space-3);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--gap-tight);
+  padding: var(--space-3); border-radius: var(--r-card-sm);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent); font-size: var(--fs-body); font-weight: 700; cursor: pointer;
+}
+// Open state collapses the section — a chevron flip (same convention as the
+// onboarding league accordion's .lg-chev), not the plus icon's "close" (✕),
+// which reads as discard/cancel. Nothing here is undone by closing it: the
+// follows already happened, so "collapse" is the honest affordance, not "undo".
+.add-ic { transition: transform .2s ease; }
+// Flip comes from .halo-chev in styles.scss, keyed on aria-expanded.
+
+.empty {
+  padding: var(--space-9) var(--space-5); text-align: center;
+  border-radius: var(--r-card-sm);
+  background: var(--card); border: 1px dashed var(--hair);
+}
+.empty .eyebrow {
+  margin: 0 0 var(--space-2); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink3);
+}
+.empty .body { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--ink2); }
+
+// ---- inline discovery ("Add more") ----
+.sug {
+  margin: var(--space-5) 2px var(--space-2); font-size: var(--fs-caption); font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink3);
+}
+.sug-empty { margin: var(--space-3) 2px 0; font-size: var(--fs-caption); color: var(--ink2); }
+
+// halo-event-filter-bar carries its own --pad-x gutter for pages where it
+// sits directly on the page background — here it's inside SettingsShell's
+// `.body`, which already applies that gutter, so left as-is it would double
+// the indent (same fix as onboarding's SSO browse filter, sso.scss).
+halo-event-filter-bar { display: block; margin: 2px 0 var(--space-3); }
+halo-event-filter-bar ::ng-deep .efb { padding: 0; }
+
+
+// followed team names are tap targets to /team/:id — name look, link behavior
+.nm-link {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  text-align: start; font: inherit; color: inherit;
+  &:active { color: var(--accent); }
+}
+/* Split: focus-visible is not pointer-only — a keyboard user has no pointer
+   but does need the affordance. Only the hover half is scoped. */
+.nm-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+}
+@media (hover: hover) {
+  .nm-link:hover {
+    color: var(--accent);
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  }
+}
+
+// a11y 2.5.8: >=24px hit area for inline name links (padding grows the target,
+// negative margin keeps the layout)
+.nm-link { padding-block: var(--space-2); margin-block: calc(var(--space-2) * -1); font-weight: 700; }  // 700: the font:inherit shorthand above resets the name's own weight

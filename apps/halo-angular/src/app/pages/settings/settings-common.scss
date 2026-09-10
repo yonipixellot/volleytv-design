@@ -1,0 +1,48 @@
+// Shared styles for the menu / settings sub-screens.
+
+:host { display: block; }
+
+halo-form-field { display: block; margin-bottom: var(--space-4); }
+
+halo-button { display: block; margin-top: var(--space-2); }
+
+.note {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--ink3);
+}
+
+// ---- Full-screen success / terminal state ----
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-10) var(--space-2) 0;
+}
+.success .coin {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center; margin-bottom: var(--space-4);
+}
+.success .coin.ok {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.success .coin.warn {
+  color: var(--live);
+  background: color-mix(in srgb, var(--live) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--live) 42%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--live) 24%, transparent);
+}
+.success h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--disp); font-weight: 800; font-size: var(--fs-title); color: var(--ink);
+}
+.success p {
+  margin: 0 0 var(--space-5); max-width: 260px;
+  font-size: var(--fs-body); line-height: 1.6; color: var(--ink2);
+}

@@ -1,0 +1,101 @@
+:host { display: block; }
+
+.ff { display: flex; flex-direction: column; gap: var(--gap-tight); }
+
+.lbl {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.wrap {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-field);
+  padding-block: 0 0; padding-inline: var(--pad-field-x) var(--space-2);
+  transition: border-color var(--dur-med), box-shadow var(--dur-med);
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  &.err {
+    border-color: var(--live);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 16%, transparent);
+  }
+  // Disabled = NEUTRAL recipe, same reasoning as .btn:disabled (button.scss):
+  // a quieter surface + muted ink rather than an opacity dim, so a read-only
+  // field reads as "not editable yet", not as a broken/greyed-out control.
+  // No :focus-within ring either — there's nothing to focus.
+  &.off {
+    background: var(--card2);
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.inp {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-body-lg);
+  padding: var(--pad-field-y) 0;
+  // Explicit, so every control type resolves to the same row height. Left to
+  // `normal` a text input, a date input and a select each pick their own line
+  // box and the stack came out 44 / 50 / 43 — visibly ragged down one column,
+  // and worst where a date and a select sit side by side in the same row.
+  // A ratio rather than a pixel value: the accessibility text control re-derives
+  // --fs-body-lg, and a fixed 20px would hold the row still while its text grew.
+  line-height: 1.25;
+
+  &::placeholder { color: var(--ink3); opacity: .8; }
+  // Same as the filter bar's find field: .wrap owns the focus state, so the
+  // input must not draw its own. `outline: none` alone left the baseline's 4px
+  // halo painting inside the box, one ring inside another.
+  &:focus-visible { outline: none; box-shadow: none; }
+  // native date/select glyphs read on dark
+  &[type='date'] {
+    color-scheme: dark;
+    // A date input has no ::placeholder — with no value it prints its own format
+    // hint ("dd.mm.yyyy") in the input's `color`. So an empty date field shouted
+    // in full-strength --ink while every other empty field in the same stack
+    // whispered in --ink3, and it read as the one field already filled in.
+    &.empty { color: var(--ink3); }
+    // Its native editor carries its own padding and an intrinsically taller line
+    // box, so this one row stood proud of a column of otherwise identical fields.
+    // Both are neutralised here rather than left to the browser's default.
+    &::-webkit-datetime-edit { padding: 0; line-height: inherit; }
+    &::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+  }
+  // Muted ink + default cursor; -webkit-text-fill-color because Safari/iOS
+  // override a disabled input's `color` with its own grey otherwise.
+  &:disabled {
+    color: var(--ink2);
+    -webkit-text-fill-color: var(--ink2);
+    opacity: 1;
+    cursor: default;
+  }
+}
+
+:host-context([data-theme='light']) .inp[type='date'] { color-scheme: light; }
+
+.right { display: inline-flex; align-items: center; }
+.right:empty { display: none; }
+
+.msg {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+}
+.msg.err { color: var(--live); font-weight: 600; }

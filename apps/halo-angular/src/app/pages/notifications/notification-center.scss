@@ -1,0 +1,137 @@
+:host { display: block; }
+
+// No bottom nav dock on this page (2026-08-26) — .halo-page's default
+// padding-bottom reserves clearance for it; this page doesn't need that gap.
+// No wide layout on purpose. A notification is a ROW — tile, title, body,
+// time — and a row stretched to 1440 puts its title at one end and its
+// timestamp at the other. The 720px cap is the right answer here, and from the
+// tablet band up the feed also has the header popover, so the route is the
+// deep-link fallback rather than the main way in (Maryna 2026-08-29).
+.nc { padding-bottom: var(--pad-x); }
+
+// Header lives in halo-page-top (shared with Settings) — nothing to style here.
+
+.nc-lab {
+  margin: var(--space-4) var(--pad-x) var(--space-2);
+  font-family: var(--body); font-weight: 800; font-size: var(--fs-caption);
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink3);
+}
+
+.nc-list { display: flex; flex-direction: column; gap: var(--gap-tight); padding: 0 var(--pad-x); }
+
+.nrow {
+  display: flex; align-items: flex-start; gap: var(--gap-snug);
+  width: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-3) var(--space-4);
+  background: var(--card); border: 1px solid var(--hair); border-radius: var(--r-card-sm);
+  // Visiting marks the feed read ~800ms in, so the unread treatment is on its
+  // way out the moment you arrive. It FADES rather than snapping off: the point
+  // of those 800ms is that you get to see which rows were new, and a hard cut
+  // would make the screen flinch. Exit is slower than a normal state change on
+  // purpose, so the change is legible as "these are settling".
+  transition: background var(--dur-slow) ease, border-color var(--dur-slow) ease;
+
+  &.unread {
+    background: color-mix(in srgb, var(--accent) 5%, var(--card));
+    border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
+.tile {
+  flex: none; width: 36px; height: 36px; margin-top: 1px;
+  display: grid; place-items: center; border-radius: 11px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+
+  &.live {
+    color: var(--live);
+    background: color-mix(in srgb, var(--live) 12%, transparent);
+    border-color: color-mix(in srgb, var(--live) 24%, transparent);
+  }
+}
+.tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nm { font-family: var(--body); font-weight: 700; font-size: var(--fs-body-lg); color: var(--ink); }
+.bd { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); line-height: 1.45; color: var(--ink3); }
+.nrow.unread .bd { color: var(--ink2); }
+.meta { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: var(--gap-tight); }
+.tm { font-family: var(--body); font-weight: 600; font-size: var(--fs-caption); color: var(--ink3); }
+// Fades out with the row's unread treatment (see .nrow), never in.
+// `transition`, NOT `animation`: an animation runs on mount, which made the dot
+// fade IN on arrival and read as a blink. A transition only fires on a change,
+// so the dot is simply present at first paint and animates once `read` flips
+// (2026-08-28).
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  transition: opacity var(--dur-slow) ease, transform var(--dur-slow) ease;
+}
+.dot.gone { opacity: 0; transform: scale(.4); }
+@media (prefers-reduced-motion: reduce) {
+  .dot { transition: none; }
+}
+
+.nc-empty {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  // 64px, above the rhythm ladder: a layout dimension, not rhythm. It drops the
+  // empty state clear of the sticky top chrome so the icon reads as centred in
+  // the space that is left rather than crowding the header.
+  padding: 64px var(--pad-x) var(--space-5);
+
+  .ic {
+    width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: var(--space-3);
+    border-radius: 18px; color: var(--ink3);
+    background: var(--card); border: 1px solid var(--hair);
+  }
+  .t { margin: 0 0 var(--space-1); font-family: var(--disp); font-weight: 800; font-size: var(--fs-body-lg); color: var(--ink); }
+  .s { margin: 0; max-width: 300px; font-family: var(--body); font-size: var(--fs-body); line-height: 1.5; color: var(--ink3); }
+}
+
+// ---------------------------------------------------------------------------
+// Popover variant — the same feed hanging off the header bell from the tablet
+// band up. Only the page chrome changes: the surface, the edge and the scroll
+// cap belong to the popover shell in halo-app-header.
+// ---------------------------------------------------------------------------
+:host:has(.nc--pop) { display: contents; }
+
+.nc--pop {
+  // A page grows to fill the routed region; a panel is as tall as its own feed
+  // and lets the shell cap it.
+  flex: 0 0 auto;
+  padding: var(--space-3) 0;
+
+  // Title and the one action the feed owns, on one line. No X: the bell that
+  // opened this is still there, and clicking away closes it.
+  .nc-pop-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-snug);
+    // Inset matched to the day labels below it, not to the panel's own edge:
+    // at the panel edge the title sat 4px left of "TODAY" and read as flush.
+    padding: 0 var(--space-3) var(--space-3);
+  }
+  // The SAME voice halo-page-top gives the full screen, one step quieter. It was
+  // Inter 700/16, which is exactly what a notification's own title is, so the
+  // panel's name and the rows inside it had no rank between them.
+  .nc-pop-t {
+    font-family: var(--disp);
+    font-weight: 700;
+    font-size: var(--fs-d-xs);
+    text-transform: uppercase;
+    letter-spacing: .01em;
+    color: var(--ink);
+  }
+
+  // The rows lose the page's outer inset: the popover's own padding is the
+  // inset now, and keeping both would leave the feed floating in a frame.
+  .nc-list { padding: 0 var(--space-2); }
+  .nc-lab { margin: var(--space-3) var(--space-3) var(--space-2); }
+  .nc-lab:first-of-type { margin-top: 0; }
+
+  // Scanned, not read: a menu-sized rhythm rather than a page's. The row still
+  // clears the 44px touch floor twice over on two lines of text.
+  .nrow { padding: var(--space-2) var(--space-3); }
+
+  // The empty state is a note here, not a full-page illustration — 64px of top
+  // padding inside a 380px panel was a hole with a bell in it.
+  .nc-empty { padding: var(--space-5) var(--pad-x) var(--space-4); }
+}

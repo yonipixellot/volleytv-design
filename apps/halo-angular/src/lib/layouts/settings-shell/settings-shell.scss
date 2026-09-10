@@ -1,0 +1,114 @@
+:host { display: block; }
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-snug);
+  padding: var(--space-1) var(--pad-x) var(--space-4);
+}
+
+.top .back {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hair);
+  border-radius: 50%;
+  background: var(--card2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.top h1 {
+  flex: 1;
+  margin: 0;
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: var(--fs-heading);
+  letter-spacing: .2px;
+}
+
+.top .action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.body {
+  padding: 0 var(--pad-x);
+}
+
+// The desktop chrome and the sidebar are hidden below the two-pane band rather
+// than kept out of the DOM: a template cannot ask a media query, and rendering
+// them always keeps this layout free of a JS breakpoint.
+.set-top { display: none; }
+.set-nav { display: none; }
+
+// ---------------------------------------------------------------------------
+// Two panes, from the band where the nav moves into the header and the app
+// stops looking like a phone. Below it the back button is the way out and a
+// sidebar would eat the column the form needs.
+// ---------------------------------------------------------------------------
+@media (min-width: 1024px) {
+  // Opts out of the 720px cap that .halo-page gives an unadapted page, the same
+  // way the Home route does: this screen now owns a wide layout, and inside a
+  // 720px column the app header was squeezed to the width of the form under it.
+  // Three classes deep so it beats `.halo-page:not(.dhome)` on specificity
+  // rather than on whichever stylesheet happens to load last.
+  .halo-page.set.set--two { max-width: none; }
+
+  .set--two {
+    .set-top { display: block; }
+
+    // The phone's clock/battery row belongs to the phone frame.
+    halo-status-bar { display: none; }
+
+    .set-cols {
+      display: grid;
+      grid-template-columns: var(--nav-w) minmax(0, 1fr);
+      gap: var(--space-10);
+      align-items: start;
+      // The nav rail, the gap, and a task column. Both numbers come from the
+      // platform now rather than from this file.
+      max-width: calc(var(--nav-w) + var(--space-10) + var(--measure-task));
+      margin: 0 auto;
+      padding: var(--space-8) var(--pad-x-wide) var(--space-10);
+    }
+
+    .set-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      position: sticky;
+      top: var(--space-6);
+    }
+
+    // The back button goes: the sidebar says where you are and the app header
+    // above is still the way out, so it would be a third exit from one screen.
+    .top .back { display: none; }
+    .top { padding-inline: 0; }
+    .body { padding-inline: 0; }
+  }
+}
+
+.sn {
+  min-height: 44px;   // WCAG 2.5.8 floor, same as every row in the app
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--r-field);
+  background: transparent;
+  cursor: pointer;
+  text-align: start;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--ink3);
+  transition: color var(--dur-med), background var(--dur-med);
+}
+@media (hover: hover) {
+  .sn:hover { color: var(--ink); background: var(--card2); }
+}
+.sn.on { color: var(--ink); background: var(--card2); }

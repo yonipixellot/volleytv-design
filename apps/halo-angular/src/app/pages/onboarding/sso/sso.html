@@ -1,0 +1,300 @@
+<div class="ob">
+  <!-- One stepper for the whole flow, not one per step. Remounting it on every
+       screen meant it was born already in its finished state, so the line could
+       never animate from the dot you left to the dot you arrived at. Handoff and
+       identify are the two screens outside the journey: a brand confirmation and
+       a loader, neither of which is a step you fill in. -->
+  @if (step() !== 'handoff' && step() !== 'identify') {
+    <halo-onboard-stepper
+      [names]="stepNames()" [step]="stepNo()" [total]="total()"
+      [showBack]="stepNo() > 1" (back)="goBack()" />
+  }
+
+  <!-- ============ HANDOFF — BA SsoHandoffScreen parity: full-screen brand
+       confirmation, auto-advances (1700ms), whole screen tappable ============ -->
+  @if (step() === 'handoff') {
+    <h1 class="sr-only">{{ 'sso.signedIn' | t }}</h1>
+    <button class="handoff" type="button" (click)="leaveHandoff()"
+      [attr.aria-label]="'sso.signedInContinue' | t">
+      <!-- The SAME lockup as sign-in, at the same size and the same distance
+           from the top: these two screens share the brand field and follow each
+           other 1.7s apart, so the mark must not jump or change treatment. The
+           boxed Logo lockup used to be here, which read as a different
+           brand system one screen later (2026-08-27). -->
+      <span class="ho-mark">
+        <img class="ho-bm" [src]="tenant.brandmarkDark()" alt="" />
+        <img class="ho-wm" [src]="tenant.wordmarkDark()" [alt]="tenant.name()" />
+      </span>
+      <!-- The mark holds the top; the confirmation centres in what's left, so
+           anchoring the lockup doesn't leave the screen bottom-heavy. -->
+      <span class="ho-body">
+        <span class="ho-check" aria-hidden="true"><halo-icon name="check" [size]="24" /></span>
+        <span class="ho-title">{{ 'sso.signedIn' | t }}</span>
+        <span class="ho-sub">{{ 'sso.takingYou' | t }}</span>
+      </span>
+    </button>
+  }
+
+  <!-- ============ IDENTIFY — BA parity: auto-resolving loader + DEV
+       simulate-result panel (production auto-resolves and advances) ============ -->
+  @if (step() === 'identify') {
+    <div class="ident">
+      <span class="id-spin" aria-hidden="true"></span>
+      <h1 class="id-title">{{ 'sso.finding' | t }}</h1>
+      <p class="id-sub">{{ 'sso.findingSub' | t }}</p>
+      <div class="devpanel">
+        <span class="dev-chip">Dev · simulate result</span>
+        @for (o of devOptions; track o.key) {
+          <button class="devopt" type="button" (click)="resolveIdentity(o)">
+            <span class="dev-lbl">{{ o.label }}</span>
+            <span class="dev-note">{{ o.note }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ============ CONFIRM ATHLETES — parent (family) entry. Pre-linked
+       children arrive via SSO/CMP; this screen CONFIRMS them, never builds ============ -->
+  @if (step() === 'confirm') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'sso.confirmAthletes' | t }}</h1>
+      <p class="ob-sub">{{ 'sso.confirmSub' | t }}</p>
+      <div class="ob-list">
+        @for (k of kids; track k.name) {
+          <div class="kidrow">
+            <halo-crest [monogram]="k.mono" [size]="40" />
+            <span class="kid-txt">
+              <span class="kid-eb">{{ 'sso.linkedToYou' | t }}</span>
+              <span class="kid-nm">{{ k.name }}</span>
+              <span class="kid-meta">{{ k.teamNames }}</span>
+            </span>
+          </div>
+        }
+      </div>
+      <p class="fine">{{ 'sso.notRight' | t }}</p>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('teams')">{{ 'ob.continue' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ FOLLOW TEAMS (matched team(s) locked; browse below) ============ -->
+  @if (step() === 'teams') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ teamsHeading() }}</h1>
+      <p class="ob-sub">{{ teamsSub() }}</p>
+
+      <!-- Registration disclaimer, FIRST. It is a condition on everything below
+           it — the locked team, the browse, the counts — so it cannot sit
+           between two of the things it qualifies. Unconditional on this page:
+           the IdP flow has four outcomes (athlete, multi-team athlete,
+           parent, not-yet-matched) and a fan never enters it. See the generic
+           /onboarding for the flow that does carry fans (Maryna 2026-08-30). -->
+      <div class="notice tint">
+        <span class="nt-ic"><halo-icon name="info" [size]="17" /></span>
+        <span class="nt-txt">
+          <span class="nt-t">{{ 'ob.noticeT' | t }}</span>
+          <span class="nt-b">{{ 'ob.noticeB' | t }}</span>
+        </span>
+      </div>
+
+      <!-- "Still setting up" notice — SSO didn't match a record yet (BA §3b) -->
+      @if (outcome() === 'none') {
+        <div class="notice">
+          <span class="nt-ic"><halo-icon name="clock" [size]="17" /></span>
+          <span class="nt-txt">
+            <span class="nt-t">{{ 'sso.stillSetting' | t }}</span>
+            <span class="nt-b">{{ 'sso.stillSettingBody' | t }}</span>
+          </span>
+        </div>
+      }
+
+      @if (lockedCards().length > 0) {
+        <div class="eyebrow">{{ lockedEyebrow() }}</div>
+        @for (c of lockedCards(); track c.regId) {
+          <div class="myteam locked">
+            <halo-crest [src]="c.crest || ''" [monogram]="c.mono" [size]="40" />
+            <span class="mt-txt"><span class="mt-nm">{{ c.name }}</span><span class="mt-org">{{ c.meta }}</span></span>
+            <span class="lockchip" [title]="'sso.followedVia' | t"><halo-icon name="lock" [size]="13" /></span>
+          </div>
+        }
+      }
+
+      <div class="eyebrow">{{ 'sso.followMore' | t }} <span class="ey-sub">{{ 'ob.optional' | t }}</span></div>
+      <!-- Browse filter — State · Organisation · League (Yuval 2026-08-23; Grade dropped 2026-08-26) -->
+      <halo-event-filter-bar
+        [categories]="browseCategories()" [selected]="browseFilters()"
+        (toggleOption)="toggleBrowseFilter($event.cat, $event.value)" (clear)="clearBrowseFilters()" />
+      <!-- League accordion — teams A→Z. Single-open while BROWSING; a filter
+           opens everything it matched, because a shortlist behind closed doors is
+           not a shortlist (see openMatches in sso.ts). No per-league "Follow
+           all": following a whole league is not a thing anyone means during
+           setup, and the row already carries "N of M followed" to say where they
+           are (Maryna 2026-08-30). -->
+      <div class="leagues">
+        <!-- Two states, two texts. One is the user's own filter and is undone
+             from here; the other is the end of the list and needs no action. -->
+        @if (visibleLeagues().length === 0) {
+          @if (browseFiltered()) {
+            <halo-empty-state icon="search" [title]="'sso.noTeamsMatch' | t"
+              [sub]="'sso.noTeamsMatchSub' | t">
+              <!-- glass, not secondary: secondary is the --primary fill, which is
+                   the loudest thing on a screen whose whole point is that there
+                   is nothing here. A quiet surface fits a utility action.
+                   size sm (32) is the documented case for it — button.ts reserves
+                   sm for "SECONDARY/redundant actions", and this is redundant by
+                   construction: the filter bar directly above carries its own
+                   Clear. At the default it rendered 54px tall, the hero-CTA scale
+                   this page uses for Continue (Maryna 2026-08-30). -->
+              <halo-button variant="glass" size="sm" (press)="clearBrowseFilters()">{{ 'cta.clearFilters' | t }}</halo-button>
+            </halo-empty-state>
+          } @else {
+            <halo-empty-state icon="shield" [title]="'sso.nothingMore' | t"
+              [sub]="'sso.nothingMoreSub' | t" />
+          }
+        }
+        @for (l of visibleLeagues(); track l.id) {
+          <div class="lg" [class.open]="isLeagueOpen(l.id)">
+            <button class="lg-tgl" type="button" [attr.aria-expanded]="isLeagueOpen(l.id)"
+              (click)="toggleLeague(l.id)">
+              <span class="lg-txt">
+                <span class="lg-nm">{{ l.name }}</span>
+                <span class="lg-meta">{{ l.meta }} · {{ 'sso.followedOf' | t: { n: followedIn(l), total: l.teams.length } }}</span>
+              </span>
+              <halo-icon class="lg-chev halo-chev" name="chevron-down" [size]="15" />
+            </button>
+            @if (isLeagueOpen(l.id)) {
+              <div class="ob-list lg-body">
+                @for (t of l.teams; track t.id) {
+                  <halo-follow-row [name]="t.name" [meta]="t.meta" [crest]="t.crest || ''" [mono]="t.mono"
+                    [followed]="t.followed" (followedChange)="setFollowed('teams', t.id, $event)" />
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="nextFromTeams()">
+        {{ 'ob.continue' | t }} · {{ plural(teamCount(), 'count.team1', 'count.teamN') }}
+      </halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ FOLLOW TEAMMATES (athlete roster / the kids' teammates) ============ -->
+  @if (step() === 'teammates') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ outcome() === 'family' ? ('sso.athletesTeammates' | t) : ('sso.yourTeammates' | t) }}</h1>
+      <p class="ob-sub">{{ teammatesSub() }}</p>
+      @if (teammates().length === 0) {
+        <!-- Empty for reasons we cannot tell apart from here: a registration not
+             finished at BA or Advantage, or a fault on our side that is hiding a
+             roster we do have (manager, 2026-08-30). So the copy names NO cause.
+             Claiming "still loading" would be a guess, and the wrong guess makes
+             a broken screen sound routine. It says what is true — nothing came
+             through — and where to go later. Non-blocking: Continue still is the
+             way out (Maryna 2026-08-30). -->
+        <halo-empty-state icon="user" [title]="'sso.noTeammates' | t"
+          [sub]="'sso.noTeammatesSub' | t" />
+      } @else {
+        <!-- One roster per team, headed by the team (manager, 2026-09-02). The
+             .eyebrow / .ob-list pair is the same grouping the Teams step above
+             uses for its locked cards, so a two-team athlete reads the two
+             screens the same way. The parenthesised aside names WHOSE team it is
+             in the family flow, where the heading alone would not say. -->
+        @for (g of teammateGroups(); track g.regId) {
+          <div class="eyebrow">
+            {{ g.team }}
+            @if (g.athlete) { <span class="ey-sub">{{ g.athlete }}</span> }
+          </div>
+          <div class="ob-list">
+            @for (p of g.people; track p.id) {
+              <halo-follow-row kind="person" [name]="p.name" [meta]="p.meta" [mono]="p.mono"
+                [followed]="p.followed" (followedChange)="setFollowed('teammates', p.id, $event)" />
+            }
+          </div>
+        }
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('notif')">{{ 'ob.continue' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ NOTIFICATIONS — simple consent pre-prompt (BA NotifUpsell):
+       bell + 3 perks + Allow / Not now. Per-category toggles live in Settings. ============ -->
+  @if (step() === 'notif') {
+    <div class="ob-scroll nf-center">
+      <span class="nf-bell" aria-hidden="true"><halo-icon name="bell" [size]="42" /><span class="nf-dot"></span></span>
+      <h1 class="ob-title">{{ 'sso.neverMiss' | t }}</h1>
+      <p class="ob-sub">{{ 'sso.neverMissSub' | t }}</p>
+      <ul class="nf-perks">
+        @for (perk of notifPerks; track perk) {
+          <li><span class="nf-check"><halo-icon name="check" [size]="13" /></span>{{ perk }}</li>
+        }
+      </ul>
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" (press)="step.set('consent')">{{ 'sso.allowNotifs' | t }}</halo-button>
+      <button class="later" type="button" (click)="step.set('consent')">{{ 'common.notNow' | t }}</button>
+    </halo-onboard-dock>
+  }
+
+  <!-- ============ CONSENT (BA ConsentStep: "Almost there" — marketing opt-in + ATSI) ============ -->
+  @if (step() === 'consent') {
+    <div class="ob-scroll">
+      <h1 class="ob-title">{{ 'sso.almostThere' | t }}</h1>
+      <p class="ob-sub">{{ 'sso.almostThereSub' | t }}</p>
+
+      <!-- Required T&C acceptance — gates Continue (Yuval 2026-08-23). -->
+      <!-- Box = the checkbox control, label = sibling: a link inside a role=checkbox button was
+           nested-interactive (4.1.2, a11y audit 2026-09-02 G7). Tapping the text still toggles. -->
+      <div class="tc">
+        <button class="tc-box" type="button" role="checkbox" [attr.aria-checked]="termsAccepted()"
+          aria-labelledby="tc-terms-lbl" [class.on]="termsAccepted()" (click)="termsAccepted.set(!termsAccepted())">
+          @if (termsAccepted()) { <halo-icon name="check" [size]="16" aria-hidden="true" /> }
+        </button>
+        <span class="tc-lbl" id="tc-terms-lbl" (click)="termsAccepted.set(!termsAccepted())">{{ 'sso.iAcceptPre' | t }}<a href="/legal/terms" target="_blank" rel="noopener"
+          (click)="$event.stopPropagation()">{{ 'sso.termsConditions' | t }}</a>{{ 'sso.iAcceptPost' | t }}</span>
+      </div>
+
+      <div class="eyebrow">{{ 'sso.stayLoop' | t }}</div>
+      <!-- A checkbox, not a switch, and the same row the T&C acceptance above it
+           uses. Both are one-time consents given while filling in a form, so
+           they answer the same way; a switch says "a setting you live with and
+           come back to", which is what the Alerts step and Settings are for
+           (Yuval 2026-08-31). -->
+      <button class="tc opt" type="button" role="checkbox" [attr.aria-checked]="consentUpdates()"
+        (click)="consentUpdates.set(!consentUpdates())">
+        <span class="tc-box" [class.on]="consentUpdates()" aria-hidden="true">
+          @if (consentUpdates()) { <halo-icon name="check" [size]="16" /> }
+        </span>
+        <span class="nr-txt"><span class="nr-nm">{{ 'sso.updates' | t }}</span><span class="nr-sub">{{ 'sso.updatesSub' | t }}</span></span>
+      </button>
+      <p class="fine">{{ 'sso.consentFine' | t }}</p>
+
+      <!-- Fan-only: this question is a Basketball Australia inclusion-programs
+           ask tied to participation, not relevant to a fan with no athlete/
+           team/coach record (Maryna 2026-08-28). -->
+      @if (vc.caps().isFan) {
+        <div class="atsi" role="radiogroup" [attr.aria-label]="'sso.atsiA11y' | t">
+          <div class="atsi-q">{{ 'sso.atsiQ' | t }}</div>
+          <p class="atsi-sub">{{ 'sso.atsiSub' | t }}</p>
+          @for (o of atsiOptions; track o.id) {
+            <button class="atsi-opt" type="button" role="radio" [attr.aria-checked]="atsi() === o.id"
+              [class.on]="atsi() === o.id" (click)="atsi.set(o.id)">
+              <span class="atsi-dot" aria-hidden="true"></span>
+              <span class="atsi-lbl">{{ o.label }}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+    <halo-onboard-dock>
+      <halo-button variant="primary" [block]="true" [disabled]="!termsAccepted()" (press)="finish()">{{ 'ob.allSet' | t }}</halo-button>
+    </halo-onboard-dock>
+  }
+
+</div>

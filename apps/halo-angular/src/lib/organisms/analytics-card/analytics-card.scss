@@ -1,0 +1,53 @@
+:host { display: block; }
+
+.card {
+  margin: 0 var(--space-6);
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 24px;
+  padding: var(--space-5) var(--pad-card) var(--pad-card);
+}
+/* The trend block is its own card now, so it needs the gap the divider used to
+   stand in for. --space-3 keeps it on the scale. */
+.trend-card { margin-top: var(--space-3); }
+
+.impact { display: flex; align-items: stretch; }
+
+.mblocks {
+  flex: 1;
+  min-width: 0;              // shrink to fit — the fixed 126px gauge + these
+                            // tiles were overflowing the card on narrow phones
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--gap-snug);
+  padding-inline-start: var(--space-4);
+}
+.mblocks halo-stat-tile { min-width: 0; }
+
+
+
+// Stacked, with room. The pair went side by side for a moment and came back:
+// with the gauge's caption now beside its ring, the left block is wide, and two
+// tall columns beside it left the card reading as four things instead of two
+// (Maryna 2026-08-30).
+@media (min-width: 1024px) {
+  .mblocks {
+    gap: var(--gap-loose);
+    padding-inline-start: var(--space-8);
+  }
+}
+
+// Two tracks, not content-then-rest. The gauge block was sized by its own
+// contents — 265px of a 948px row — so the tiles took 683 and the value cell
+// inside them came out 464px wide for a 70px number. Giving the left a real
+// share takes that void back (Maryna 2026-08-30).
+//
+// A percentage with both ends pinned, not a fixed 380: fixed, the left took two
+// thirds of the card at 1280 and left the tiles 160px.
+@media (min-width: 1280px) {
+  .impact {
+    display: grid;
+    grid-template-columns: minmax(0, clamp(340px, 50%, 430px)) minmax(0, 1fr);
+  }
+}

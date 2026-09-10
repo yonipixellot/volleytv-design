@@ -1,0 +1,148 @@
+:host { display: block; }
+
+.sglab {
+  margin: 0 0 var(--space-3);
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* Dividers come from a 1px gap over a hairline-coloured background, not from
+   per-cell borders with nth-child maths: that survives any cell count, any
+   column count, and a hero cell spanning the full row. */
+.sgrid {
+  display: grid;
+  grid-template-columns: repeat(var(--sg-cols, 3), 1fr);
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-tight);
+  padding: var(--space-5) var(--space-3) var(--space-4);
+  background: var(--card);
+}
+.cell .v {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-md);
+  line-height: 1;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cell.hot .v { color: var(--accent); }
+.cell .k {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+
+/* Hero band — the summary stat above the grid. Full row, tinted, and laid out
+   on one line (value then code) so it reads as a headline rather than as an
+   oversized cell. */
+.cell.hero {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: var(--gap-snug);
+  padding: var(--space-4) var(--space-5) var(--space-4);
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
+.cell.hero .v {
+  font-weight: 800;
+  font-size: var(--fs-d-lg);
+  line-height: .9;
+  letter-spacing: -.02em;
+  color: var(--accent);
+}
+.cell.hero .k { color: var(--ink2); }
+
+/* Delta — the stat's distance from this player's own season average. Muted by
+   default, accent only when above: the arrow already carries direction, so
+   colour never has to (and a below-average game is not an error state). */
+/* Pinned to the cell's top-right, level with the value it qualifies: as a
+   third centred row it read as a note on the stat CODE, and it added 20px to
+   every cell. Same corner the hero band already puts its delta in. */
+.d {
+  position: absolute;
+  top: 9px;
+  inset-inline-end: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--body);
+  font-weight: 700;
+  // 11px, a step up from the stat codes: the delta is the one piece of NEW
+  // information on the card, and it should not be the smallest thing on it.
+  font-size: var(--fs-caption);
+  letter-spacing: .02em;
+  color: var(--ink3);
+  font-variant-numeric: tabular-nums;
+}
+.d halo-icon { flex: none; }
+.d.up { color: var(--accent); }
+.d.flat { letter-spacing: .08em; text-transform: uppercase; }
+
+/* Hero band: value and code on the first line, then the verdict. The delta
+   keeps the cells' 10px right inset, NOT the band's own 18px padding, so every
+   delta in the card sits on one vertical line (2026-08-27). */
+.cell.hero { flex-wrap: wrap; row-gap: var(--space-1); }
+.cell.hero .d { top: 18px; inset-inline-end: 10px; }
+.cell.hero .note {
+  flex-basis: 100%;
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  color: var(--ink2);
+}
+
+/* ── Flush — see the `flush` input. Dividers only, no card of its own, and a
+   cell sized for an identity panel rather than a full-width box score. */
+.sgrid.flush {
+  // Only the border and the radius go. The hairline GROUND stays: the cells
+  // cover everything except the 1px gaps, so it keeps painting the dividers and
+  // nothing else — no outer line to clip away.
+  border: 0;
+  border-radius: 0;
+}
+// A STATED HEIGHT, not a padded one. The pair (18px value, 12px label, 4px
+// between) measures ~36, so vertical padding was setting the height by
+// accident: 12px a side landed the cell on 60.5. 48 is the row height this
+// readout wants, so the cell says 48 and centres its two lines inside it.
+.sgrid.flush .cell {
+  gap: var(--space-1);
+  justify-content: center;
+  min-height: var(--space-12);
+  padding: 0 var(--space-2);
+}
+// A STEP DOWN from the box-score number. In a full-width table the value is the
+// content; in an identity panel it is a readout beside a name and an action —
+// secondary, and sized to say so (Maryna 2026-08-30).
+.sgrid.flush .cell .v { font-size: var(--fs-title); }
+// The label loses its uppercase and its tracking here, and drops a weight.
+// Those belong to a stat CODE in a box score, where "PTS" is an abbreviation
+// being announced; in a panel the label is often a WORD ("Upcoming"), and a
+// word set in tracked caps at 800 shouts a caption. Codes stay codes: they
+// arrive uppercase from the data, so nothing lowercases them.
+.sgrid.flush .cell .k {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink3);
+}
+.sgrid.flush .sglab { text-align: center; }

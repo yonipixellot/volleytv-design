@@ -1,0 +1,182 @@
+:host { display: block; }
+
+.idrow {
+  position: relative;
+  margin: var(--space-4) var(--space-6) 2px;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 22px;
+  padding: var(--space-4) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-loose);
+}
+
+/* Background rings — the geometry is copied from .updeco in
+   upcoming-row.scss (132px outer, 92px inner, both centred on the right edge)
+   so the two cards share one decorative language. The clipping lives on this
+   wrapper, not on .idrow, so the disc's shadow is never cut. */
+.iddeco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .7;
+}
+.iddeco::before,
+.iddeco::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+}
+.iddeco::before {
+  inset-inline-end: -34px; width: 132px; height: 132px;
+  border: 1px solid var(--hair);
+}
+.iddeco::after {
+  inset-inline-end: -14px; width: 92px; height: 92px;
+  border: 1px solid var(--hair2);
+}
+
+.pav { position: relative; width: 70px; height: 70px; flex: none; }
+
+.idtxt { flex: 1; min-width: 0; }
+.nm {
+  font-family: var(--disp);
+  font-weight: 700;   // a bit bolder (Yoni 2026-08-24)
+  font-size: var(--fs-d-sm);   // a bit bigger than fs-d-sm (Yoni 2026-08-24)
+  line-height: .94;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  color: var(--ink);
+  // Long-name contract: wrap to at most 2 lines, ellipsis beyond — a name
+  // never pushes the card taller than two display lines or spills the row.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;   // survives one unbroken very long surname
+}
+// >14 chars ("Tal Weiss" is 9): step the size down so most real names still
+// hold one line, and two full parts fit the two-line clamp comfortably.
+.nm.long { font-size: var(--fs-d-sm); line-height: 1; }
+
+/* ---- Team line ----
+   Body size (15px) so it actually reads, --ink2 so it never competes with the
+   display name above it. Identical with one team or several: the chevron and
+   the button semantics are the only difference. */
+.team {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  min-width: 0;
+  // 12px, not 7: the team is a separate tier from the name, and at 7px the two
+  // read as one block (2026-08-27).
+  margin-top: var(--space-3);
+  font-family: var(--body);
+  text-align: start;
+}
+.team-nm {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  // 500, not 600: bold at this size competed with the display name instead of
+  // sitting under it. Weight plus colour both step down, size stays readable.
+  font-weight: 500;
+  font-size: var(--fs-body-lg);   // 15px — the app's control/row-label body size
+  line-height: 1.3;
+  color: var(--ink2);
+}
+// Flip and transition are .halo-chev's now (styles.scss), keyed on the button's
+// own aria-expanded instead of a .open class this file had to maintain.
+.team-chev { flex: none; color: var(--ink3); }
+button.team[aria-expanded='true'] .team-chev { color: var(--ink2); }
+
+.team.static { max-width: 100%; }
+
+/* ---- Team picker (anchored menu) ----
+   Same recipe as you.scss's .ks-menu and games.scss's .monthmenu: a trigger, an
+   invisible click-away, and an absolutely positioned menu. --z-pop, since this
+   is a page-local popover, not a sheet. */
+.teamwrap { position: relative; }
+.team-away {
+  position: fixed; inset: 0; z-index: var(--z-pop);
+  background: transparent; border: 0; cursor: default;
+}
+.team-menu {
+  // Anchored to the LEFT of the trigger, and exactly as WIDE as it: a listbox
+  // that changes the value above it should share both of that value's edges.
+  // It was a flat 236px, chosen back when the text column was the narrow thing
+  // on the card; once the column took the panel's full width the menu stayed
+  // put and sat 60px short of its own trigger (Maryna 2026-08-30).
+  // 100% + 20 is the trigger's width: the button spans its own negative inset,
+  // and the menu now spans the same. min-width keeps the old comfortable size
+  // where the column really is narrow, without ever exceeding the viewport.
+  position: absolute; top: calc(100% + 4px); inset-inline-start: -10px; z-index: calc(var(--z-pop) + 1);
+  width: calc(100% + 20px); min-width: min(236px, calc(100vw - var(--space-8)));
+  display: flex; flex-direction: column; gap: 2px; padding: var(--space-2);
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--shadow-up);
+}
+.tm-opt {
+  // 26px crest and 9px gaps, not 30/11: left-anchoring caps the menu at the
+  // text column's width, and at 320px the old metrics left only 76px for the
+  // name, clipping "Vikings Grey" (2026-08-27).
+  display: flex; align-items: center; gap: var(--gap-tight); width: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-2) var(--space-2); min-height: 48px;
+  background: none; border: 0; border-radius: 10px; color: var(--ink2);
+}
+@media (hover: hover) {
+  .tm-opt:hover { background: var(--band); }
+}
+.tm-opt.on { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.tm-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.tm-nm {
+  font-family: var(--body); font-weight: 700; font-size: var(--fs-body); color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tm-opt.on .tm-nm { color: var(--accent); }
+.tm-sub { font-family: var(--body); font-weight: 500; font-size: var(--fs-caption); color: var(--ink3); }
+.tm-ck { flex: none; color: var(--accent); }
+
+// The switchable line is a real button. Negative margins hold the visual
+// position while the padding lifts the tap target to 44px (PRODUCT.md); the
+// button therefore spans its own padding, so the name keeps the full text
+// width at 320px instead of losing 20px to it.
+button.team {
+  width: calc(100% + 20px);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--r-field);
+  padding: var(--space-3) var(--space-3);
+  margin: 0 calc(var(--space-3) * -1) calc(var(--space-3) * -1);
+  transition: background var(--dur-fast) ease;
+}
+@media (hover: hover) {
+  button.team:hover { background: var(--card2); }
+}
+@media (hover: hover) {
+  button.team:hover .team-nm { color: var(--ink); }
+}
+@media (hover: hover) {
+  button.team:hover .team-chev { color: var(--ink2); }
+}
+button.team:active { background: color-mix(in srgb, var(--accent) 10%, var(--card2)); }
+@media (prefers-reduced-motion: reduce) {
+  button.team { transition: none; }
+}
+
+.mt {
+  font-family: var(--body);
+  font-size: var(--fs-caption);
+  color: var(--ink2);
+  font-weight: 500;
+  margin-top: var(--space-1);
+  line-height: 1.5;
+}

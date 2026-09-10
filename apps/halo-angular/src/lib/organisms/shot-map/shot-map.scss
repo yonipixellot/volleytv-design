@@ -1,0 +1,67 @@
+:host { display: block; }
+
+// card — matches the side padding of the cards above it (parent supplies pad-x inset)
+.card {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-card);
+  padding: var(--space-5) var(--space-5) var(--pad-card);
+
+  // ------------------------------------------------------------------------
+  // The court is PORTRAIT now (a full volleyball court is 9 × 18 m), so it can
+  // never take the card's full width: at 300px it would stand 500px tall. It
+  // takes a column instead and the reading — kill %, the set filter, the
+  // legend — sits beside it, at every size. The column is clamped: on a phone
+  // it is ~55% of the card (≈165px, the ink reference), on a 1440 page it stops
+  // at 280px, about the width Advantage draws its court, and the side column
+  // takes the rest — no dead card either side (Maryna 2026-08-30 on centring).
+  // ------------------------------------------------------------------------
+  display: grid;
+  grid-template-columns: clamp(150px, 55%, 280px) minmax(0, 1fr);
+  grid-template-areas:
+    "head  head"
+    "sets  sets"
+    "court side";
+  align-items: center;
+  column-gap: var(--space-5);
+}
+
+.shot-h {
+  grid-area: head;
+  display: flex; justify-content: space-between; gap: var(--gap-snug);
+  align-items: baseline;
+  // the gap under the header is the header's, so align-items: center below
+  // centres the court and the side column on the same axis
+  margin-bottom: var(--space-4);
+}
+.shot-h-l { min-width: 0; }
+.ct { font-family: var(--body); font-weight: 800; font-size: var(--fs-body); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+.shot-meta { font-family: var(--body); font-size: var(--fs-caption); color: var(--ink3); margin-top: var(--space-2); font-weight: 500; }
+
+.court { grid-area: court; border-radius: 14px; overflow: hidden; display: block; }
+
+.side { grid-area: side; display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+
+.shot-sum { display: flex; flex-direction: column; align-items: flex-start; }
+.shot-sum .big { font-family: var(--disp); font-weight: 700; font-size: var(--fs-d-md); line-height: .9; letter-spacing: -0.005em; color: var(--accent); }
+.shot-sum small { display: block; font-family: var(--body); font-size: var(--fs-caption); letter-spacing: .02em; color: var(--ink3); font-weight: 600; margin-top: var(--space-1); }
+
+// Label above, equal segments below: six hugging pills ran 45px past a phone
+// card even on their own row, so the toggle divides whatever width it has and
+// is capped where a segment stops being a thumb-sized target and starts being a bar.
+.sets { grid-area: sets; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; margin-bottom: var(--space-4); }
+.sets-l { font-family: var(--body); font-size: var(--fs-caption); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); }
+.sets halo-segmented-toggle { display: block; min-width: 0; max-width: 360px; }
+
+.shot-legend { display: flex; flex-direction: column; gap: var(--gap-snug); align-items: flex-start; }
+.shot-legend .lg { display: inline-flex; align-items: center; gap: var(--gap-tight); font-family: var(--body); font-size: var(--fs-caption); font-weight: 600; color: var(--ink3); }
+// legend arrows: a 2px shaft with a 5px triangular head, drawn at the size the court draws them
+.shot-legend .ak, .shot-legend .ae { position: relative; width: 18px; height: 2px; border-radius: 1px; flex: none; }
+.shot-legend .ak { background: var(--pos); }
+.shot-legend .ae { background: var(--live); opacity: .7; }   // matches the half-tone error shaft on the court
+// arrowhead / error cross, 5px, centred on the 2px shaft
+.shot-legend .ak::after { content: ""; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--pos); border-right-width: 0; }
+.shot-legend .ae::before, .shot-legend .ae::after { content: ""; position: absolute; right: -3px; top: 0; width: 8px; height: 2px; background: var(--live); border-radius: 1px; }
+.shot-legend .ae::before { transform: rotate(45deg); }
+.shot-legend .ae::after { transform: rotate(-45deg); }
+.shot-legend .push { min-width: 0; color: var(--ink3); }   // a11y: --ink4 is hairline-faint, fails AA as text

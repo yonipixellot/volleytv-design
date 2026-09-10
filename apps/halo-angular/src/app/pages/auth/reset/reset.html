@@ -1,0 +1,39 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  @if (invalid()) {
+    <div class="head">
+      <h1>{{ 'auth.linkExpired' | t }}</h1>
+      <p>{{ 'auth.linkExpiredLead' | t }}</p>
+    </div>
+    <halo-button class="cta" variant="primary" [block]="true" (press)="requestNew()">{{ 'auth.sendNewLink' | t }}</halo-button>
+  } @else if (!saved()) {
+    <div class="head">
+      <h1>{{ 'auth.setNewPassword' | t }}</h1>
+      <p>{{ 'auth.setNewLead' | t }}</p>
+    </div>
+
+    <div class="fields">
+      <halo-form-field [label]="'auth.newPassword' | t" [type]="pwType()" [placeholder]="'auth.sixPlus' | t"
+        autocomplete="new-password" [error]="pwError()"
+        [value]="password()" (valueChange)="password.set($event)">
+        <button slot-right class="pw-toggle" type="button" (click)="showPw.set(!showPw())">
+          {{ showPw() ? ('auth.hide' | t) : ('auth.show' | t) }}
+        </button>
+      </halo-form-field>
+
+      <halo-form-field [label]="'auth.confirm' | t" [type]="pwType()" [placeholder]="'auth.typeAgain' | t"
+        [error]="confirmError()"
+        [value]="confirm()" (valueChange)="confirm.set($event)" />
+    </div>
+
+    <halo-button class="cta" variant="primary" [block]="true" [disabled]="!valid()"
+      (press)="submit()">{{ 'auth.savePassword' | t }}</halo-button>
+  } @else {
+    <div class="head">
+      <h1>{{ 'auth.passwordUpdated' | t }}</h1>
+      <p>{{ 'auth.passwordUpdatedLead' | t }}</p>
+    </div>
+
+    <halo-button class="cta" variant="primary" [block]="true"
+      (press)="backToSignIn()">{{ 'auth.backToSignIn' | t }}</halo-button>
+  }
+</halo-auth-shell>

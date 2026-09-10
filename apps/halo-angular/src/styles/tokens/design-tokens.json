@@ -1,0 +1,231 @@
+{
+  "$comment": "Platform-neutral source of truth for the Halo design system. Mirrored by _tokens.scss (web/Angular) and, later, a Flutter theme. WHITE-LABEL MODEL: clients set two brand knobs (primary, secondary) from an external admin app; everything interactive is derived. The BASE theme is brand-neutral; a SKIN (e.g. volleytv) only sets the knobs + per-theme accent lead + tinted surfaces. Logos are client-supplied (see ClientLogo), not tokens. Regenerated 2026-08-21 from _tokens.scss (theme sweep + Track B token families).",
+  "font": {
+    "display": "League Spartan",
+    "body": "Inter",
+    "display-fallback": "Antonio"
+  },
+  "knobs": {
+    "$comment": "Admin-editable at runtime by setting these vars inline on the .halo root (inline style overrides the skin).",
+    "vars": [
+      "--primary",
+      "--on-primary",
+      "--secondary",
+      "--on-secondary"
+    ]
+  },
+  "derived": {
+    "$comment": "Computed from the knobs in _tokens.scss — do not set directly per client.",
+    "vars": [
+      "--accent",
+      "--accent-deep",
+      "--on-accent",
+      "--c-off",
+      "--c-def",
+      "--brand-grad",
+      "--brand-grad-ink",
+      "--brand-ring",
+      "--brand-core",
+      "--brand-core-ink"
+    ]
+  },
+  "shared": {
+    "$comment": "Theme-independent. on-media = white ink over imagery/video/scrims (media is dark in both themes). live-strong = filled badge red carrying white text (AA). player.* = the always-dark video-player chrome. a11y CONTRACT: on-tint inks must clear AA on the darkest common surface (screen/card2), not just white.",
+    "crest-plate": "#ffffff",
+    "crest-edge": "rgba(18, 22, 30, .22)",
+    "live-strong": "#d12b2f",
+    "on-media": "#ffffff",
+    "player": {
+      "bg": "#000000",
+      "frame": "#111111",
+      "on": "#ffffff",
+      "chip-ink": "#0e1512"
+    },
+    "premium": {
+      "$comment": "Fixed platform gold — premium never re-skins with client brand (Yoni 2026-08-22)",
+      "premium": "#ffce3a",
+      "premium-ink": "#221600",
+      "premium-deep": "#e7a915",
+      "premium-text-dark": "#ffce3a",
+      "premium-text-light": "#8a6100"
+    },
+    "system": {
+      "$comment": "OS-style control colours, skin-independent",
+      "sys-green": "#34c759"
+    }
+  },
+  "base": {
+    "dark": {
+      "primary": "#5c86ff",
+      "on-primary": "#08120c",
+      "$on-primary-note": "dark ink on the bright fill (BA-dark pattern): white was 3.33:1 on every filled control; dark ink is 5.72:1. The knob stays bright — it doubles as text-accent on dark surfaces.",
+      "secondary": "#8b5cff",
+      "on-secondary": "#ffffff",
+      "accentLead": "primary",
+      "ink": "#eef1f6",
+      "ink2": "rgba(238,241,246,.60)",
+      "ink3": "rgba(238,241,246,.52)",
+      "ink4": "rgba(238,241,246,.22)",
+      "pos": "#37d886",
+      "on-pos": "#08120c",
+      "live": "#ff5a5f",
+      "card": "#16181d",
+      "card2": "#1e2126",
+      "hair": "rgba(255,255,255,.09)",
+      "hair2": "rgba(255,255,255,.055)",
+      "band": "rgba(255,255,255,.05)",
+      "ring": "rgba(255,255,255,.26)",
+      "court": "#14161a",
+      "courtline": "rgba(255,255,255,.22)",
+      "screen": "#0b0c0f",
+      "shadow-1": "0 4px 12px -4px rgba(0,0,0,.5)",
+      "shadow-2": "0 8px 20px -10px rgba(0,0,0,.5)",
+      "shadow-3": "0 20px 44px -18px rgba(0,0,0,.6)",
+      "shadow-up": "0 -18px 50px -16px rgba(0,0,0,.55)",
+      "edge": "inset 0 1px 0 rgba(255,255,255,.07)",
+      "scrim-ink": "#000000"
+    },
+    "light": {
+      "primary": "#3358ff",
+      "on-primary": "#ffffff",
+      "secondary": "#6a3fff",
+      "on-secondary": "#ffffff",
+      "accentLead": "primary",
+      "ink": "#12141a",
+      "ink2": "rgba(18,20,26,.62)",
+      "ink3": "rgba(18,20,26,.62)",
+      "ink4": "rgba(18,20,26,.26)",
+      "pos": "#05753d",
+      "on-pos": "#ffffff",
+      "live": "#c8272b",
+      "card": "#ffffff",
+      "card2": "#f2f4f7",
+      "hair": "rgba(18,22,30,.12)",
+      "hair2": "rgba(18,22,30,.06)",
+      "band": "rgba(18,22,30,.05)",
+      "ring": "rgba(8,30,18,.16)",
+      "court": "#eef1f5",
+      "courtline": "rgba(18,22,30,.24)",
+      "screen": "#eef0f4",
+      "shadow-1": "0 2px 8px -3px rgba(16,24,40,.14)",
+      "shadow-2": "0 8px 20px -10px rgba(16,24,40,.14)",
+      "shadow-3": "0 20px 44px -18px rgba(16,24,40,.22)",
+      "shadow-up": "0 -18px 50px -16px rgba(16,24,40,.16)",
+      "edge": "inset 0 1px 0 rgba(255,255,255,.85)",
+      "scrim-ink": "#000000"
+    }
+  },
+  "skins": {
+    "volleytv": {
+      "label": "Volley TV",
+      "$comment": "Placeholder tenant brand for the volleyball click-dummy (2026-09-08). Coral + deep teal, ink #0b1a22. Dark coral-led, light teal-led.",
+      "dark": {
+        "primary": "#0f5c6e",
+        "on-primary": "#ffffff",
+        "secondary": "#ff6b35",
+        "on-secondary": "#0b1a22",
+        "accentLead": "secondary",
+        "accent-deep": "#d9531f",
+        "card": "#121c21",
+        "card2": "#182329",
+        "court": "#101a1e",
+        "screen": "#0a1014",
+        "scrim-ink": "#061218"
+      },
+      "light": {
+        "primary": "#0f5c6e",
+        "on-primary": "#ffffff",
+        "secondary": "#ff6b35",
+        "on-secondary": "#0b1a22",
+        "accentLead": "primary",
+        "accent-deep": "#0a4452",
+        "card": "#ffffff",
+        "card2": "#f1f6f6",
+        "court": "#edf3f3",
+        "screen": "#f4f8f8",
+        "scrim-ink": "#082a33"
+      }
+    }
+  },
+  "scale": {
+    "type": {
+      "$comment": "px. Roles, not t-shirt sizes. fs-* = body (Inter), fs-d-* = display (League Spartan). A ratio scale, deliberately NOT on the 4px rhythm grid. A hardcoded font-size is a defect: the accessibility text steps re-derive this scale and cannot reach a literal. Rendered in the Tokens/Typography story; rules in Tokens/Typography · Rules.",
+      "fs-caption": "12px",
+      "fs-body": "14px",
+      "fs-body-lg": "16px",
+      "fs-title": "18px",
+      "fs-heading": "20px",
+      "fs-d-xs": "20px",
+      "fs-d-sm": "24px",
+      "fs-d-md": "32px",
+      "fs-d-lg": "40px",
+      "fs-d-2xl": "54px"
+    },
+    "radius": {
+      "pill": "100px",
+      "card": "24px",
+      "card-sm": "18px",
+      "field": "15px",
+      "phone": "46px"
+    },
+    "space": {
+      "$comment": "One 4px rhythm grid addressed through semantic roles. space-N is the primitive ladder where N x 4 = the value; everything else names a role. Raw px spacing in a component is a defect. Values below 4px (sub-grid optical corrections) and above space-12 (layout dimensions, not rhythm) stay literals and must state a reason.",
+      "space-1": "4px",
+      "space-2": "8px",
+      "space-3": "12px",
+      "space-4": "16px",
+      "space-5": "20px",
+      "space-6": "24px",
+      "space-7": "28px",
+      "space-8": "32px",
+      "space-9": "36px",
+      "space-10": "40px",
+      "space-11": "44px",
+      "space-12": "48px",
+      "pad-x": "16px",
+      "stack": "12px",
+      "rail-gap": "12px",
+      "nav-clear": "108px",
+      "block-gap": "32px",
+      "section-bottom": "16px",
+      "pad-card": "16px",
+      "pad-card-sm": "12px",
+      "pad-control-y": "8px",
+      "pad-control-x": "16px",
+      "pad-field-y": "12px",
+      "pad-field-x": "16px",
+      "gap-tight": "8px",
+      "gap-snug": "12px",
+      "gap-loose": "16px",
+      "pad-x-wide": "clamp(24px, 3.2vw, 64px)",
+      "pad-block-x": "var(--pad-x)",
+      "measure-task": "720px",
+      "measure-page": "1080px",
+      "rail-w": "320px",
+      "nav-w": "220px",
+      "content-max": "2240px"
+    },
+    "breakpoints": {
+      "$comment": "min-width. CSS vars can't be read inside @media — these are the canonical values to hardcode.",
+      "bp-tablet": "768px",
+      "bp-desktop": "1280px"
+    },
+    "z": {
+      "$comment": "Overlay ladder only; component-internal layering (1-15) stays local. Scrim = band value, panel = band+1 (+10 in modal band).",
+      "z-header": 20,
+      "z-pop": 30,
+      "z-drawer": 60,
+      "z-sheet": 70,
+      "z-sheet-hi": 80,
+      "z-modal": 130
+    },
+    "motion": {
+      "$comment": "Interactive feedback = fast, standard state = med, entrances = slow. Ambient loops stay bespoke.",
+      "dur-fast": ".12s",
+      "dur-med": ".15s",
+      "dur-slow": ".3s",
+      "ease-spring": "cubic-bezier(.2,.8,.2,1)",
+      "ease-out-soft": "cubic-bezier(.16,1,.3,1)"
+    }
+  }
+}

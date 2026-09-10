@@ -1,0 +1,288 @@
+<div class="gm halo-page halo-wide">
+  <halo-back-bar [homeName]="home.name" [awayName]="away.name"
+    [homeCrest]="home.crest" [awayCrest]="away.crest"
+    [homeMono]="home.mono" [awayMono]="away.mono"
+    [showBell]="false" (back)="back()" />
+
+  <h1 class="sr-only">{{ home.name }} {{ 'common.vs' | t }} {{ away.name }}</h1>
+
+  <!-- Same two-pane shape as You: an identity rail on the left, the tabs and
+       everything they switch between on the right. `split` only when the game
+       has been played — before tip-off there are no tabs and no body, so a
+       second column would be an empty half-screen (Maryna 2026-08-30).
+       All three wrappers dissolve to display:contents below 1024, so the phone
+       keeps the single stack it already had. -->
+  <div class="gmain" [class.halo-split]="!isPre()">
+  <aside class="grail halo-split-rail">
+  <div class="head">
+    @if (isPre()) {
+      <!-- Countdown-style hero (mobile-friendly): big first-serve time, gold bar, teams below. -->
+      <div class="pre-hero">
+        <div class="ph-eye">
+          <span class="ph-badge"><span class="dot"></span>{{ 'home.upcoming' | t }}</span>
+        </div>
+        <div class="ph-count">
+          <span class="ph-k">{{ 'game.tipoff' | t }}</span>
+          <span class="ph-big">{{ tipoffTime }}</span>
+          <span class="ph-at">{{ startsIn }} · {{ comp }}</span>
+        </div>
+        <div class="ph-bar"><span></span></div>
+        <div class="ph-teams">
+          <halo-crest [src]="home.crest" [monogram]="home.mono" [size]="26" />
+          <button class="ph-tnm nm-link" type="button" (click)="openTeam(homeTeamId)">{{ home.name }}</button>
+          <span class="ph-vs">{{ 'common.vs' | t }}</span>
+          <button class="ph-tnm nm-link" type="button" (click)="openTeam(awayTeamId)">{{ away.name }}</button>
+          <halo-crest [src]="away.crest" [monogram]="away.mono" [size]="26" />
+        </div>
+      </div>
+    } @else {
+      <div class="scorewrap">
+        <halo-score-hero [statusLabel]="'status.final' | t" [final]="true" [when]="when" [homeTeamId]="homeTeamId" [awayTeamId]="awayTeamId" (openTeam)="openTeam($event)"
+          [homeName]="home.name" [awayName]="away.name"
+          [homeCrest]="home.crest" [awayCrest]="away.crest"
+          [homeMono]="home.mono" [awayMono]="away.mono"
+          [homeScore]="home.score" [awayScore]="away.score">
+          <!-- Inside the card, full width. As a pill in the eyebrow it took the
+               width the team name needed — "Netsetters 1" was truncating to
+               "Hoopstar…" beside it (Maryna 2026-08-30). -->
+          @if (!caps().isFan) {
+            <button class="edit-pill" type="button" (click)="openEditor()">
+              <halo-icon name="edit" [size]="13" /> {{ 'common.editor' | t }}
+            </button>
+          }
+        </halo-score-hero>
+      </div>
+    }
+  </div>
+  </aside>
+
+  <div class="gcontent halo-split-main">
+  @if (!isPre()) {
+    <div class="gtabs halo-split-tabs">
+      <halo-segmented-toggle [options]="tabs()" [value]="tab()" (valueChange)="tab.set($any($event))" />
+    </div>
+  }
+
+  <!-- One wrapper for everything the tabs switch between, so the desktop split
+       has a right pane to hand it. On the phone it is a plain block. -->
+  <div class="gbody">
+  @if (!isPre()) {
+    <!-- ---------- VIDEO ---------- -->
+    @if (tab() === 'video') {
+      <!-- Side by side from the desktop band. One 16:9 embed across a 982px
+           column is a 550px-tall poster of a game you have already seen the
+           score of, and the second one lands below the fold (Maryna 2026-08-30).
+           .vidrow is display:contents on the phone, so the stack there is
+           untouched. -->
+      <div class="vidrow">
+        <div class="vidcell">
+          <halo-section-header [title]="'kind.fullGame' | t" />
+          <div class="pad">
+            <halo-video-embed kindLabel="" [title]="fullGame.title" [sub]="fullGame.sub"
+              [duration]="fullGame.duration" [poster]="fullGame.poster" (open)="openVideo('full')" />
+          </div>
+        </div>
+        <div class="vidcell">
+          <halo-section-header [title]="'kind.recap' | t" />
+          <div class="pad">
+            <halo-video-embed kindLabel="" [title]="recap.title" [sub]="recap.sub"
+              [duration]="recap.duration" [poster]="recap.poster" (open)="openVideo('recap')" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ---------- HIGHLIGHTS ---------- -->
+    @if (tab() === 'highlights') {
+      @if (processing()) {
+        <div class="pad">
+          <div class="proc" role="status">
+            <span class="proc-ic"><halo-icon name="settings" [size]="26" /></span>
+            <p class="proc-t">{{ 'game.hlGenerating' | t }}</p>
+            <p class="proc-b">{{ 'game.hlGeneratingSub' | t }}</p>
+          </div>
+        </div>
+      } @else {
+      <!-- Two of my players in this game → pick whose highlights (Yuval 2026-08-24). -->
+      @if (showGamePicker()) {
+        <div class="pad subtabs">
+          <halo-segmented-toggle size="inline" [options]="playerOptions()" [value]="focusedId()"
+            (valueChange)="focusedId.set($any($event))" />
+        </div>
+      }
+      <!-- Scope is the SECONDARY axis under the player picker → quieter inline
+           chips, so two stacked toggles don't read identically (Yoni 2026-08-24). -->
+      <div class="pad subtabs">
+        <halo-segmented-toggle mode="tabs" [options]="hlScopes()" [value]="hlScope()"
+          (valueChange)="hlScope.set($any($event))" />
+      </div>
+      <div class="pad">
+        <halo-blur-lock [locked]="hlScope() === 'you' && lockOwn()"
+          [title]="'game.hlPremium' | t: { whose: ownPoss() }" [note]="'game.hlPremiumNote' | t"
+          (upgrade)="openUpgrade()">
+          <div class="hgrid halo-reel-grid" haloGridColumns (columns)="momentCols.set($event)">
+            @for (c of shownClips(); track c.title) {
+              <button class="htile halo-media-card" type="button" [class.locked]="clipLocked(c)"
+                [attr.aria-label]="clipLocked(c) ? ('common.premiumUpgradeA11y' | t: { title: clipLabel(c) }) : clipLabel(c)"
+                (click)="onHighlightTap(c)">
+                <span class="th">
+                  <img [src]="c.thumb" alt="" />
+                  <span class="scr"></span>
+                  @if (!clipLocked(c)) {
+                    <!-- Share archived 2026-08-26: no sharing anywhere yet.
+                    <span class="share" aria-label="Share"><halo-icon name="share" [size]="13" /></span>
+                    -->
+                    <span class="hplay halo-media-play"><halo-icon name="play" [size]="15" /></span>
+                    <span class="hd">{{ c.duration }}</span>
+                  } @else {
+                    <span class="hlock" aria-hidden="true"><span class="lk-disc"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.6 6.3L21 9l-5 4.2L17.6 20 12 16.4 6.4 20 8 13.2 3 9l6.4-.7L12 2z"/></svg></span><span class="lk-w">{{ 'common.premium' | t }}</span></span>
+                  }
+                </span>
+                <!-- Teammate tiles name the player (each is a different one);
+                     own clips need no attribution. -->
+                <span class="hcap">
+                  <span class="ht">{{ clipLabel(c) }}</span>
+                  @if (c.playerName) { <span class="hwho">{{ c.playerName }}</span> }
+                </span>
+              </button>
+            }
+          </div>
+          <!-- Pages in place: this grid IS the full list for this game, so there
+               is no See all destination. See `shownClips` for why it pages
+               rather than revealing everything at once. -->
+          @if (momentsHidden() > 0) {
+            <button class="halo-more" type="button" data-moments-toggle
+              (click)="loadMoreMoments()">{{ 'common.loadMore' | t }}
+              <halo-icon name="chevron-down" [size]="14" /></button>
+          }
+        </halo-blur-lock>
+      </div>
+      }
+    }
+
+    <!-- ---------- STATS ---------- -->
+    @if (tab() === 'stats') {
+      @if (processing()) {
+        <div class="pad">
+          <div class="proc" role="status">
+            <span class="proc-ic"><halo-icon name="chart" [size]="26" /></span>
+            <p class="proc-t">{{ 'game.statsCalculating' | t }}</p>
+            <p class="proc-b">{{ 'game.statsCalculatingSub' | t }}</p>
+          </div>
+        </div>
+      } @else {
+      <!-- Fans see only the Team scope — a one-option toggle is noise, so hide it. -->
+      @if (statScopes().length > 1) {
+        <div class="pad subtabs">
+          <halo-segmented-toggle mode="tabs" [options]="statScopes()" [value]="statScope()"
+            (valueChange)="statScope.set($any($event))" />
+        </div>
+      }
+
+      @if (statScope() === 'you') {
+        @if (showGamePicker()) {
+          <div class="pad subtabs">
+            <halo-segmented-toggle size="inline" [options]="playerOptions()" [value]="focusedId()"
+              (valueChange)="focusedId.set($any($event))" />
+          </div>
+        }
+        <halo-section-header [title]="'game.whoseStats' | t: { whose: ownPoss() }" [count]="'#' + focusedNumber()" />
+        <div class="pad">
+          <!-- Stat-sheet cubes ONLY — shooting lines + shot chart cut (Yuval 2026-08-23). -->
+          <halo-blur-lock [locked]="lockOwn()" [title]="'game.statsPremium' | t: { whose: ownPoss() }"
+            [note]="'game.statsPremiumNote' | t"
+            (upgrade)="openUpgrade()">
+            <!-- The arrows need to name their reference point: without this
+                 line the card shows a delta against nothing in particular. -->
+            @if (hasDeltas()) {
+              <p class="boxlegend">{{ 'game.comparedWith' | t: { whose: ownPossLower() } }}</p>
+            }
+            <halo-stat-grid [cells]="yourBox()" [cols]="2" [possessive]="ownPossLower()" [showDelta]="false" />
+          </halo-blur-lock>
+        </div>
+      } @else {
+        <halo-section-header [title]="'game.teamStats' | t" />
+        <div class="pad">
+          <div class="card statcard">
+            <div class="stat-head">
+              <span class="th"><span class="dot home"></span>{{ home.name }}</span>
+              <span class="th r">{{ away.name }}<span class="dot away"></span></span>
+            </div>
+            @for (s of teamStats; track s.label) {
+              <div class="ts-row">
+                <span class="ts-lab">{{ s.label }}</span>
+                <div class="ts-line">
+                  <span class="ts-v" [class.win]="s.homePct >= s.awayPct">{{ s.homeV }}
+                    @if (s.homeSub) { <span class="ts-sub num">{{ s.homeSub }}</span> }
+                  </span>
+                  <span class="ts-track">
+                    <span class="ts-fill h" [style.width.%]="share(s)"></span>
+                    <span class="ts-fill a"></span>
+                  </span>
+                  <span class="ts-v r" [class.win]="s.awayPct > s.homePct">{{ s.awayV }}
+                    @if (s.awaySub) { <span class="ts-sub num">{{ s.awaySub }}</span> }
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <halo-section-header [title]="'game.playerStats' | t" />
+        <div class="pad subtabs">
+          <halo-segmented-toggle [options]="teamScopes" [value]="playerTeam()"
+            (valueChange)="playerTeam.set($any($event))" />
+        </div>
+        <div class="pad">
+          <div class="card ptable-wrap">
+            <div class="ptable">
+              <div class="pt-head">
+                <button class="c-player th-btn" type="button" (click)="sortBy('player')"
+                  [class.on]="playerSort().key === 'player'"
+                  [attr.aria-label]="playerSort().key === 'player' ? ('game.colSorted' | t: { col: ('game.player' | t), dir: (playerSort().dir === 'asc' ? ('game.asc' | t) : ('game.desc' | t)) }) : ('game.colSort' | t: { col: ('game.player' | t) })">{{ 'game.player' | t }}</button>
+                @for (c of playerCols; track c.key) {
+                  <button class="th-btn" type="button" (click)="sortBy(c.key)"
+                    [class.on]="playerSort().key === c.key"
+                    [attr.aria-label]="playerSort().key === c.key ? ('game.colSorted' | t: { col: c.label, dir: (playerSort().dir === 'asc' ? ('game.asc' | t) : ('game.desc' | t)) }) : ('game.colSort' | t: { col: c.label })">{{ c.label }}</button>
+                }
+              </div>
+              @for (p of sortedRoster(); track p.name) {
+                <div class="pt-row" [class.self]="p.self">
+                  <span class="c-player"><span class="jz">{{ p.jersey }}</span><span class="nm" [attr.title]="p.name">{{ lastName(p.name) }}</span></span>
+                  <span class="pts">{{ p.pts }}</span><span>{{ p.k }}</span><span>{{ p.ace }}</span>
+                  <span>{{ p.blk }}</span><span>{{ p.dig }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      }
+    }
+  } @else {
+    <!-- ================= PRE-GAME ================= -->
+    <!-- Lineups aren't in the data feed pre-game, so — like the proto — we show
+         what lands after first serve rather than an empty roster. -->
+    <halo-section-header [title]="'game.statsAfterTipoff' | t" />
+    <div class="pad">
+      <div class="card coming">
+        @for (r of comingRows; track r.title) {
+          <div class="cm-row">
+            <span class="cm-ic"><halo-icon [name]="r.icon" [size]="16" /></span>
+            <div class="cm-tx">
+              <span class="cm-t">{{ r.title }}</span>
+              <span class="cm-b">{{ r.body }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+  </div>
+  </div>
+  </div>
+
+  <div class="halo-nav-dock">
+    <halo-bottom-nav [items]="navItems()" active="" (select)="tabNav.go($event)" />
+  </div>
+</div>

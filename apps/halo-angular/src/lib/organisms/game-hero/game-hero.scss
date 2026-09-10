@@ -1,0 +1,189 @@
+:host { display: block; padding: var(--section-bottom) var(--pad-block-x) 0; }
+
+.ehero {
+  position: relative;
+  height: 284px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+  box-shadow: var(--shadow-3);
+}
+
+.ehero > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+// legibility scrim (stays dark over the photo in both themes)
+.scr {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scrim-ink) 30%, transparent), color-mix(in srgb, var(--scrim-ink) 5%, transparent) 34%, color-mix(in srgb, var(--scrim-ink) 72%, transparent) 74%, color-mix(in srgb, var(--scrim-ink) 93%, transparent));
+}
+
+.top {
+  position: absolute;
+  // Card-interior inset. These were 22px — the old --pad-x, left behind when
+  // the screen inset consolidated on 24. Offsets like these are outside the
+  // spacing linter's reach, so they drift silently (Maryna 2026-08-28).
+  inset-inline-start: var(--pad-card);
+  inset-inline-end: var(--pad-card);
+  top: var(--pad-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-snug);
+}
+.hmeta {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .82);
+  text-align: end;
+  white-space: nowrap;   // never break the meta onto a 2nd row
+  // …but it must still yield: nowrap defaults to min-width:auto, so at 375px
+  // the meta overflowed the card rather than truncating (needed 336 of 281).
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Standard mobile: shrink the meta (integer px) + tighten so the live badge
+// and meta stay on one line down to ~340px.
+@media (max-width: 480px) {
+  .top { gap: var(--gap-tight); }
+  .hmeta { font-size: var(--fs-caption); letter-spacing: .05em; }
+}
+
+.livebadge {
+  display: inline-flex;
+  align-items: center;
+  // A badge is a fixed label: it never wraps and never gives up width. Left to
+  // shrink, "LIVE NOW" broke onto two lines inside the pill.
+  flex: none;
+  white-space: nowrap;
+  gap: var(--gap-tight);
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: var(--fs-caption);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--on-media);
+  background: var(--live-strong);   // a11y: white text needs 4.5:1
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  box-shadow: 0 0 16px -3px var(--live);
+}
+.livebadge .pz { width: 5px; height: 5px; border-radius: 50%; background: var(--on-media); animation: live-pulse 2.4s ease-in-out infinite; }
+// Micro-animation: the live dot breathes gently.
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .livebadge .pz { animation: none; }
+}
+.livebadge.fin, .livebadge.up { background: rgba(255, 255, 255, .16); color: var(--on-media); box-shadow: none; }
+
+.foot {
+  position: absolute;
+  // Same card-interior inset as .top above — was 22px, the retired --pad-x.
+  inset-inline-start: var(--pad-card);
+  bottom: var(--space-5);
+  max-width: 66%;
+}
+
+.eteam {
+  font-family: var(--disp);
+  font-weight: 700;
+  font-size: var(--fs-d-xs);
+  line-height: .98;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: var(--on-media);
+}
+.eteam.lo { color: rgba(255, 255, 255, .72); }
+
+// Uneven margins EQUALIZE the visual ink gaps (name baseline → score cap-top
+// vs score baseline → name cap-top): measured 16px both sides at fs 26/54
+// with the League Spartan metric overrides. Equal margins measured 14.6/17.3.
+.escore { display: flex; align-items: center; margin: 8.4px 0 8.7px; }
+// Size, weight and colour only: halo-score owns the face, the figures and the
+// dash, and inherits these. 600 stays deliberate — League Spartan at 700 reads
+// near-black at hero size (Yoni 2026-08-23).
+.escore halo-score {
+  font-weight: 600;
+  font-size: var(--fs-d-2xl);
+  letter-spacing: -0.015em;
+  color: var(--on-media);
+}
+.vs {
+  font-family: var(--disp);
+  font-weight: 800;
+  font-size: var(--fs-d-md);
+  color: rgba(255, 255, 255, .7);
+  margin: var(--space-3) 0 var(--space-3);
+}
+
+.wl {
+  // halo-button primary atom (ds-button S3) — layout + hero-scale metrics here
+  align-self: flex-start;
+  margin-top: var(--space-3);
+
+  ::ng-deep .btn {
+    padding: var(--space-3) var(--space-5);
+    font-weight: 800;
+    font-size: var(--fs-body);
+    letter-spacing: .02em;
+  }
+  // Watch Live stays lime in both themes (--accent flips purple in light).
+  // Match the atom's `.btn.primary` specificity so this wins.
+  ::ng-deep .btn.primary {
+    background: var(--secondary);
+    color: var(--on-secondary);
+  }
+}
+
+// Desktop web (Home only, >=1280px): taller hero, content left-aligned in
+// normal flow instead of pinned to the bottom-left corner (Maryna 2026-08-25).
+:host-context(.dhome) {
+  @media (min-width: 768px) {
+    .ehero {
+      // Grows with the canvas and then stops. A fixed 360 turned the hero into
+      // a 5:1 strip at 1920 and 6.8:1 at 2560, because only its width moved.
+      height: clamp(320px, 28vw, 520px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-inline-start: var(--space-11);
+    }
+    .top {
+      position: relative;
+      inset-inline-start: auto; inset-inline-end: auto; top: auto;
+      justify-content: flex-start;
+      gap: var(--gap-snug);
+      margin: 0 0 var(--space-6);
+    }
+    .hmeta { text-align: start; }
+    .foot {
+      position: relative;
+      inset-inline-start: auto; bottom: auto;
+      max-width: 46%;
+    }
+    // Off the display ladder on purpose: these are numerals fitted to the
+    // desktop hero card, not steps anyone else reaches for. Pulling them onto
+    // the ladder would shrink the score from 64 to 54 (-15%) for the sake of
+    // tidiness, in the one place the score is the whole point.
+    .eteam { font-size: 28px; }
+    .escore { margin: var(--space-2) 0 var(--space-3); }
+    .escore halo-score { font-size: 64px; }
+    .wl { margin-top: var(--space-6); }
+  }
+}

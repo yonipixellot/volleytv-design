@@ -1,0 +1,128 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens/Interaction · Rules" />
+
+# Interaction states
+
+Default, hover, focus, pressed, disabled. Two of those you get for free, one is
+pointer-only, and one of them is a promise you should not make lightly.
+
+---
+
+## Focus and pressed are system floors
+
+Both are declared once in `styles.scss` using `:where()`, which adds no specificity — so a
+new control inherits them without doing anything, and any component overrides them with a
+plain class.
+
+```scss
+:where(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+:where(a, button, [role='button'], [role='tab'], [role='link'], [role='switch']):not(:disabled):active {
+  transform: scale(var(--press-scale));
+}
+```
+
+`--press-scale` is **0.97**. Large surfaces set their own, because the same percentage reads
+differently at different sizes: 3% off a 40px control is a press, 3% off a 302px card is a
+lurch. Cards use `0.99`, the ad banner `0.995`.
+
+```scss
+.vcard { --press-scale: .99; }
+```
+
+Focus is keyboard-only (`:focus-visible`) so a pointer tap does not leave a ring behind.
+
+---
+
+## Hover is pointer-only
+
+**The Pointer-Only Hover Rule.** Every `:hover` goes inside `@media (hover: hover)`.
+
+On a touch screen a hover rule sticks after the tap: the card you last touched stays looking
+selected until you touch something else. This is not hypothetical tidiness — it is the
+difference between a card row that feels responsive and one that looks broken.
+
+```scss
+/* ✓ Do */
+@media (hover: hover) {
+  .card:hover { border-color: color-mix(in srgb, var(--accent) 30%, var(--hair)); }
+}
+
+/* ✗ Don't */
+.card:hover { border-color: …; }
+```
+
+---
+
+## The hover recipe
+
+A surface tints. It does not lift.
+
+| Layer | At rest | Hovered |
+| --- | --- | --- |
+| Border | `--hair` | 30% `--accent` mixed into `--hair` |
+| Background | `--card` | `--card-raised` |
+| Media inside | — | `scale(1.03–1.06)` inside its own clip |
+
+**The Content-Moves Rule.** The card holds still and its media grows. A card that lifts or
+scales in a horizontal rail jostles the cards beside it, and rails are how this product is
+browsed. Moving the thumbnail inside `overflow: hidden` changes nothing about layout.
+
+Text controls hover on the label rather than gaining a surface, and a directional control may
+nudge its glyph toward where the click leads:
+
+```scss
+@media (hover: hover) {
+  .seeall:hover { color: var(--accent-deep); }
+  .seeall:hover halo-icon { transform: translateX(2px); }
+}
+```
+
+---
+
+## Reduced motion changes the cue, it does not remove it
+
+Motion carries pressed, so switching motion off would leave a click unacknowledged — worse
+than never having had feedback. Swap the channel instead:
+
+```scss
+@media (prefers-reduced-motion: reduce) {
+  :where(a, button, …):not(:disabled):active {
+    transform: none;
+    filter: brightness(.92);
+  }
+}
+```
+
+---
+
+## Only real controls get hover
+
+**The Honest Affordance Rule.** A hover state is a promise that a click does something. Two
+places on Home deliberately have none:
+
+- **`upcoming-row`** is a `<div>` with no click, no output, no role and no tabindex — a
+  fixture card. A hover would advertise an action that does not exist.
+- **The ad banner** is a link, but "the content reacts" is how *editorial* cards invite a
+  click. Lending that treatment to a paid placement makes the ad behave like the app's own
+  content. It stays a flat surface, and still gets the focus ring and the press state,
+  because acknowledging a click is accessibility, not enticement.
+
+Before adding hover, check the element is actually interactive. If it is a `<div>`, the
+answer is usually that it needs a `<button>`, not a hover rule.
+
+---
+
+## Checklist for a new control
+
+1. Is it a real `<button>` / `<a>` / has a `role`? If not, fix that first.
+2. Focus and pressed arrive on their own. Override `--press-scale` only if the surface is
+   large.
+3. Wrap hover in `@media (hover: hover)`.
+4. Tint the surface; move the media, not the card.
+5. If you added motion, give `prefers-reduced-motion` a non-motion cue.

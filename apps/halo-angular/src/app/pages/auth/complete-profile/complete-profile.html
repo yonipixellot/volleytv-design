@@ -1,0 +1,20 @@
+<halo-auth-shell [logoSrc]="logoSrc()" [clientName]="clientName()">
+  <div class="cp">
+    <span class="eyebrow">{{ 'auth.signedUpWith' | t: { provider } }}</span>
+    <h1>{{ 'auth.completeProfile' | t }}</h1>
+    <p class="lead">{{ 'auth.completeLead' | t: { provider } }}</p>
+
+    <halo-form-field [label]="'auth.birthDate' | t" type="date" [hint]="'auth.ageHint' | t"
+      [value]="birthDate()" (valueChange)="birthDate.set($event)" />
+
+    <div class="gender">
+      <span class="lbl">{{ 'auth.gender' | t }}</span>
+      <halo-segmented-toggle [options]="genders" [value]="gender()" (valueChange)="gender.set($event)" />
+    </div>
+
+    <halo-form-field [label]="'auth.country' | t" [placeholder]="'auth.yourCountry' | t"
+      [value]="country()" (valueChange)="country.set($event)" />
+
+    <halo-button variant="primary" [block]="true" [disabled]="!ready()" (press)="finish()">{{ 'auth.finishSetup' | t }}</halo-button>
+  </div>
+</halo-auth-shell>

@@ -1,0 +1,166 @@
+<!-- Ambient backdrop for the wide bands. A 9:16 reel cannot fill a landscape
+     window, and the honest answer to what surrounds it is the moment itself:
+     the same frame, scaled past the edges and blurred, so the surround carries
+     the clip's own light instead of being a black void. Hidden below 768, where
+     the reel already fills the phone frame (Maryna 2026-08-29). -->
+<span class="ambient" aria-hidden="true" [style.background-image]="'url(' + current().thumb + ')'"></span>
+
+<!-- THE DECK — the reel plus its neighbours. Below 768 `.deck` is
+     `display: contents`, so the reel stays the direct child of the host and the
+     phone layout is untouched; from 768 it becomes the row that Instagram's
+     desktop story viewer uses: the previous and next reels dimmed either side,
+     an arrow in each gap, and the close moved off the story into the corner. -->
+<div class="deck" [class.solo]="single()">
+  <button class="side" type="button" [class.ghost]="!prevReel()"
+          [attr.aria-label]="prevReel() ? ('watch.prevReelA11y' | t: { title: prevReel()!.title }) : null"
+          [attr.aria-hidden]="prevReel() ? null : 'true'" [attr.tabindex]="prevReel() ? null : -1"
+          (click)="prevReel() && openReel(prevReel()!.id)">
+    <img [src]="prevReel()?.thumb || ''" alt="" />
+    <span class="side-t">{{ prevReel()?.title }}</span>
+  </button>
+  <button class="nav" type="button" [class.ghost]="!prevReel()"
+          [attr.aria-label]="'watch.prevReel' | t" [attr.tabindex]="prevReel() ? null : -1"
+          (click)="prevReel() && openReel(prevReel()!.id)">
+    <halo-icon name="chevron-left" [size]="16" />
+  </button>
+
+<div class="hv">
+  <h1 class="sr-only">{{ reelTitle() }}, {{ current().action }}</h1>
+  <!-- Real footage since 2026-09-09, and only where there IS footage for the
+       moment: `reelVideo` returns '' for a poster outside the numbered clip set
+       (a caller-supplied ?thumb=), and that case keeps the still it always had.
+       A locked moment does NOT get a video — the blurred poster is the gate, so
+       playing the clip underneath it would hand over the thing being sold.
+       Muted + loop + playsinline: this is a story frame, not a player, so it
+       behaves like one and never asks iOS for its own fullscreen. -->
+  @if (clipVideo() && !currentLocked()) {
+    <video class="bg" [src]="clipVideo()" [poster]="current().thumb"
+      autoplay muted loop playsinline preload="auto"></video>
+  } @else {
+    <img class="bg" [class.blur]="currentLocked()" [src]="current().thumb" alt="" />
+  }
+  <span class="veil"></span>
+
+  <!-- Progress segments (premium plays get a gold segment). A single clip has
+       nothing to progress THROUGH, so the bar and the counter both stand down:
+       a one-segment progress bar reads as a stalled reel. -->
+  @if (!single()) {
+  <div class="segs">
+    @for (c of clips(); track $index; let idx = $index) {
+      <span class="seg"><span class="fill" [class.done]="idx < i()" [class.on]="idx === i()" [class.premium]="clipPremium(c)"></span></span>
+    }
+  </div>
+  }
+
+  <!-- top row: section chip + index + close -->
+  <div class="top">
+    <span class="section"><span class="jz">{{ jersey() }}</span>{{ sectionLabel() }}</span>
+    <div class="topright">
+      @if (!single()) { <span class="ix">{{ i() + 1 }} / {{ clips().length }}</span> }
+      <halo-icon-button icon="close" [ariaLabel]="'common.close' | t" size="sm" (click)="close()" />
+    </div>
+  </div>
+
+  <!-- tap zones -->
+  <button class="zone left" type="button" [attr.aria-label]="'watch.prev' | t" (click)="prev()"></button>
+  <button class="zone right" type="button" [attr.aria-label]="'watch.next' | t" (click)="next()"></button>
+
+  <!-- per-clip premium lock — the PT's gold locked card, IN PLACE in the reel:
+       the moment's own footage stays visible (blurred) so you buy what you can
+       almost see. Star crest, not a padlock (aspirational, not "denied"). -->
+  @if (currentLocked() && !showUpsell()) {
+    <span class="goldfrost" aria-hidden="true"></span>
+    <!-- Ticket stub (Yoni's pick of 4 directions): the locked moment as an
+         event ticket — gold side rail, perforated tear-off holding the CTA. -->
+    <div class="lockwrap" role="dialog" [attr.aria-label]="'watch.premiumMoment' | t">
+      <halo-premium-ticket
+        [title]="current().action"
+        [meta]="reelTitle() + (lockedMore() > 0 ? ' · ' + ('watch.moreFromGame' | t: { n: lockedMore() }) : '')"
+        [cta]="'watch.unlockAll' | t: { n: clips().length }"
+        [skipLabel]="nextFree() !== null ? ('watch.keepWatchingFree' | t) : ''"
+        (unlock)="openUpgrade()"
+        (skip)="skipToFree()"
+      />
+    </div>
+  }
+
+  <!-- terminal upsell end-card (basic reel with gated premium plays) -->
+  @if (showUpsell()) {
+    <div class="endcard" role="dialog" [attr.aria-label]="'watch.upgradeToPremium' | t">
+      <halo-premium-ticket
+        [title]="'watch.unlockEvery' | t"
+        [meta]="'watch.unlockEveryMeta' | t"
+        [cta]="'common.upgrade' | t"
+        [skipLabel]="'common.notNow' | t"
+        (unlock)="openUpgrade()"
+        (skip)="close()"
+      />
+    </div>
+  }
+
+  <!-- info block -->
+  <div class="cap">
+    <!-- title lives on the gold card while locked (PT parity) -->
+    @if (!currentLocked() || showUpsell()) {
+      <div class="titleblock">
+        <!-- Ownership badge — accent "Yours" on your own reel, quiet
+             "Teammate" on someone else's. Same slot either way so the title
+             block keeps its rhythm instead of shifting between reels. -->
+        <span class="yours" [class.other]="!isOwn()">{{ isOwn() ? ('watch.yours' | t) : ('watch.teammate' | t) }}</span>
+        <span class="ttl">{{ reelTitle() }}</span>
+        @if (!single()) { <span class="team">{{ current().action }}</span> }
+      </div>
+    }
+
+    <div class="scorecard">
+      <span class="tm"><span class="crest">{{ home.mono }}</span><halo-team-name [name]="home.name" [teamId]="teamIdOf(home.name)" (open)="openTeamId($event)" /></span>
+      <halo-score class="sc" [home]="home.score" [away]="away.score"
+                  [homeName]="home.name" [awayName]="away.name" />
+      <span class="tm r"><halo-team-name [name]="away.name" [teamId]="teamIdOf(away.name)" (open)="openTeamId($event)" /><span class="crest">{{ away.mono }}</span></span>
+    </div>
+
+    <div class="actions">
+      <!-- Stays the accent button, unlike the VOD / live players' quiet text
+           link: the reel has no metadata block to sit in and this is its only
+           forward action, so it carries the weight here (2026-08-28). -->
+      @if (showGameLink()) {
+        <button class="full" type="button" (click)="goToGamePage()">
+          {{ 'watch.goToGame' | t }}
+        </button>
+      }
+      <!-- Share archived 2026-08-26: no share affordance on Player Highlights
+           (users can't share their own player reel). ShareSheet/ShareState kept
+           for reuse elsewhere; see the commented block in highlight.ts.
+           <halo-icon-button icon="share" ariaLabel="Share" size="lg" (click)="share()" /> -->
+      <!-- Download — OWN reel only: you can export your own highlights, never a
+           teammate's, so the control is omitted (not disabled) on someone
+           else's reel. Next step (editor hand-off) isn't built yet — download()
+           raises a toast in the meantime (2026-08-26). -->
+      @if (isOwn()) {
+        <halo-icon-button icon="download" [ariaLabel]="'watch.download' | t" size="lg" (click)="download()" />
+      }
+    </div>
+  </div>
+
+</div>
+
+  <button class="nav r" type="button" [class.ghost]="!nextReel()"
+          [attr.aria-label]="'watch.nextReel' | t" [attr.tabindex]="nextReel() ? null : -1"
+          (click)="nextReel() && openReel(nextReel()!.id)">
+    <halo-icon name="chevron-right" [size]="16" />
+  </button>
+  <button class="side" type="button" [class.ghost]="!nextReel()"
+          [attr.aria-label]="nextReel() ? ('watch.nextReelA11y' | t: { title: nextReel()!.title }) : null"
+          [attr.aria-hidden]="nextReel() ? null : 'true'" [attr.tabindex]="nextReel() ? null : -1"
+          (click)="nextReel() && openReel(nextReel()!.id)">
+    <img [src]="nextReel()?.thumb || ''" alt="" />
+    <span class="side-t">{{ nextReel()?.title }}</span>
+  </button>
+</div>
+
+<!-- The page's close, in the page's corner. The reel's own close (inside .top)
+     stands down from 768, where this one exists — one exit per width, never
+     two. -->
+<button class="deckx" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">
+  <halo-icon name="close" [size]="16" />
+</button>

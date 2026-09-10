@@ -1,0 +1,127 @@
+:host { display: block; }
+
+.esec {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-tight);
+  padding: var(--block-gap) var(--pad-block-x) var(--section-bottom);
+}
+
+.tk {
+  width: 3px;
+  height: 16px;
+  border-radius: 3px;
+  flex: none;
+  background: var(--accent);
+  &.def { background: var(--c-def); }
+  &.live { background: var(--live); }
+  &.past { background: var(--ink3); opacity: .7; }
+}
+
+.rl {
+  // Flexible: the decorative rule gives way before any text clips. The high
+  // shrink factor is what makes that true — flexbox distributes shrink by
+  // basis*factor, so at `1` the title (basis ~176px) absorbed the squeeze and
+  // clipped while the rule sat at 34 of its 40px. At 100 the rule collapses
+  // first, and it may collapse to nothing: it is an ornament, and losing it
+  // costs less than an ellipsis in a heading (Maryna 2026-08-28).
+  flex: 0 100 40px;
+  min-width: 0;
+  height: 2px;
+  border-radius: 2px;
+  opacity: .45;
+  background: var(--accent);
+  &.def { background: var(--c-def); }
+  &.live { background: var(--live); }
+  &.past { background: var(--ink3); }
+}
+
+h2 {
+  font-family: var(--disp);
+  font-weight: 700;
+  // League Spartan runs ~29% wider than Antonio — 20px/.02em restores the
+  // exact footprint the 24px/.055em Antonio header had ("GAME HIGHLIGHTS"
+  // + count + rule + see-all fit on one row again).
+  font-size: var(--fs-d-xs);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--ink);
+  white-space: nowrap;
+  // A flex item with `nowrap` defaults to min-width:auto, so it refuses to
+  // shrink below its text and pushes the count and See all clean off the
+  // screen. Section titles carry TENANT text ("More from Basketball
+  // Australia" already overflowed at 375px), so the title is the thing that
+  // gives way last but does give way (Maryna 2026-08-28).
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// The heading takes --section-ink, which a skin sets. Hoops TV's client edit
+// ("make headings purple") is that token pointing at the accent; the neutral
+// default is plain ink. LIVE-toned sections always stay red: live is a status
+// colour, never a brand one, so it overrides the hook rather than reading it.
+h2 { color: var(--section-ink); }
+.tk.live + h2 { color: var(--live); }
+
+.cnt {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  color: var(--ink3);
+  white-space: nowrap;   // "3 clips" stays one row — the rule shrinks instead
+  flex: none;            // …and the title truncates before the count is lost
+}
+
+.sub {
+  margin-inline-start: auto;
+  font-family: var(--body);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+
+.seeall {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+// a11y 2.5.8: >=24px hit area
+.seeall { padding-block: var(--space-2); margin-block: calc(var(--space-2) * -1); }
+
+// Narrow devices: the full row (title + rule + count + see-all) needs a
+// smaller title to hold one line. The cutoff was 374px, which missed the
+// 375px class (iPhone SE, 12/13 mini) by a single pixel — and 375 is exactly
+// where the row started clipping once the screen inset went to 24px
+// (Maryna 2026-08-28).
+@media (max-width: 390px) {
+  h2 { font-size: var(--fs-title); }
+  .esec { gap: var(--gap-tight); }
+}
+
+/* Desktop interaction. A text control with no surface of its own, so hover has
+   to come from the label and the chevron — the chevron nudges toward where the
+   click leads. */
+@media (hover: hover) {
+  .seeall:hover { color: var(--accent-deep); }
+  .seeall:hover halo-icon { transform: translateX(2px); }
+}
+.seeall { transition: color var(--dur-med); }
+.seeall halo-icon { transition: transform var(--dur-med) var(--ease-out-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .seeall, .seeall halo-icon { transition: none; }
+  .seeall:hover halo-icon { transform: none; }
+}

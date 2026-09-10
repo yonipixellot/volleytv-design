@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Volley TV</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="deployment-test" content="2026-08-28T17:01:00Z">
+  <meta name="theme-color" content="#0a1014">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="img/brand/VolleyTV_Brandmark_Coral.svg">
+  <script>
+    // GH Pages SPA fallback (deep links): the domain-root 404.html redirects
+    // /halo-angular/<route> here as ?p=<encoded route+query+hash>; restore the
+    // real URL before the Angular router boots. No-op in local dev.
+    (function () {
+      var m = location.search.match(/[?&]p=([^&]+)/);
+      if (!m) return;
+      var base = (document.querySelector('base') || {}).href || '/';
+      history.replaceState(null, '', base.replace(/\/$/, '') + decodeURIComponent(m[1]));
+    })();
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
